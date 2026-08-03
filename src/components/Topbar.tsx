@@ -322,9 +322,14 @@ export default function Topbar({
           </button>
 
           {/* Avatar */}
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--primary-foreground)', cursor: 'pointer', marginLeft: 4, flexShrink: 0 }}>
+          <button
+            onClick={() => navigate('/login')}
+            title="切换账号"
+            aria-label="切换账号"
+            style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--primary-foreground)', cursor: 'pointer', marginLeft: 4, flexShrink: 0, border: 'none' }}
+          >
             管
-          </div>
+          </button>
         </div>
         {showTopProgress && (
           <div style={{ position: 'absolute', left: 0, right: 0, bottom: -1, height: 2, overflow: 'hidden', pointerEvents: 'none' }}>

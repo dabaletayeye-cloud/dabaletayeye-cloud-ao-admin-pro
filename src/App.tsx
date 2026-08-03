@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './hooks/useTheme';
 import { Toaster } from 'sonner';
 
+import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import ArticleListPage from './pages/ArticleListPage';
 import CategoryPage from './pages/CategoryPage';
@@ -76,6 +77,8 @@ export default function App() {
       <BrowserRouter>
         <Toaster position="top-right" richColors />
         <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<LoginPage />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/content/articles" element={<ArticleListPage />} />
           <Route path="/content/categories" element={<CategoryPage />} />
