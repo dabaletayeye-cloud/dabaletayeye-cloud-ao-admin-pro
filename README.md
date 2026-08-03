@@ -70,6 +70,20 @@ npm run dev
 | 页面模板 | `/tmpl/cards`、`/tmpl/charts`、`/tmpl/map` |
 | 结果与错误页 | `/result/success-page`、`/error/403-page`、`/error/404-page`、`/error/500-page` |
 
+## 清理演示内容
+
+项目需要以业务功能为中心进行二次开发时，可移除组件中心、功能示例和模板中心的演示代码：
+
+```bash
+# 只查看清理范围，不修改文件
+npm run clean:demo:dry
+
+# 删除演示页面、地图数据及对应路由和侧边栏入口
+npm run clean:demo
+```
+
+清理命令会删除文件，请先确认预览结果，并在版本控制中保留可恢复的提交。
+
 ## 项目结构
 
 ```text

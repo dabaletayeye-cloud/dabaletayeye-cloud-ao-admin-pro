@@ -26,6 +26,7 @@ import ErrorPage from './pages/ErrorPage';
 import ServerPage from './pages/ServerPage';
 import PermissionPage from './pages/PermissionPage';
 import SettingsPage from './pages/SettingsPage';
+/* CLEAN_DEMO_START: imports */
 import OverviewPage from './pages/comp/OverviewPage';
 import ButtonsPage from './pages/comp/ButtonsPage';
 import FormsPage from './pages/comp/FormsPage';
@@ -67,6 +68,7 @@ import FrontendPermissionExamplePage from './pages/examples/FrontendPermissionEx
 import SearchFormExamplePage from './pages/examples/SearchFormExamplePage';
 import SplitTableExamplePage from './pages/examples/SplitTableExamplePage';
 import SocketExamplePage from './pages/examples/SocketExamplePage';
+/* CLEAN_DEMO_END: imports */
 
 export default function App() {
   return (
@@ -97,6 +99,7 @@ export default function App() {
           <Route path="/system/servers" element={<ServerPage />} />
           <Route path="/permissions" element={<PermissionPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          {/* CLEAN_DEMO_START: routes */}
           <Route path="/comp/overview" element={<OverviewPage />} />
           <Route path="/comp/buttons" element={<ButtonsPage />} />
           <Route path="/comp/forms" element={<FormsPage />} />
@@ -132,6 +135,7 @@ export default function App() {
           <Route path="/tmpl/chat" element={<ChatPage />} />
           <Route path="/tmpl/pricing" element={<PricingPage />} />
           <Route path="/tmpl/map" element={<MapPage />} />
+          {/* CLEAN_DEMO_END: routes */}
           <Route path="/article/list" element={<ArticleGridPage />} />
           <Route path="/article/publish" element={<ArticlePublishPage />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalyticsPage />} />
