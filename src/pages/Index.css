@@ -1,0 +1,48 @@
+
+/* Custom styles for the AI system */
+.ant-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e8e8e8;
+}
+
+.ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.ant-input-textarea {
+  border-radius: 6px 0 0 6px;
+}
+
+.ant-btn-primary {
+  border-radius: 0 6px 6px 0;
+}
+
+/* Custom scrollbar for code preview */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .ant-layout-content > div {
+    flex-direction: column;
+  }
+  
+  .ant-card {
+    margin-bottom: 16px;
+  }
+}

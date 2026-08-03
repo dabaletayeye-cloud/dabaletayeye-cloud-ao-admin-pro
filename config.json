@@ -1,0 +1,320 @@
+{
+  "routes": [
+    {
+      "path": "/",
+      "src": "src/pages/Dashboard.tsx"
+    },
+    {
+      "path": "/content/articles",
+      "src": "src/pages/ArticleListPage.tsx"
+    },
+    {
+      "path": "/content/categories",
+      "src": "src/pages/CategoryPage.tsx"
+    },
+    {
+      "path": "/content/tags",
+      "src": "src/pages/TagPage.tsx"
+    },
+    {
+      "path": "/analytics/traffic",
+      "src": "src/pages/VisitStatsPage.tsx"
+    },
+    {
+      "path": "/analytics/portrait",
+      "src": "src/pages/UserPortraitPage.tsx"
+    },
+    {
+      "path": "/analytics/funnel",
+      "src": "src/pages/FunnelPage.tsx"
+    },
+    {
+      "path": "/media",
+      "src": "src/pages/MediaPage.tsx"
+    },
+    {
+      "path": "/marketing/coupons",
+      "src": "src/pages/CouponPage.tsx"
+    },
+    {
+      "path": "/marketing/events",
+      "src": "src/pages/ActivityPage.tsx"
+    },
+    {
+      "path": "/marketing/push",
+      "src": "src/pages/PushPage.tsx"
+    },
+    {
+      "path": "/users",
+      "src": "src/pages/UsersPage.tsx"
+    },
+    {
+      "path": "/system/users",
+      "src": "src/pages/UsersPage.tsx"
+    },
+    {
+      "path": "/orders",
+      "src": "src/pages/OrderPage.tsx"
+    },
+    {
+      "path": "/messages",
+      "src": "src/pages/MessagePage.tsx"
+    },
+    {
+      "path": "/system/roles",
+      "src": "src/pages/RolePage.tsx"
+    },
+    {
+      "path": "/system/menus",
+      "src": "src/pages/MenuPage.tsx"
+    },
+    {
+      "path": "/system/logs",
+      "src": "src/pages/LogPage.tsx"
+    },
+    {
+      "path": "/system/dict",
+      "src": "src/pages/DictPage.tsx"
+    },
+    {
+      "path": "/system/config",
+      "src": "src/pages/SystemConfigPage.tsx"
+    },
+    {
+      "path": "/system/servers",
+      "src": "src/pages/ServerPage.tsx"
+    },
+    {
+      "path": "/comp/overview",
+      "src": "src/pages/comp/OverviewPage.tsx"
+    },
+    {
+      "path": "/comp/buttons",
+      "src": "src/pages/comp/ButtonsPage.tsx"
+    },
+    {
+      "path": "/comp/forms",
+      "src": "src/pages/comp/FormsPage.tsx"
+    },
+    {
+      "path": "/comp/table",
+      "src": "src/pages/comp/DataTablePage.tsx"
+    },
+    {
+      "path": "/comp/feedback",
+      "src": "src/pages/comp/FeedbackPage.tsx"
+    },
+    {
+      "path": "/comp/display",
+      "src": "src/pages/comp/DisplayPage.tsx"
+    },
+    {
+      "path": "/comp/nav",
+      "src": "src/pages/comp/NavPage.tsx"
+    },
+    {
+      "path": "/comp/icons",
+      "src": "src/pages/comp/IconsPage.tsx"
+    },
+    {
+      "path": "/comp/number-roll",
+      "src": "src/pages/comp/NumberRollPage.tsx"
+    },
+    {
+      "path": "/comp/rich-editor",
+      "src": "src/pages/comp/RichEditorPage.tsx"
+    },
+    {
+      "path": "/comp/image-crop",
+      "src": "src/pages/comp/ImageCropPage.tsx"
+    },
+    {
+      "path": "/comp/qrcode",
+      "src": "src/pages/comp/QrCodePage.tsx"
+    },
+    {
+      "path": "/comp/video-player",
+      "src": "src/pages/comp/VideoPlayerPage.tsx"
+    },
+    {
+      "path": "/comp/drag",
+      "src": "src/pages/comp/DragPage.tsx"
+    },
+    {
+      "path": "/comp/context-menu",
+      "src": "src/pages/comp/ContextMenuPage.tsx"
+    },
+    {
+      "path": "/comp/watermark",
+      "src": "src/pages/comp/WatermarkPage.tsx"
+    },
+    {
+      "path": "/comp/text-scroll",
+      "src": "src/pages/comp/TextScrollPage.tsx"
+    },
+    {
+      "path": "/comp/confetti",
+      "src": "src/pages/comp/ConfettiPage.tsx"
+    },
+    {
+      "path": "/comp/excel",
+      "src": "src/pages/comp/ExcelPage.tsx"
+    },
+    {
+      "path": "/tmpl/cards",
+      "src": "src/pages/tmpl/CardPage.tsx"
+    },
+    {
+      "path": "/tmpl/banners",
+      "src": "src/pages/tmpl/BannerPage.tsx"
+    },
+    {
+      "path": "/tmpl/charts",
+      "src": "src/pages/tmpl/ChartPage.tsx"
+    },
+    {
+      "path": "/tmpl/calendar",
+      "src": "src/pages/tmpl/CalendarPage.tsx"
+    },
+    {
+      "path": "/tmpl/chat",
+      "src": "src/pages/tmpl/ChatPage.tsx"
+    },
+    {
+      "path": "/tmpl/pricing",
+      "src": "src/pages/tmpl/PricingPage.tsx"
+    },
+    {
+      "path": "/tmpl/map",
+      "src": "src/pages/tmpl/MapPage.tsx"
+    },
+    {
+      "path": "/article/list",
+      "src": "src/pages/article/ArticleGridPage.tsx"
+    },
+    {
+      "path": "/article/publish",
+      "src": "src/pages/article/ArticlePublishPage.tsx"
+    },
+    {
+      "path": "/dashboard/analytics",
+      "src": "src/pages/dashboard/DashboardAnalyticsPage.tsx"
+    },
+    {
+      "path": "/dashboard/ecommerce",
+      "src": "src/pages/dashboard/EcommercePage.tsx"
+    },
+    {
+      "path": "/result/success",
+      "src": "src/pages/ResultPage.tsx"
+    },
+    {
+      "path": "/result/success-page",
+      "src": "src/pages/result/SuccessPage.tsx"
+    },
+    {
+      "path": "/result/fail-page",
+      "src": "src/pages/result/FailPage.tsx"
+    },
+    {
+      "path": "/result/fail",
+      "src": "src/pages/ResultPage.tsx"
+    },
+    {
+      "path": "/error/403",
+      "src": "src/pages/ErrorPage.tsx"
+    },
+    {
+      "path": "/error/403-page",
+      "src": "src/pages/error/Page403.tsx"
+    },
+    {
+      "path": "/error/404",
+      "src": "src/pages/ErrorPage.tsx"
+    },
+    {
+      "path": "/error/404-page",
+      "src": "src/pages/error/Page404.tsx"
+    },
+    {
+      "path": "/error/500",
+      "src": "src/pages/ErrorPage.tsx"
+    },
+    {
+      "path": "/error/500-page",
+      "src": "src/pages/error/Page500.tsx"
+    }
+  ],
+  "components": [
+    {
+      "name": "ActivityFeed",
+      "src": "src/components/ActivityFeed.tsx",
+      "route": "/preview/activity-feed"
+    },
+    {
+      "name": "AdminLayout",
+      "src": "src/components/AdminLayout.tsx",
+      "route": "/preview/admin-layout"
+    },
+    {
+      "name": "AppLauncher",
+      "src": "src/components/AppLauncher.tsx",
+      "route": "/preview/app-launcher"
+    },
+    {
+      "name": "Charts",
+      "src": "src/components/Charts.tsx",
+      "route": "/preview/charts"
+    },
+    {
+      "name": "HorizontalNav",
+      "src": "src/components/HorizontalNav.tsx",
+      "route": "/preview/horizontal-nav"
+    },
+    {
+      "name": "NewUserList",
+      "src": "src/components/NewUserList.tsx",
+      "route": "/preview/new-user-list"
+    },
+    {
+      "name": "NotificationPanel",
+      "src": "src/components/NotificationPanel.tsx",
+      "route": "/preview/notification-panel"
+    },
+    {
+      "name": "Sidebar",
+      "src": "src/components/Sidebar.tsx",
+      "route": "/preview/sidebar"
+    },
+    {
+      "name": "StatCards",
+      "src": "src/components/StatCards.tsx",
+      "route": "/preview/stat-cards"
+    },
+    {
+      "name": "ThemeBackground",
+      "src": "src/components/ThemeBackground.tsx",
+      "route": "/preview/theme-background"
+    },
+    {
+      "name": "ThemePanel",
+      "src": "src/components/ThemePanel.tsx",
+      "route": "/preview/theme-panel"
+    },
+    {
+      "name": "TodoList",
+      "src": "src/components/TodoList.tsx",
+      "route": "/preview/todo-list"
+    },
+    {
+      "name": "Topbar",
+      "src": "src/components/Topbar.tsx",
+      "route": "/preview/topbar"
+    },
+    {
+      "name": "UserOverview",
+      "src": "src/components/UserOverview.tsx",
+      "route": "/preview/user-overview"
+    }
+  ]
+}
