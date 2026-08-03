@@ -13,11 +13,13 @@ import {
   LockKeyholeIcon,
   MoonIcon,
   ShieldCheckIcon,
+  SlidersIcon,
   SparklesIcon,
   SunIcon,
   UserRoundIcon,
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import ThemePanel from '../components/ThemePanel';
 import './AuthPage.css';
 
 type AuthMode = 'login' | 'register';
@@ -110,6 +112,7 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(true);
   const [agreed, setAgreed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [themePanelOpen, setThemePanelOpen] = useState(false);
   const [verification, setVerification] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
@@ -221,6 +224,14 @@ export default function LoginPage() {
               <span>返回首页</span>
             </Link>
             <div className="auth-toolbar-actions">
+              <button
+                type="button"
+                className="auth-icon-button"
+                title="主题设置"
+                onClick={() => setThemePanelOpen(true)}
+              >
+                <SlidersIcon size={17} />
+              </button>
               <button
                 type="button"
                 className="auth-icon-button"
@@ -462,6 +473,7 @@ export default function LoginPage() {
           <footer className="auth-copyright">© 2026 ao-admin-pro</footer>
         </section>
       </div>
+      <ThemePanel open={themePanelOpen} onClose={() => setThemePanelOpen(false)} />
     </main>
   );
 }

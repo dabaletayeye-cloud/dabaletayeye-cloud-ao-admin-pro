@@ -858,6 +858,241 @@
   border-color: #267b6c;
 }
 
+.auth-page.auth-page {
+  --auth-primary: var(--primary);
+  --auth-primary-soft: color-mix(in srgb, var(--primary) 15%, var(--background));
+  --auth-primary-muted: color-mix(in srgb, var(--primary) 32%, var(--background));
+  --auth-surface: var(--card);
+  --auth-surface-muted: color-mix(in srgb, var(--card) 86%, var(--primary));
+  --auth-border: var(--border);
+  --auth-foreground: var(--foreground);
+  --auth-muted: var(--muted-foreground);
+  --auth-accent: var(--chart-4);
+  --auth-success: var(--chart-2);
+  background: var(--background);
+  color: var(--auth-foreground);
+}
+
+.auth-page .auth-showcase {
+  background: var(--auth-primary-soft);
+  border-color: var(--auth-border);
+}
+
+.auth-page .auth-main,
+.auth-page .auth-input-wrap,
+.auth-page .auth-select-wrap,
+.auth-page .auth-check span,
+.auth-page .auth-mode-tabs button.is-active {
+  background: var(--auth-surface);
+}
+
+.auth-page .auth-main {
+  color: var(--auth-foreground);
+}
+
+.auth-page .auth-brand,
+.auth-page .auth-heading h1 {
+  color: var(--auth-foreground);
+}
+
+.auth-page .auth-brand-mark span:nth-child(1) {
+  background: var(--auth-success);
+}
+
+.auth-page .auth-brand-mark span:nth-child(2),
+.auth-page .auth-folder-body,
+.auth-page .auth-submit {
+  background: var(--auth-primary);
+  border-color: var(--auth-primary);
+}
+
+.auth-page .auth-brand-mark span:nth-child(3),
+.auth-page .auth-monitor-chart .chart-column-four {
+  background: var(--auth-accent);
+}
+
+.auth-page .auth-display-orbit {
+  border-color: var(--auth-primary-muted);
+}
+
+.auth-page .auth-display-spark-one {
+  background: var(--auth-accent);
+}
+
+.auth-page .auth-display-spark-two,
+.auth-page .auth-monitor-chart .chart-column-five,
+.auth-page .auth-security-badge {
+  color: var(--auth-success);
+  background: color-mix(in srgb, var(--auth-success) 16%, var(--auth-surface));
+  border-color: color-mix(in srgb, var(--auth-success) 36%, var(--auth-border));
+}
+
+.auth-page .auth-monitor {
+  background: var(--auth-surface);
+  border-color: var(--auth-primary);
+  box-shadow: 12px 14px 0 var(--auth-primary-muted);
+}
+
+.auth-page .auth-monitor::after {
+  border-color: var(--auth-primary);
+}
+
+.auth-page .auth-monitor-bar,
+.auth-page .auth-monitor-rail {
+  border-color: var(--auth-border);
+}
+
+.auth-page .auth-monitor-rail span:first-child,
+.auth-page .auth-monitor-chart .chart-column-two {
+  background: var(--auth-primary);
+}
+
+.auth-page .auth-monitor-main,
+.auth-page .auth-monitor-line,
+.auth-page .auth-monitor-chart {
+  border-color: var(--auth-border);
+}
+
+.auth-page .auth-monitor-line,
+.auth-page .auth-monitor-chart span {
+  background: var(--auth-primary-muted);
+}
+
+.auth-page .auth-monitor-line-short {
+  background: var(--auth-primary-muted);
+}
+
+.auth-page .auth-folder-tab {
+  background: var(--auth-primary-muted);
+}
+
+.auth-page .auth-folder-body {
+  box-shadow: 10px 12px 0 var(--auth-primary-muted);
+}
+
+.auth-page .auth-folder-check {
+  color: var(--auth-primary);
+  background: var(--auth-surface);
+}
+
+.auth-page .auth-showcase-copy p,
+.auth-page .auth-input-wrap input,
+.auth-page .auth-select-wrap select {
+  color: var(--auth-foreground);
+}
+
+.auth-page .auth-showcase-copy span,
+.auth-page .auth-heading p,
+.auth-page .auth-back,
+.auth-page .auth-field > span,
+.auth-page .auth-footer,
+.auth-page .auth-check,
+.auth-page .auth-copyright,
+.auth-page .auth-password-strength {
+  color: var(--auth-muted);
+}
+
+.auth-page .auth-icon-button,
+.auth-page .auth-password-toggle {
+  color: var(--auth-muted);
+}
+
+.auth-page .auth-icon-button:hover,
+.auth-page .auth-password-toggle:hover {
+  color: var(--auth-primary);
+  background: var(--auth-primary-soft);
+  border-color: var(--auth-primary-muted);
+}
+
+.auth-page .auth-mode-tabs,
+.auth-page .auth-verification {
+  background: var(--auth-surface-muted);
+  border-color: var(--auth-border);
+}
+
+.auth-page .auth-mode-tabs button {
+  color: var(--auth-muted);
+}
+
+.auth-page .auth-mode-tabs button.is-active,
+.auth-page .auth-mode-tabs button:hover,
+.auth-page .auth-back:hover,
+.auth-page .auth-form-options button,
+.auth-page .auth-footer button {
+  color: var(--auth-primary);
+}
+
+.auth-page .auth-input-wrap,
+.auth-page .auth-select-wrap,
+.auth-page .auth-check span {
+  border-color: var(--auth-border);
+}
+
+.auth-page .auth-input-wrap:focus-within,
+.auth-page .auth-select-wrap:focus-within {
+  color: var(--auth-primary);
+  border-color: var(--auth-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--auth-primary) 16%, transparent);
+}
+
+.auth-page .auth-check input:checked + span,
+.auth-page .auth-submit:hover:not(:disabled) {
+  background: var(--auth-primary);
+  border-color: var(--auth-primary);
+}
+
+.auth-page .auth-submit:hover:not(:disabled) {
+  box-shadow: 0 6px 13px color-mix(in srgb, var(--auth-primary) 28%, transparent);
+}
+
+.auth-page .auth-verification::before {
+  background: var(--auth-primary-muted);
+}
+
+.auth-page .auth-verification-handle {
+  color: var(--auth-primary);
+  background: var(--auth-surface);
+  border-color: var(--auth-border);
+}
+
+.auth-page .auth-verification.is-verified {
+  color: var(--auth-success);
+  background: color-mix(in srgb, var(--auth-success) 10%, var(--auth-surface));
+  border-color: color-mix(in srgb, var(--auth-success) 48%, var(--auth-border));
+}
+
+.auth-page .auth-verification.is-verified::before {
+  background: color-mix(in srgb, var(--auth-success) 21%, var(--auth-surface));
+}
+
+.auth-page .auth-verification.is-verified .auth-verification-handle {
+  color: var(--primary-foreground);
+  background: var(--auth-success);
+  border-color: var(--auth-success);
+}
+
+.auth-page .auth-password-strength.level-weak i:first-child,
+.auth-page .auth-password-strength.level-weak em {
+  color: var(--destructive);
+  background-color: var(--destructive);
+}
+
+.auth-page .auth-password-strength.level-medium i:nth-child(-n + 2),
+.auth-page .auth-password-strength.level-medium em {
+  color: var(--auth-accent);
+  background-color: var(--auth-accent);
+}
+
+.auth-page .auth-password-strength.level-strong i,
+.auth-page .auth-password-strength.level-strong em {
+  color: var(--auth-success);
+  background-color: var(--auth-success);
+}
+
+.auth-page .auth-password-strength em {
+  background: transparent !important;
+}
+
 @media (max-width: 960px) {
   .auth-frame {
     display: block;
