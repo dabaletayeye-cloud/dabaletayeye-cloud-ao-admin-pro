@@ -27,6 +27,8 @@ import ErrorPage from './pages/ErrorPage';
 import ServerPage from './pages/ServerPage';
 import PermissionPage from './pages/PermissionPage';
 import SettingsPage from './pages/SettingsPage';
+import ProfilePage from './pages/ProfilePage';
+import AccountSecurityPage from './pages/AccountSecurityPage';
 /* CLEAN_DEMO_START: imports */
 import OverviewPage from './pages/comp/OverviewPage';
 import ButtonsPage from './pages/comp/ButtonsPage';
@@ -102,6 +104,8 @@ export default function App() {
           <Route path="/system/servers" element={<ServerPage />} />
           <Route path="/permissions" element={<PermissionPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/account-security" element={<AccountSecurityPage />} />
           {/* CLEAN_DEMO_START: routes */}
           <Route path="/comp/overview" element={<OverviewPage />} />
           <Route path="/comp/buttons" element={<ButtonsPage />} />

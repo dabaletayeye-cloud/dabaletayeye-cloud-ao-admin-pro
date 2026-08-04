@@ -20,6 +20,8 @@ const ROUTE_LABELS: Record<string, string> = {
   '/system/config': '系统配置',
   '/permissions': '权限管理',
   '/settings': '系统设置',
+  '/profile': '个人中心',
+  '/account-security': '账号安全',
   '/messages': '消息中心',
   '/orders': '订单管理',
   '/media': '媒体库',
@@ -34,6 +36,7 @@ const ROUTE_LABELS: Record<string, string> = {
   '/examples/search-form': '搜索表单',
   '/examples/split-table': '左右布局表格',
   '/examples/socket': 'Socket 连接',
+  '/tmpl/map': '地图模板',
 };
 
 function labelFor(path: string) {
@@ -43,7 +46,9 @@ function labelFor(path: string) {
 function loadTabs(current: PageTab): PageTab[] {
   try {
     const raw = sessionStorage.getItem(TAB_STORAGE_KEY);
-    const saved = raw ? JSON.parse(raw) as PageTab[] : [{ path: '/', label: '工作台' }];
+    const saved = raw
+      ? (JSON.parse(raw) as PageTab[]).map(tab => ({ ...tab, label: labelFor(tab.path) }))
+      : [{ path: '/', label: '工作台' }];
     const tabs = saved.some(tab => tab.path === current.path) ? saved : [...saved, current];
     sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(tabs.slice(-10)));
     return tabs.slice(-10);

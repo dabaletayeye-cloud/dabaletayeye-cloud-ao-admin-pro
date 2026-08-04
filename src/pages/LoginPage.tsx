@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import ThemePanel from '../components/ThemePanel';
+import { getCurrentAccount, saveCurrentAccount } from '../lib/currentAccount';
 import './AuthPage.css';
 
 type AuthMode = 'login' | 'register';
@@ -29,6 +30,13 @@ const ROLE_OPTIONS = [
   { value: 'editor', label: '内容运营' },
   { value: 'analyst', label: '数据分析师' },
 ];
+
+const REMEMBERED_ACCOUNT_KEY = 'ao-admin-pro.remembered-account';
+
+function getRememberedAccount() {
+  if (typeof window === 'undefined') return 'Super';
+  return window.localStorage.getItem(REMEMBERED_ACCOUNT_KEY) || 'Super';
+}
 
 function AuthVisual() {
   return (
@@ -104,7 +112,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>(location.pathname === '/register' ? 'register' : 'login');
   const [recovery, setRecovery] = useState(false);
   const [role, setRole] = useState('super-admin');
-  const [account, setAccount] = useState('Super');
+  const [account, setAccount] = useState(getRememberedAccount);
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
@@ -181,6 +189,19 @@ export default function LoginPage() {
 
       setSubmitting(true);
       window.setTimeout(() => {
+        const registeredAccount = displayName.trim();
+        saveCurrentAccount({
+          ...getCurrentAccount(),
+          name: registeredAccount,
+          account: registeredAccount,
+          email: email.trim(),
+          role: '普通用户',
+          department: '产品体验组',
+          avatar: '',
+        });
+        window.localStorage.setItem(REMEMBERED_ACCOUNT_KEY, registeredAccount);
+        setAccount(registeredAccount);
+        setRemember(true);
         setSubmitting(false);
         toast.success('账号创建成功，请登录');
         switchMode('login');
@@ -199,6 +220,19 @@ export default function LoginPage() {
 
     setSubmitting(true);
     window.setTimeout(() => {
+      const selectedRole = ROLE_OPTIONS.find((option) => option.value === role)?.label ?? '普通用户';
+      const savedAccount = getCurrentAccount();
+      saveCurrentAccount({
+        ...savedAccount,
+        account: account.trim(),
+        name: account.trim() === 'Super' ? savedAccount.name : account.trim(),
+        role: selectedRole,
+      });
+      if (remember) {
+        window.localStorage.setItem(REMEMBERED_ACCOUNT_KEY, account.trim());
+      } else {
+        window.localStorage.removeItem(REMEMBERED_ACCOUNT_KEY);
+      }
       setSubmitting(false);
       toast.success(remember ? '登录成功，已记住本次登录' : '登录成功');
       navigate('/');

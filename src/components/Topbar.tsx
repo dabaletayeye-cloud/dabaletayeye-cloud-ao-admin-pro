@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useTheme } from '../hooks/useTheme';
 import {
   MenuIcon,
@@ -13,11 +14,17 @@ import {
   MinimizeIcon,
   MessageSquareIcon,
   SettingsIcon,
+  UserRoundIcon,
+  LogOutIcon,
+  ShieldCheckIcon,
+  BellIcon,
+  CircleHelpIcon,
 } from 'lucide-react';
 import { NAV_ITEMS } from './Sidebar';
 import NotificationPanel from './NotificationPanel';
 import AppLauncher from './AppLauncher';
 import ChatAssistantPanel from './ChatAssistantPanel';
+import { getCurrentAccount } from '../lib/currentAccount';
 
 interface TopbarProps {
   onOpenThemePanel?: () => void;
@@ -54,11 +61,23 @@ export default function Topbar({
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [language, setLanguage] = useState<'zh-CN' | 'en-US'>('zh-CN');
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [currentAccount, setCurrentAccount] = useState(getCurrentAccount);
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   useEffect(() => {
     const syncFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener('fullscreenchange', syncFullscreen);
     return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+  }, []);
+
+  useEffect(() => {
+    const syncCurrentAccount = () => {
+      setCurrentAccount(getCurrentAccount());
+      setAvatarFailed(false);
+    };
+    window.addEventListener('ao-current-account-change', syncCurrentAccount);
+    return () => window.removeEventListener('ao-current-account-change', syncCurrentAccount);
   }, []);
 
   const handleRefresh = useCallback(() => {
@@ -321,15 +340,132 @@ export default function Topbar({
             <SlidersIcon size={16} />
           </button>
 
-          {/* Avatar */}
-          <button
-            onClick={() => navigate('/login')}
-            title="切换账号"
-            aria-label="切换账号"
-            style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--primary-foreground)', cursor: 'pointer', marginLeft: 4, flexShrink: 0, border: 'none' }}
-          >
-            管
-          </button>
+          {/* Account menu */}
+          <div style={{ position: 'relative', marginLeft: 4 }}>
+            <button
+              type="button"
+              onClick={() => {
+                setAccountMenuOpen(open => !open);
+                setLanguageMenuOpen(false);
+              }}
+              title="账户菜单"
+              aria-label="打开账户菜单"
+              aria-expanded={accountMenuOpen}
+              style={{ width: 36, height: 36, borderRadius: 10, background: accountMenuOpen ? 'var(--accent)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, border: accountMenuOpen ? '1px solid var(--primary)' : '1px solid transparent', overflow: 'hidden', padding: 0 }}
+            >
+              {!avatarFailed && currentAccount.avatar ? (
+                <img
+                  src={currentAccount.avatar}
+                  alt={currentAccount.name + '的头像'}
+                  onError={() => setAvatarFailed(true)}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <span style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--primary-foreground)' }}>
+                  {currentAccount.name.trim().charAt(0) || '管'}
+                </span>
+              )}
+            </button>
+
+            {accountMenuOpen && (
+              <div
+                role="menu"
+                aria-label="账户菜单"
+                style={{ position: 'absolute', right: 0, top: 44, zIndex: 150, width: 250, padding: 8, borderRadius: 12, border: '1px solid var(--border)', background: 'var(--popover)', boxShadow: '0 14px 32px rgba(0,0,0,0.16)' }}
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setAccountMenuOpen(false);
+                    navigate('/profile');
+                  }}
+                  style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 11, padding: 10, color: 'var(--foreground)', background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <div style={{ width: 42, height: 42, flexShrink: 0, overflow: 'hidden', borderRadius: '50%', background: 'var(--primary)', color: 'var(--primary-foreground)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                    {!avatarFailed && currentAccount.avatar ? (
+                      <img src={currentAccount.avatar} alt="" onError={() => setAvatarFailed(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : currentAccount.name.trim().charAt(0) || '管'}
+                  </div>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <strong style={{ display: 'block', overflow: 'hidden', fontSize: 14, fontWeight: 700, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentAccount.name}</strong>
+                    <small style={{ display: 'block', marginTop: 3, overflow: 'hidden', color: 'var(--muted-foreground)', fontSize: 12, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentAccount.email}</small>
+                  </span>
+                </button>
+                <div style={{ height: 1, margin: '4px 2px', background: 'var(--border)' }} />
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setAccountMenuOpen(false);
+                    navigate('/profile');
+                  }}
+                  style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '10px 11px', color: 'var(--foreground)', background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', textAlign: 'left', fontSize: 13 }}
+                  onMouseEnter={(event) => { event.currentTarget.style.background = 'var(--accent)'; }}
+                  onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
+                >
+                  <UserRoundIcon size={16} color="var(--primary)" />
+                  个人中心
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setAccountMenuOpen(false);
+                    navigate('/account-security');
+                  }}
+                  style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '10px 11px', color: 'var(--foreground)', background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', textAlign: 'left', fontSize: 13 }}
+                  onMouseEnter={(event) => { event.currentTarget.style.background = 'var(--accent)'; }}
+                  onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
+                >
+                  <ShieldCheckIcon size={16} color="var(--primary)" />
+                  账号安全
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setAccountMenuOpen(false);
+                    navigate('/messages');
+                  }}
+                  style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '10px 11px', color: 'var(--foreground)', background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', textAlign: 'left', fontSize: 13 }}
+                  onMouseEnter={(event) => { event.currentTarget.style.background = 'var(--accent)'; }}
+                  onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
+                >
+                  <BellIcon size={16} color="var(--primary)" />
+                  消息中心
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setAccountMenuOpen(false);
+                    setAssistantOpen(true);
+                  }}
+                  style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '10px 11px', color: 'var(--foreground)', background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer', textAlign: 'left', fontSize: 13 }}
+                  onMouseEnter={(event) => { event.currentTarget.style.background = 'var(--accent)'; }}
+                  onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
+                >
+                  <CircleHelpIcon size={16} color="var(--primary)" />
+                  帮助与反馈
+                </button>
+                <div style={{ height: 1, margin: '4px 2px', background: 'var(--border)' }} />
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setAccountMenuOpen(false);
+                    toast.success('已退出登录');
+                    navigate('/login');
+                  }}
+                  style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 3, padding: '9px 11px', color: 'var(--foreground)', background: 'var(--secondary)', border: '1px solid var(--border)', borderRadius: 7, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                >
+                  <LogOutIcon size={15} />
+                  退出登录
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         {showTopProgress && (
           <div style={{ position: 'absolute', left: 0, right: 0, bottom: -1, height: 2, overflow: 'hidden', pointerEvents: 'none' }}>
