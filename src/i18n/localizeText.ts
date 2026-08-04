@@ -4,10 +4,38 @@ type Fallback = {
   terms?: Record<string, string>;
   phrases?: Record<string, string>;
   traditional?: Record<string, string>;
+  supplemental?: Record<string, string>;
 };
 
 type Resource = {
   components?: {
+    fallback?: Fallback;
+  };
+  templates?: {
+    fallback?: Fallback;
+  };
+  content?: {
+    fallback?: Fallback;
+  };
+  feedback?: {
+    fallback?: Fallback;
+  };
+  analyticsPages?: {
+    fallback?: Fallback;
+  };
+  media?: {
+    fallback?: Fallback;
+  };
+  marketing?: {
+    fallback?: Fallback;
+  };
+  pageExtras?: {
+    fallback?: Fallback;
+  };
+  business?: {
+    fallback?: Fallback;
+  };
+  systemPages?: {
     fallback?: Fallback;
   };
 };
@@ -15,10 +43,89 @@ type Resource = {
 function getEntries(language: string) {
   const resource = i18n.getResourceBundle(language, 'translation') as Resource | undefined;
   const englishResource = i18n.getResourceBundle('en-US', 'translation') as Resource | undefined;
-  const fallback = resource?.components?.fallback ?? englishResource?.components?.fallback;
+  const componentFallback = resource?.components?.fallback ?? englishResource?.components?.fallback;
+  const templateFallback = resource?.templates?.fallback ?? englishResource?.templates?.fallback;
+  const contentFallback = resource?.content?.fallback ?? englishResource?.content?.fallback;
+  const feedbackFallback = resource?.feedback?.fallback ?? englishResource?.feedback?.fallback;
+  const analyticsPagesFallback = resource?.analyticsPages?.fallback ?? englishResource?.analyticsPages?.fallback;
+  const mediaFallback = resource?.media?.fallback ?? englishResource?.media?.fallback;
+  const marketingFallback = resource?.marketing?.fallback ?? englishResource?.marketing?.fallback;
+  const pageExtrasFallback = resource?.pageExtras?.fallback ?? englishResource?.pageExtras?.fallback;
+  const businessFallback = resource?.business?.fallback ?? englishResource?.business?.fallback;
+  const systemPagesFallback = resource?.systemPages?.fallback ?? englishResource?.systemPages?.fallback;
   const dictionary = language === 'zh-TW'
-    ? resource?.components?.fallback?.traditional ?? {}
-    : { ...(fallback?.terms ?? {}), ...(fallback?.phrases ?? {}) };
+    ? {
+        ...(componentFallback?.traditional ?? {}),
+        ...(componentFallback?.supplemental ?? {}),
+        ...(templateFallback?.traditional ?? {}),
+        ...(templateFallback?.terms ?? {}),
+        ...(templateFallback?.phrases ?? {}),
+        ...(templateFallback?.supplemental ?? {}),
+        ...(contentFallback?.traditional ?? {}),
+        ...(contentFallback?.terms ?? {}),
+        ...(contentFallback?.phrases ?? {}),
+        ...(contentFallback?.supplemental ?? {}),
+        ...(feedbackFallback?.traditional ?? {}),
+        ...(feedbackFallback?.terms ?? {}),
+        ...(feedbackFallback?.phrases ?? {}),
+        ...(feedbackFallback?.supplemental ?? {}),
+        ...(analyticsPagesFallback?.traditional ?? {}),
+        ...(analyticsPagesFallback?.terms ?? {}),
+        ...(analyticsPagesFallback?.phrases ?? {}),
+        ...(analyticsPagesFallback?.supplemental ?? {}),
+        ...(mediaFallback?.traditional ?? {}),
+        ...(mediaFallback?.terms ?? {}),
+        ...(mediaFallback?.phrases ?? {}),
+        ...(mediaFallback?.supplemental ?? {}),
+        ...(marketingFallback?.traditional ?? {}),
+        ...(marketingFallback?.terms ?? {}),
+        ...(marketingFallback?.phrases ?? {}),
+        ...(marketingFallback?.supplemental ?? {}),
+        ...(pageExtrasFallback?.traditional ?? {}),
+        ...(pageExtrasFallback?.terms ?? {}),
+        ...(pageExtrasFallback?.phrases ?? {}),
+        ...(pageExtrasFallback?.supplemental ?? {}),
+        ...(businessFallback?.traditional ?? {}),
+        ...(businessFallback?.terms ?? {}),
+        ...(businessFallback?.phrases ?? {}),
+        ...(businessFallback?.supplemental ?? {}),
+        ...(systemPagesFallback?.traditional ?? {}),
+        ...(systemPagesFallback?.terms ?? {}),
+        ...(systemPagesFallback?.phrases ?? {}),
+        ...(systemPagesFallback?.supplemental ?? {}),
+      }
+    : {
+        ...(componentFallback?.terms ?? {}),
+        ...(componentFallback?.phrases ?? {}),
+        ...(componentFallback?.supplemental ?? {}),
+        ...(templateFallback?.terms ?? {}),
+        ...(templateFallback?.phrases ?? {}),
+        ...(templateFallback?.supplemental ?? {}),
+        ...(contentFallback?.terms ?? {}),
+        ...(contentFallback?.phrases ?? {}),
+        ...(contentFallback?.supplemental ?? {}),
+        ...(feedbackFallback?.terms ?? {}),
+        ...(feedbackFallback?.phrases ?? {}),
+        ...(feedbackFallback?.supplemental ?? {}),
+        ...(analyticsPagesFallback?.terms ?? {}),
+        ...(analyticsPagesFallback?.phrases ?? {}),
+        ...(analyticsPagesFallback?.supplemental ?? {}),
+        ...(mediaFallback?.terms ?? {}),
+        ...(mediaFallback?.phrases ?? {}),
+        ...(mediaFallback?.supplemental ?? {}),
+        ...(marketingFallback?.terms ?? {}),
+        ...(marketingFallback?.phrases ?? {}),
+        ...(marketingFallback?.supplemental ?? {}),
+        ...(pageExtrasFallback?.terms ?? {}),
+        ...(pageExtrasFallback?.phrases ?? {}),
+        ...(pageExtrasFallback?.supplemental ?? {}),
+        ...(businessFallback?.terms ?? {}),
+        ...(businessFallback?.phrases ?? {}),
+        ...(businessFallback?.supplemental ?? {}),
+        ...(systemPagesFallback?.terms ?? {}),
+        ...(systemPagesFallback?.phrases ?? {}),
+        ...(systemPagesFallback?.supplemental ?? {}),
+      };
 
   return Object.entries(dictionary).sort((a, b) => b[0].length - a[0].length);
 }

@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
+import { localizeText } from '../../i18n/localizeText';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -19,15 +21,16 @@ import {
 } from '../../data/calendarData';
 
 /* ── helpers ────────────────────────────────────────────────── */
-function fmtYM(year: number, month: number) {
-  return `${year} 年 ${month} 月`;
+function fmtYM(year: number, month: number, language: string) {
+  return new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long' }).format(new Date(year, month - 1, 1));
 }
-function fmtDate(dateStr: string) {
-  const [, m, d] = dateStr.split('-');
-  return `${Number(m)} 月 ${Number(d)} 日`;
+function fmtDate(dateStr: string, language: string) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Intl.DateTimeFormat(language, { month: 'long', day: 'numeric' }).format(new Date(year, month - 1, day));
 }
-const WEEK_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
-const WEEK_LABELS_FULL = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+function weekdayLabels(language: string, style: 'narrow' | 'short') {
+  return Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(language, { weekday: style }).format(new Date(2024, 0, index + 7)));
+}
 
 function toDateStr(y: number, m: number, d: number) {
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -70,7 +73,7 @@ function EventDot({ color }: { color: string }) {
 }
 
 /* ── EventPill (week view) ───────────────────────────────────── */
-function EventPill({ event, onClick }: { event: CalEvent; onClick: () => void }) {
+function EventPill({ event, onClick, tx }: { event: CalEvent; onClick: () => void; tx: (value: string) => string }) {
   const hex = EVENT_COLORS[event.color] ?? '#6366f1';
   return (
     <button
@@ -103,7 +106,7 @@ function EventPill({ event, onClick }: { event: CalEvent; onClick: () => void })
           flex: 1,
         }}
       >
-        {event.title}
+        {tx(event.title)}
       </span>
     </button>
   );
@@ -113,10 +116,14 @@ function EventPill({ event, onClick }: { event: CalEvent; onClick: () => void })
 function DayEventModal({
   dateStr,
   events,
+  language,
+  tx,
   onClose,
 }: {
   dateStr: string;
   events: CalEvent[];
+  language: string;
+  tx: (value: string) => string;
   onClose: () => void;
 }) {
   return (
@@ -165,10 +172,10 @@ function DayEventModal({
         >
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--foreground)' }}>
-              {fmtDate(dateStr)} 的日程
+              {fmtDate(dateStr, language)} {tx('日程')}
             </div>
             <div style={{ fontSize: 12, color: 'var(--muted-foreground)', marginTop: 2 }}>
-              共 {events.length} 项事项
+              {events.length} {tx('事项')}
             </div>
           </div>
           <button
@@ -200,7 +207,7 @@ function DayEventModal({
                 fontSize: 13,
               }}
             >
-              今天暂无日程安排
+              {tx('今天暂无日程安排')}
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -236,7 +243,7 @@ function DayEventModal({
                             flex: 1,
                           }}
                         >
-                          {ev.title}
+                        {tx(ev.title)}
                         </span>
                         <span
                           style={{
@@ -269,7 +276,7 @@ function DayEventModal({
                           size={12}
                           style={{ marginTop: 2, flexShrink: 0, opacity: 0.6 }}
                         />
-                        {ev.desc}
+                        {tx(ev.desc)}
                       </div>
                     </div>
                   );
@@ -288,11 +295,15 @@ function MonthView({
   month,
   todayStr,
   onClickDate,
+  tx,
+  language,
 }: {
   year: number;
   month: number;
   todayStr: string;
   onClickDate: (d: string) => void;
+  tx: (value: string) => string;
+  language: string;
 }) {
   const { themeState } = useTheme();
   const isDark = themeState.mode === 'dark';
@@ -332,7 +343,7 @@ function MonthView({
           borderBottom: '1px solid var(--border)',
         }}
       >
-        {WEEK_LABELS.map((l, i) => (
+        {weekdayLabels(language, 'narrow').map((l, i) => (
           <div
             key={l}
             style={{
@@ -454,7 +465,7 @@ function MonthView({
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {ev.title}
+                    {tx(ev.title)}
                   </div>
                 );
               })}
@@ -462,7 +473,7 @@ function MonthView({
                 <div
                   style={{ fontSize: 10, color: 'var(--muted-foreground)', paddingLeft: 2 }}
                 >
-                  +{evs.length - 2} 更多
+                  +{evs.length - 2} {tx('更多')}
                 </div>
               )}
             </div>
@@ -478,10 +489,14 @@ function WeekView({
   weekDates,
   todayStr,
   onClickDate,
+  tx,
+  language,
 }: {
   weekDates: string[];
   todayStr: string;
   onClickDate: (d: string, ev: CalEvent) => void;
+  tx: (value: string) => string;
+  language: string;
 }) {
   const { themeState } = useTheme();
   const isDark = themeState.mode === 'dark';
@@ -523,7 +538,7 @@ function WeekView({
                   marginBottom: 3,
                 }}
               >
-                {WEEK_LABELS_FULL[i]}
+                {weekdayLabels(language, 'short')[i]}
               </div>
               <div
                 style={{
@@ -595,6 +610,7 @@ function WeekView({
                       key={ev.id}
                       event={ev}
                       onClick={() => onClickDate(ds, ev)}
+                      tx={tx}
                     />
                   ))}
                 </div>
@@ -609,6 +625,9 @@ function WeekView({
 
 /* ── CalendarPage ────────────────────────────────────────────── */
 export default function CalendarPage() {
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
+  const tx = useCallback((value: string) => localizeText(value, language), [language]);
   const today = new Date();
   const todayStr = toDateStr(today.getFullYear(), today.getMonth() + 1, today.getDate());
 
@@ -670,7 +689,7 @@ export default function CalendarPage() {
   const weekRangeLabel = (() => {
     const s = weekDates[0].split('-');
     const e = weekDates[6].split('-');
-    return `${Number(s[1])} 月 ${Number(s[2])} 日 – ${Number(e[1])} 月 ${Number(e[2])} 日`;
+    return `${fmtDate(weekDates[0], language)} – ${fmtDate(weekDates[6], language)}`;
   })();
 
   return (
@@ -699,10 +718,10 @@ export default function CalendarPage() {
         {/* ── Page title ── */}
         <div>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--foreground)' }}>
-            日历模板
+            {tx('日历模板')}
           </h1>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--muted-foreground)' }}>
-            月视图 · 周视图 · 彩色日程圆点 · 点击查看详情
+            {tx('月视图 · 周视图 · 彩色日程圆点 · 点击查看详情')}
           </p>
         </div>
 
@@ -766,7 +785,7 @@ export default function CalendarPage() {
                   color: accentHex,
                 }}
               >
-                今天
+                {tx('今天')}
               </button>
               <button
                 onClick={view === 'month' ? nextMonth : nextWeek}
@@ -797,7 +816,7 @@ export default function CalendarPage() {
                 minWidth: 120,
               }}
             >
-              {view === 'month' ? fmtYM(year, month) : weekRangeLabel}
+              {view === 'month' ? fmtYM(year, month, language) : weekRangeLabel}
             </div>
 
             {/* view switcher */}
@@ -831,7 +850,7 @@ export default function CalendarPage() {
                   }}
                 >
                   {v === 'month' ? <CalendarDaysIcon size={13} /> : <CalendarIcon size={13} />}
-                  {v === 'month' ? '月' : '周'}
+                  {tx(v === 'month' ? '月' : '周')}
                 </button>
               ))}
             </div>
@@ -845,6 +864,8 @@ export default function CalendarPage() {
                 month={month}
                 todayStr={todayStr}
                 onClickDate={openDayModal}
+                tx={tx}
+                language={language}
               />
             </div>
             <div style={{ display: view === 'week' ? 'flex' : 'none', flex: 1, minHeight: 0, flexDirection: 'column' }}>
@@ -852,6 +873,8 @@ export default function CalendarPage() {
                 weekDates={weekDates}
                 todayStr={todayStr}
                 onClickDate={openEventModal}
+                tx={tx}
+                language={language}
               />
             </div>
           </div>
@@ -864,6 +887,8 @@ export default function CalendarPage() {
           <DayEventModal
             dateStr={modalDate}
             events={modalEvents}
+            language={language}
+            tx={tx}
             onClose={closeModal}
           />
         )}

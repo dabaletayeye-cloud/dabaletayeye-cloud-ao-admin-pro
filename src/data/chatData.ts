@@ -154,25 +154,27 @@ export const INIT_CONVERSATIONS: Conversation[] = [
 ];
 
 /* ─── time format util ────────────────────────────────────── */
-export function fmtTime(ts: number): string {
+export function fmtTime(ts: number, locale = 'zh-CN'): string {
   const d = new Date(ts);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return '刚刚';
-  if (diffMin < 60) return `${diffMin} 分钟前`;
+  const relative = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  if (diffMin < 1) return relative.format(0, 'second');
+  if (diffMin < 60) return relative.format(-diffMin, 'minute');
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  if (diffH < 48) return '昨天';
-  return `${d.getMonth()+1}/${d.getDate()}`;
+  if (diffH < 24) return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
+  if (diffH < 48) return relative.format(-1, 'day');
+  return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(d);
 }
 
-export function fmtMsgTime(ts: number): string {
+export function fmtMsgTime(ts: number, locale = 'zh-CN'): string {
   const d = new Date(ts);
   const now = new Date();
   const diffDay = Math.floor((now.getTime() - d.getTime()) / 86400000);
-  const hm = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  if (diffDay === 0) return `今天 ${hm}`;
-  if (diffDay === 1) return `昨天 ${hm}`;
-  return `${d.getMonth()+1}月${d.getDate()}日 ${hm}`;
+  const time = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
+  const relative = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  if (diffDay === 0) return `${relative.format(0, 'day')} ${time}`;
+  if (diffDay === 1) return `${relative.format(-1, 'day')} ${time}`;
+  return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
 }

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './hooks/useTheme';
 import { LocaleProvider } from './hooks/useLocale';
 import { Toaster } from 'sonner';
+import LegacyTextLocalizer from './components/LegacyTextLocalizer';
 
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
@@ -84,6 +85,7 @@ export default function App() {
       <ThemeProvider>
         <BrowserRouter>
         <Toaster position="top-right" richColors />
+        <LegacyTextLocalizer />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<LoginPage />} />

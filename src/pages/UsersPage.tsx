@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 import { MOCK_USERS, type User } from '../data/mockData';
 import {
   EyeIcon,
@@ -76,8 +77,14 @@ function getUserRoles(user: User): string[] {
 
 export default function UsersPage() {
   const { themeState } = useTheme();
+  const { i18n } = useTranslation();
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? PINK : 'var(--primary)';
+  const isJapanese = (i18n.resolvedLanguage ?? i18n.language) === 'ja-JP';
+  const genderLabel = (gender: User['gender']) => {
+    if (!isJapanese) return gender;
+    return gender === '男' ? '男性' : '女性';
+  };
 
   const [users, setUsers] = useState<User[]>(() => MOCK_USERS.map((user) => (
     user.id === 1 ? { ...user, roles: [user.role, '运营'] } : user
@@ -310,7 +317,7 @@ export default function UsersPage() {
                         </div>
                       </td>
                       <td className="px-5 py-3" style={{ color: 'var(--foreground)' }}>{user.region}</td>
-                      <td className="px-5 py-3" style={{ color: 'var(--foreground)' }}>{user.gender}</td>
+                      <td className="px-5 py-3" style={{ color: 'var(--foreground)' }}>{genderLabel(user.gender)}</td>
                       <td className="px-5 py-3">
                         <div className="flex flex-wrap gap-1">
                           {getUserRoles(user).map((role) => (

@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from '../../lib/localizedToast';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
+import { localizeText } from '../../i18n/localizeText';
 import {
   SendIcon,
   SearchIcon,
@@ -88,11 +90,15 @@ function ConvItem({
   conv,
   active,
   accentHex,
+  language,
+  tx,
   onClick,
 }: {
   conv: Conversation;
   active: boolean;
   accentHex: string;
+  language: string;
+  tx: (value: string) => string;
   onClick: () => void;
 }) {
   return (
@@ -131,10 +137,10 @@ function ConvItem({
             whiteSpace: 'nowrap',
             maxWidth: 120,
           }}>
-            {conv.name}
+            {tx(conv.name)}
           </span>
           <span style={{ fontSize: 11, color: 'var(--muted-foreground)', flexShrink: 0 }}>
-            {fmtTime(conv.lastTs)}
+            {fmtTime(conv.lastTs, language)}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -147,7 +153,7 @@ function ConvItem({
             flex: 1,
             marginRight: 6,
           }}>
-            {conv.lastMsg}
+            {tx(conv.lastMsg)}
           </span>
           {conv.unread > 0 && (
             <span style={{
@@ -180,10 +186,12 @@ function Bubble({
   msg,
   conv,
   accentHex,
+  tx,
 }: {
   msg: ChatMessage;
   conv: Conversation;
   accentHex: string;
+  tx: (value: string) => string;
 }) {
   const isMe = msg.role === 'me';
   return (
@@ -221,7 +229,7 @@ function Bubble({
             maxWidth: '100%',
           }}
         >
-          {msg.text}
+          {tx(msg.text)}
         </div>
         {/* timestamp + read */}
         <div style={{
@@ -245,7 +253,7 @@ function Bubble({
 /* ──────────────────────────────────────────────────────────────
    TimeDivider
 ────────────────────────────────────────────────────────────── */
-function TimeDivider({ ts }: { ts: number }) {
+function TimeDivider({ ts, language }: { ts: number; language: string }) {
   return (
     <div style={{
       display: 'flex',
@@ -256,7 +264,7 @@ function TimeDivider({ ts }: { ts: number }) {
     }}>
       <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
       <span style={{ fontSize: 11, color: 'var(--muted-foreground)', whiteSpace: 'nowrap' }}>
-        {fmtMsgTime(ts)}
+        {fmtMsgTime(ts, language)}
       </span>
       <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
     </div>
@@ -308,6 +316,9 @@ function TypingIndicator({ conv }: { conv: Conversation }) {
 ────────────────────────────────────────────────────────────── */
 export default function ChatPage() {
   const { themeState } = useTheme();
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
+  const tx = useCallback((value: string) => localizeText(value, language), [language]);
   const isManga = themeState.themeId === 'manga';
   const isDark = themeState.mode === 'dark';
   const accentHex = isManga ? '#E91E8C' : '#6366f1';
@@ -389,8 +400,8 @@ export default function ChatPage() {
   /* search filter */
   const filteredConvs = search.trim()
     ? convs.filter(c =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.lastMsg.toLowerCase().includes(search.toLowerCase())
+        tx(c.name).toLowerCase().includes(search.toLowerCase()) ||
+        tx(c.lastMsg).toLowerCase().includes(search.toLowerCase())
       )
     : convs;
 
@@ -432,10 +443,10 @@ export default function ChatPage() {
         {/* ── page title ── */}
         <div style={{ flexShrink: 0 }}>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--foreground)' }}>
-            聊天模板
+            {tx('聊天模板')}
           </h1>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--muted-foreground)' }}>
-            会话列表 · 气泡消息 · 自动回复模拟
+            {tx('会话列表 · 气泡消息 · 自动回复模拟')}
           </p>
         </div>
 
@@ -474,7 +485,7 @@ export default function ChatPage() {
                 <input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="搜索对话..."
+                  placeholder={tx('搜索对话...')}
                   style={{
                     flex: 1,
                     border: 'none',
@@ -491,7 +502,7 @@ export default function ChatPage() {
             <div className="conv-list" style={{ flex: 1, overflowY: 'auto' }}>
               {filteredConvs.length === 0 ? (
                 <div style={{ padding: 20, textAlign: 'center', color: 'var(--muted-foreground)', fontSize: 12 }}>
-                  无匹配对话
+                  {tx('无匹配对话')}
                 </div>
               ) : (
                 filteredConvs.map(conv => (
@@ -500,6 +511,8 @@ export default function ChatPage() {
                     conv={conv}
                     active={conv.id === activeId}
                     accentHex={accentHex}
+                    language={language}
+                    tx={tx}
                     onClick={() => selectConv(conv.id)}
                   />
                 ))
@@ -522,7 +535,7 @@ export default function ChatPage() {
               <Avatar conv={activeConv} size={38} showOnline />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>
-                  {activeConv.name}
+                  {tx(activeConv.name)}
                 </div>
                 <div style={{
                   fontSize: 11,
@@ -532,8 +545,8 @@ export default function ChatPage() {
                   color: activeConv.online ? '#22c55e' : 'var(--muted-foreground)',
                 }}>
                   {activeConv.online
-                    ? <><span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e', display:'inline-block' }} />在线</>
-                    : <><WifiOffIcon size={10} />离线</>
+                    ? <><span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e', display:'inline-block' }} />{tx('在线')}</>
+                    : <><WifiOffIcon size={10} />{tx('离线')}</>
                   }
                 </div>
               </div>
@@ -585,8 +598,8 @@ export default function ChatPage() {
                 const showDivider = shouldShowTimeDivider(prev, msg);
                 return (
                   <React.Fragment key={msg.id}>
-                    {showDivider && <TimeDivider ts={msg.ts} />}
-                    <Bubble msg={msg} conv={activeConv} accentHex={accentHex} />
+                    {showDivider && <TimeDivider ts={msg.ts} language={language} />}
+                    <Bubble msg={msg} conv={activeConv} accentHex={accentHex} tx={tx} />
                   </React.Fragment>
                 );
               })}
@@ -655,7 +668,7 @@ export default function ChatPage() {
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="输入消息…  Enter 发送，Shift+Enter 换行"
+                  placeholder={tx('输入消息…  Enter 发送，Shift+Enter 换行')}
                   rows={2}
                   style={{
                     flex: 1,
@@ -700,7 +713,7 @@ export default function ChatPage() {
 
               {/* hint */}
               <div style={{ marginTop: 5, fontSize: 11, color: 'var(--muted-foreground)', paddingLeft: 2 }}>
-                Enter 发送 · Shift+Enter 换行 · 发送后将模拟自动回复
+                {tx('Enter 发送 · Shift+Enter 换行 · 发送后将模拟自动回复')}
               </div>
             </div>
           </div>

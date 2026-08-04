@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../components/AdminLayout';
+import { localizeText } from '../../i18n/localizeText';
 import { BarChart3Icon, CloudIcon, MousePointerClickIcon, RefreshCwIcon, TrendingUpIcon } from 'lucide-react';
 
 type WordItem = {
@@ -57,7 +58,7 @@ function getFontSize(value: number) {
 }
 
 export default function WordCloudPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [datasetIndex, setDatasetIndex] = useState(0);
   const [selectedWord, setSelectedWord] = useState<WordItem>(OPERATION_WORDS[0]);
   const [hoveredWord, setHoveredWord] = useState<WordItem | null>(null);
@@ -65,6 +66,7 @@ export default function WordCloudPage() {
   const datasetLabel = t(`components.wordCloud.${datasetIndex === 0 ? 'operation' : 'product'}`);
   const datasetCaption = t(`components.wordCloud.${datasetIndex === 0 ? 'operationCaption' : 'productCaption'}`);
   const topWords = useMemo(() => [...dataset.words].sort((a, b) => b.value - a.value).slice(0, 6), [dataset]);
+  const displayWord = (word: WordItem) => localizeText(word.text, i18n.resolvedLanguage ?? i18n.language);
 
   const changeDataset = () => {
     const nextIndex = (datasetIndex + 1) % DATASETS.length;
@@ -129,17 +131,17 @@ export default function WordCloudPage() {
                     fontWeight={word.value >= 78 ? 800 : word.value >= 55 ? 700 : 600}
                     role="button"
                     tabIndex={0}
-                    aria-label={t('components.wordCloud.heatAria', { word: word.text, value: word.value })}
+                    aria-label={t('components.wordCloud.heatAria', { word: displayWord(word), value: word.value })}
                     style={{ '--word-color': word.color, cursor: 'pointer', animationDelay: `${index * 18}ms` } as React.CSSProperties}
                     onMouseEnter={() => setHoveredWord(word)}
                     onMouseLeave={() => setHoveredWord(null)}
                     onClick={() => setSelectedWord(word)}
                     onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') setSelectedWord(word); }}
-                  >{word.text}</text>
+                  >{displayWord(word)}</text>
                 ))}
               </svg>
               <div style={{ position: 'absolute', right: 18, bottom: 15, padding: '7px 10px', maxWidth: 220, borderRadius: 8, background: 'color-mix(in srgb, var(--card) 92%, transparent)', border: '1px solid var(--border)', boxShadow: '0 4px 14px rgba(0,0,0,.08)', pointerEvents: 'none', fontSize: 11, color: 'var(--muted-foreground)' }}>
-                <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 5 }}><MousePointerClickIcon size={12} /></span>{hoveredWord ? t('components.wordCloud.hoverValue', { word: hoveredWord.text, value: hoveredWord.value }) : t('components.wordCloud.hoverHint')}
+                <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 5 }}><MousePointerClickIcon size={12} /></span>{hoveredWord ? t('components.wordCloud.hoverValue', { word: displayWord(hoveredWord), value: hoveredWord.value }) : t('components.wordCloud.hoverHint')}
               </div>
             </div>
           </section>
@@ -147,7 +149,7 @@ export default function WordCloudPage() {
           <aside style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <section style={{ padding: 18, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: '0 2px 10px rgba(0,0,0,.035)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 15 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: selectedWord.color, boxShadow: `0 0 0 4px color-mix(in srgb, ${selectedWord.color} 14%, transparent)` }} /><span style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>{t('components.wordCloud.currentKeyword')}</span></div>
-              <div style={{ fontSize: 27, fontWeight: 800, letterSpacing: '-.5px', color: selectedWord.color, marginBottom: 8 }}>{selectedWord.text}</div>
+              <div style={{ fontSize: 27, fontWeight: 800, letterSpacing: '-.5px', color: selectedWord.color, marginBottom: 8 }}>{displayWord(selectedWord)}</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}><span style={{ fontSize: 24, fontWeight: 800, color: 'var(--foreground)' }}>{selectedWord.value}</span><span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>{t('components.wordCloud.popularityIndex')}</span></div>
               <div style={{ height: 7, marginTop: 13, overflow: 'hidden', borderRadius: 999, background: 'var(--muted)' }}><div style={{ width: `${selectedWord.value}%`, height: '100%', borderRadius: 'inherit', background: selectedWord.color, transition: 'width .25s ease' }} /></div>
             </section>
@@ -158,7 +160,7 @@ export default function WordCloudPage() {
                 {topWords.map((word, index) => (
                   <button key={word.text} type="button" onClick={() => setSelectedWord(word)} style={{ display: 'grid', gridTemplateColumns: '21px minmax(0, 1fr) 33px', alignItems: 'center', gap: 8, width: '100%', padding: '5px 6px', margin: '0 -6px', border: 0, borderRadius: 7, cursor: 'pointer', textAlign: 'left', background: selectedWord.text === word.text ? 'color-mix(in srgb, var(--primary) 9%, transparent)' : 'transparent', color: 'inherit' }}>
                     <span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 5, fontSize: 11, fontWeight: 800, color: index < 3 ? '#fff' : 'var(--muted-foreground)', background: index === 0 ? '#f59e0b' : index === 1 ? '#94a3b8' : index === 2 ? '#c08457' : 'var(--muted)' }}>{index + 1}</span>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, color: 'var(--foreground)', fontWeight: 600 }}>{word.text}</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, color: 'var(--foreground)', fontWeight: 600 }}>{displayWord(word)}</span>
                     <span style={{ textAlign: 'right', fontSize: 12, fontWeight: 700, color: word.color }}>{word.value}</span>
                   </button>
                 ))}

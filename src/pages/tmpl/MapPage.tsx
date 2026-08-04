@@ -1,8 +1,10 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import ReactECharts from 'echarts-for-react';
 import * as echarts from 'echarts';
+import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
+import { localizeText } from '../../i18n/localizeText';
 import {
   CircleDotIcon,
   EyeIcon,
@@ -47,8 +49,11 @@ function geoNameFor(region: RegionData, scope: MapScope) {
   return scope === 'china' ? (CHINA_GEO_NAMES[region.name] ?? region.name) : (WORLD_GEO_NAMES[region.name] ?? region.name);
 }
 
-function formatValue(value: number) {
-  return value >= 10000 ? `${(value / 10000).toFixed(1)}万` : value.toLocaleString();
+function formatValue(value: number, language = 'zh-CN') {
+  return new Intl.NumberFormat(language, {
+    notation: value >= 10000 ? 'compact' : 'standard',
+    maximumFractionDigits: 1,
+  }).format(value);
 }
 
 function getColor(value: number, data: RegionData[], colors: string[]) {
@@ -92,6 +97,8 @@ function GeographicMap({
   data,
   colors,
   isDark,
+  language,
+  tx,
   selected,
   onSelect,
   onHover,
@@ -101,6 +108,8 @@ function GeographicMap({
   data: RegionData[];
   colors: string[];
   isDark: boolean;
+  language: string;
+  tx: (value: string) => string;
   selected: RegionData;
   onSelect: (region: RegionData) => void;
   onHover: (region: RegionData | null) => void;
@@ -127,14 +136,14 @@ function GeographicMap({
         const region = regionByGeoName.get(params.name);
         if (!region) return params.name;
         const growthColor = (region.growth ?? 0) >= 0 ? '#10b981' : '#ef4444';
-        return `<div style="font-weight:700;margin-bottom:5px">${region.name}</div><div>访问量：<b>${formatValue(region.value)}</b></div><div style="margin-top:3px;color:${growthColor}">同比：${region.growth ?? 0}%</div>`;
+        return `<div style="font-weight:700;margin-bottom:5px">${tx(region.name)}</div><div>${tx('访问量')}：<b>${formatValue(region.value, language)}</b></div><div style="margin-top:3px;color:${growthColor}">${tx('同比')}：${region.growth ?? 0}%</div>`;
       },
     };
     const label = {
       show: scope === 'china',
       color: mutedColor,
       fontSize: 10,
-      formatter: (params: { name: string }) => CHINA_SHORT_NAMES.get(params.name) ?? params.name,
+      formatter: (params: { name: string }) => tx(CHINA_SHORT_NAMES.get(params.name) ?? params.name),
     };
     const mapStyle = {
       borderColor,
@@ -147,7 +156,7 @@ function GeographicMap({
         tooltip,
         visualMap: { show: false, min: Math.min(...data.map(region => region.value)), max: maxValue, inRange: { color: colors } },
         series: [{
-          name: '访问量',
+          name: tx('访问量'),
           type: 'map',
           map: mapName,
           roam: true,
@@ -178,7 +187,7 @@ function GeographicMap({
         emphasis: { label: { ...label, color: '#ffffff', fontWeight: 700 }, itemStyle: { areaColor: isDark ? '#334155' : '#dbeafe', borderColor: textColor, borderWidth: 1.3 } },
       },
       series: [{
-        name: '访问量',
+        name: tx('访问量'),
         type: 'scatter',
         coordinateSystem: 'geo',
         data: bubbleData,
@@ -187,7 +196,7 @@ function GeographicMap({
         emphasis: { scale: 1.25, itemStyle: { borderColor: textColor, borderWidth: 2 } },
       }],
     };
-  }, [borderColor, centers, colors, data, isDark, mapData, mapName, maxValue, mode, mutedColor, neutralArea, regionByGeoName, scope, textColor]);
+  }, [borderColor, centers, colors, data, isDark, language, mapData, mapName, maxValue, mode, mutedColor, neutralArea, regionByGeoName, scope, textColor, tx]);
 
   const onEvents = {
     click: (params: { name?: string }) => {
@@ -207,6 +216,9 @@ function GeographicMap({
 
 export default function MapPage() {
   const { themeState } = useTheme();
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
+  const tx = (value: string) => localizeText(value, language);
   const isDark = themeState.mode === 'dark';
   const isManga = themeState.themeId === 'manga';
   const colors = isManga
@@ -253,62 +265,62 @@ export default function MapPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <span style={{ width: 36, height: 36, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, color: '#fff', background: 'linear-gradient(135deg, #0ea5e9, #2563eb)', boxShadow: '0 7px 16px rgba(37,99,235,.22)' }}><MapIcon size={19} /></span>
               <div>
-                <h1 style={{ margin: 0, fontSize: 20, lineHeight: 1.3, color: 'var(--foreground)', fontWeight: 750 }}>地图模板</h1>
-                <p style={{ margin: '3px 0 0', color: 'var(--muted-foreground)', fontSize: 13 }}>基于真实地理边界的中国省份与世界国家访问分布</p>
+                <h1 style={{ margin: 0, fontSize: 20, lineHeight: 1.3, color: 'var(--foreground)', fontWeight: 750 }}>{tx('地图模板')}</h1>
+                <p style={{ margin: '3px 0 0', color: 'var(--muted-foreground)', fontSize: 13 }}>{tx('基于真实地理边界的中国省份与世界国家访问分布')}</p>
               </div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <button className={`map-segment${scope === 'china' ? ' active' : ''}`} type="button" onClick={() => changeScope('china')}><MapPinIcon size={14} />中国地图</button>
-            <button className={`map-segment${scope === 'world' ? ' active' : ''}`} type="button" onClick={() => changeScope('world')}><Globe2Icon size={14} />世界地图</button>
+            <button className={`map-segment${scope === 'china' ? ' active' : ''}`} type="button" onClick={() => changeScope('china')}><MapPinIcon size={14} />{tx('中国地图')}</button>
+            <button className={`map-segment${scope === 'world' ? ' active' : ''}`} type="button" onClick={() => changeScope('world')}><Globe2Icon size={14} />{tx('世界地图')}</button>
           </div>
         </header>
 
         <section style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <MetricCard icon={<EyeIcon size={20} />} label="总访问量" value={formatValue(total)} detail={scope === 'china' ? '覆盖 34 个省级地区' : '覆盖 50 个国家 / 地区'} color="#6366f1" />
-          <MetricCard icon={<MapPinIcon size={20} />} label="最高地区" value={sortedData[0]?.name ?? '-'} detail={`${formatValue(sortedData[0]?.value ?? 0)} 次访问`} color="#8b5cf6" />
-          <MetricCard icon={<LayersIcon size={20} />} label="平均访问" value={formatValue(average)} detail="按区域均值统计" color="#0ea5e9" />
-          <MetricCard icon={<TrendingUpIcon size={20} />} label="增长最快" value={fastest?.name ?? '-'} detail={`同比增长 ${fastest?.growth ?? 0}%`} color="#10b981" />
+          <MetricCard icon={<EyeIcon size={20} />} label={tx('总访问量')} value={formatValue(total, language)} detail={tx(scope === 'china' ? '覆盖 34 个省级地区' : '覆盖 50 个国家 / 地区')} color="#6366f1" />
+          <MetricCard icon={<MapPinIcon size={20} />} label={tx('最高地区')} value={tx(sortedData[0]?.name ?? '-')} detail={`${formatValue(sortedData[0]?.value ?? 0, language)} ${tx('次访问')}`} color="#8b5cf6" />
+          <MetricCard icon={<LayersIcon size={20} />} label={tx('平均访问')} value={formatValue(average, language)} detail={tx('按区域均值统计')} color="#0ea5e9" />
+          <MetricCard icon={<TrendingUpIcon size={20} />} label={tx('增长最快')} value={tx(fastest?.name ?? '-')} detail={`${tx('同比增长')} ${fastest?.growth ?? 0}%`} color="#10b981" />
         </section>
 
         <div className="map-template-grid">
           <section style={{ overflow: 'hidden', border: '1px solid var(--border)', borderRadius: 12, background: 'var(--card)' }}>
             <div className="map-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 15, fontWeight: 700, color: 'var(--foreground)' }}>{scope === 'china' ? <MapPinIcon size={16} /> : <Globe2Icon size={16} />}{scope === 'china' ? '中国省份访问分布' : '世界国家访问分布'}</div>
-                <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--muted-foreground)' }}>{mode === 'heat' ? '颜色越深，访问热度越高' : '圆点越大，访问量越高。可拖拽、缩放地图'}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 15, fontWeight: 700, color: 'var(--foreground)' }}>{scope === 'china' ? <MapPinIcon size={16} /> : <Globe2Icon size={16} />}{tx(scope === 'china' ? '中国省份访问分布' : '世界国家访问分布')}</div>
+                <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--muted-foreground)' }}>{tx(mode === 'heat' ? '颜色越深，访问热度越高' : '圆点越大，访问量越高。可拖拽、缩放地图')}</p>
               </div>
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <button className={`map-segment${mode === 'heat' ? ' active' : ''}`} type="button" onClick={() => setMode('heat')}><LayersIcon size={14} />热力地图</button>
-                <button className={`map-segment${mode === 'bubble' ? ' active' : ''}`} type="button" onClick={() => setMode('bubble')}><CircleDotIcon size={14} />气泡地图</button>
+                <button className={`map-segment${mode === 'heat' ? ' active' : ''}`} type="button" onClick={() => setMode('heat')}><LayersIcon size={14} />{tx('热力地图')}</button>
+                <button className={`map-segment${mode === 'bubble' ? ' active' : ''}`} type="button" onClick={() => setMode('bubble')}><CircleDotIcon size={14} />{tx('气泡地图')}</button>
               </div>
             </div>
 
-            <GeographicMap scope={scope} mode={mode} data={data} colors={colors} isDark={isDark} selected={selected} onSelect={setSelected} onHover={setHovered} />
+            <GeographicMap scope={scope} mode={mode} data={data} colors={colors} isDark={isDark} language={language} tx={tx} selected={selected} onSelect={setSelected} onHover={setHovered} />
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '11px 18px 14px', borderTop: '1px solid var(--border)' }}>
-              <span style={{ flexShrink: 0, fontSize: 12, color: 'var(--muted-foreground)' }}>访问热度</span>
+              <span style={{ flexShrink: 0, fontSize: 12, color: 'var(--muted-foreground)' }}>{tx('访问热度')}</span>
               <div style={{ display: 'flex', flex: 1, overflow: 'hidden', height: 8, borderRadius: 999 }}>{colors.map(color => <span key={color} style={{ flex: 1, background: color }} />)}</div>
-              <span style={{ flexShrink: 0, fontSize: 11, color: 'var(--muted-foreground)' }}>低</span>
-              <span style={{ flexShrink: 0, fontSize: 11, color: 'var(--muted-foreground)' }}>高</span>
+              <span style={{ flexShrink: 0, fontSize: 11, color: 'var(--muted-foreground)' }}>{tx('低')}</span>
+              <span style={{ flexShrink: 0, fontSize: 11, color: 'var(--muted-foreground)' }}>{tx('高')}</span>
             </div>
           </section>
 
           <aside style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <section style={{ padding: 17, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--card)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: activeColor, boxShadow: `0 0 0 4px color-mix(in srgb, ${activeColor} 14%, transparent)` }} /><span style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>{hovered ? '悬停地区' : '当前地区'}</span></div>
-              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--foreground)', fontSize: 25, fontWeight: 800 }}>{activeRegion.name}</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 7 }}><span style={{ fontSize: 23, fontWeight: 800, color: 'var(--foreground)' }}>{formatValue(activeRegion.value)}</span><span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>访问量</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: activeColor, boxShadow: `0 0 0 4px color-mix(in srgb, ${activeColor} 14%, transparent)` }} /><span style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>{tx(hovered ? '悬停地区' : '当前地区')}</span></div>
+              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--foreground)', fontSize: 25, fontWeight: 800 }}>{tx(activeRegion.name)}</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 7 }}><span style={{ fontSize: 23, fontWeight: 800, color: 'var(--foreground)' }}>{formatValue(activeRegion.value, language)}</span><span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>{tx('访问量')}</span></div>
               <div style={{ height: 7, overflow: 'hidden', marginTop: 14, borderRadius: 999, background: 'var(--muted)' }}><div style={{ width: `${Math.max(5, activeRegion.value / sortedData[0].value * 100)}%`, height: '100%', borderRadius: 'inherit', background: activeColor, transition: 'width .22s ease' }} /></div>
-              <div style={{ marginTop: 10, fontSize: 12, color: (activeRegion.growth ?? 0) >= 0 ? '#10b981' : '#ef4444' }}><TrendingUpIcon size={13} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 4 }} />同比 {activeRegion.growth ?? 0}%</div>
+              <div style={{ marginTop: 10, fontSize: 12, color: (activeRegion.growth ?? 0) >= 0 ? '#10b981' : '#ef4444' }}><TrendingUpIcon size={13} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 4 }} />{tx('同比')} {activeRegion.growth ?? 0}%</div>
             </section>
 
             <section style={{ padding: 17, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--card)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}><span style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>访问量排行</span><span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>TOP 10</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}><span style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>{tx('访问量排行')}</span><span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>TOP 10</span></div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {sortedData.slice(0, 10).map((region, index) => {
                   const active = selected.name === region.name;
-                  return <button key={region.name} type="button" onClick={() => setSelected(region)} style={{ display: 'grid', gridTemplateColumns: '21px minmax(0, 1fr) 39px', gap: 8, alignItems: 'center', width: '100%', padding: '5px 6px', margin: '0 -6px', border: 0, borderRadius: 7, background: active ? 'color-mix(in srgb, var(--primary) 9%, transparent)' : 'transparent', cursor: 'pointer', textAlign: 'left' }}><span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 5, color: index < 3 ? '#fff' : 'var(--muted-foreground)', background: index === 0 ? '#f59e0b' : index === 1 ? '#94a3b8' : index === 2 ? '#c08457' : 'var(--muted)', fontSize: 11, fontWeight: 800 }}>{index + 1}</span><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--foreground)', fontSize: 13, fontWeight: 600 }}>{region.name}</span><span style={{ textAlign: 'right', color: getColor(region.value, data, colors), fontSize: 12, fontWeight: 750 }}>{formatValue(region.value)}</span></button>;
+                  return <button key={region.name} type="button" onClick={() => setSelected(region)} style={{ display: 'grid', gridTemplateColumns: '21px minmax(0, 1fr) 39px', gap: 8, alignItems: 'center', width: '100%', padding: '5px 6px', margin: '0 -6px', border: 0, borderRadius: 7, background: active ? 'color-mix(in srgb, var(--primary) 9%, transparent)' : 'transparent', cursor: 'pointer', textAlign: 'left' }}><span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 5, color: index < 3 ? '#fff' : 'var(--muted-foreground)', background: index === 0 ? '#f59e0b' : index === 1 ? '#94a3b8' : index === 2 ? '#c08457' : 'var(--muted)', fontSize: 11, fontWeight: 800 }}>{index + 1}</span><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--foreground)', fontSize: 13, fontWeight: 600 }}>{tx(region.name)}</span><span style={{ textAlign: 'right', color: getColor(region.value, data, colors), fontSize: 12, fontWeight: 750 }}>{formatValue(region.value, language)}</span></button>;
                 })}
               </div>
             </section>

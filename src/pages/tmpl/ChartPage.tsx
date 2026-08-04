@@ -1,7 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
+import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
+import { localizeText } from '../../i18n/localizeText';
+
+function useTemplateText() {
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
+  return useCallback((value: string) => localizeText(value, language), [language]);
+}
 
 /* ─────────────────────────────────────────────────────────────
    Theme palette helper
@@ -75,6 +83,7 @@ function ChartCard({ title, desc, children }: ChartCardProps) {
 ───────────────────────────────────────────────────────────── */
 function LineAreaChart() {
   const p = usePalette();
+  const tx = useTemplateText();
 
   const option = useMemo(() => ({
     backgroundColor: 'transparent',
@@ -94,7 +103,7 @@ function LineAreaChart() {
     },
     xAxis: {
       type: 'category',
-      data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+      data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'].map(tx),
       axisLine: { lineStyle: { color: p.axisLine } },
       axisTick: { show: false },
       axisLabel: { color: p.textMuted, fontSize: 11 },
@@ -109,7 +118,7 @@ function LineAreaChart() {
     },
     series: [
       {
-        name: '访问量',
+        name: tx('访问量'),
         type: 'line',
         smooth: true,
         symbol: 'circle',
@@ -128,7 +137,7 @@ function LineAreaChart() {
         data: [3200, 4100, 3800, 5200, 4900, 6300, 5800, 7100, 6600, 7800, 8200, 9100],
       },
       {
-        name: '转化数',
+        name: tx('转化数'),
         type: 'line',
         smooth: true,
         symbol: 'circle',
@@ -147,7 +156,7 @@ function LineAreaChart() {
         data: [1200, 1600, 1400, 2100, 1900, 2600, 2400, 2900, 2700, 3200, 3500, 3900],
       },
     ],
-  }), [p]);
+  }), [p, tx]);
 
   return (
     <ReactECharts
@@ -163,6 +172,7 @@ function LineAreaChart() {
 ───────────────────────────────────────────────────────────── */
 function BarChart() {
   const p = usePalette();
+  const tx = useTemplateText();
 
   const option = useMemo(() => ({
     backgroundColor: 'transparent',
@@ -182,7 +192,7 @@ function BarChart() {
     },
     xAxis: {
       type: 'category',
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(tx),
       axisLine: { lineStyle: { color: p.axisLine } },
       axisTick: { show: false },
       axisLabel: { color: p.textMuted, fontSize: 11 },
@@ -197,7 +207,7 @@ function BarChart() {
     },
     series: [
       {
-        name: '新增用户',
+        name: tx('新增用户'),
         type: 'bar',
         barWidth: '30%',
         barMaxWidth: 28,
@@ -214,7 +224,7 @@ function BarChart() {
         data: [420, 380, 510, 460, 590, 340, 280],
       },
       {
-        name: '活跃用户',
+        name: tx('活跃用户'),
         type: 'bar',
         barWidth: '30%',
         barMaxWidth: 28,
@@ -231,7 +241,7 @@ function BarChart() {
         data: [320, 290, 410, 370, 480, 260, 200],
       },
     ],
-  }), [p]);
+  }), [p, tx]);
 
   return (
     <ReactECharts
@@ -247,13 +257,14 @@ function BarChart() {
 ───────────────────────────────────────────────────────────── */
 function DonutChart() {
   const p = usePalette();
+  const tx = useTemplateText();
 
   const data = [
-    { value: 38, name: '直接访问' },
-    { value: 26, name: '搜索引擎' },
-    { value: 19, name: '社交媒体' },
-    { value: 11, name: '邮件营销' },
-    { value: 6,  name: '其他渠道' },
+    { value: 38, name: tx('直接访问') },
+    { value: 26, name: tx('搜索引擎') },
+    { value: 19, name: tx('社交媒体') },
+    { value: 11, name: tx('邮件营销') },
+    { value: 6,  name: tx('其他渠道') },
   ];
 
   const colors = [p.primary, p.teal, p.amber, p.rose, p.sky];
@@ -296,7 +307,7 @@ function DonutChart() {
         label: {
           show: true,
           position: 'center',
-          formatter: () => `{title|流量来源}\n{sub|本月}`,
+          formatter: () => `{title|${tx('流量来源')}}\n{sub|${tx('本月')}}`,
           rich: {
             title: { color: p.textMuted, fontSize: 11, lineHeight: 20 },
             sub: { color: p.textMuted, fontSize: 10 },
@@ -309,7 +320,7 @@ function DonutChart() {
         data,
       },
     ],
-  }), [p]);
+  }), [p, tx]);
 
   return (
     <ReactECharts
@@ -325,6 +336,7 @@ function DonutChart() {
 ───────────────────────────────────────────────────────────── */
 function RadarChart() {
   const p = usePalette();
+  const tx = useTemplateText();
 
   const option = useMemo(() => ({
     backgroundColor: 'transparent',
@@ -360,12 +372,12 @@ function RadarChart() {
       },
       axisLine: { lineStyle: { color: p.axisLine } },
       indicator: [
-        { name: '产品质量', max: 100 },
-        { name: '用户体验', max: 100 },
-        { name: '交付速度', max: 100 },
-        { name: '市场覆盖', max: 100 },
-        { name: '客户满意', max: 100 },
-        { name: '技术能力', max: 100 },
+        { name: tx('产品质量'), max: 100 },
+        { name: tx('用户体验'), max: 100 },
+        { name: tx('交付速度'), max: 100 },
+        { name: tx('市场覆盖'), max: 100 },
+        { name: tx('客户满意'), max: 100 },
+        { name: tx('技术能力'), max: 100 },
       ],
     },
     series: [
@@ -373,7 +385,7 @@ function RadarChart() {
         type: 'radar',
         data: [
           {
-            name: '本季度',
+            name: tx('本季度'),
             value: [88, 75, 82, 70, 91, 85],
             lineStyle: { color: p.primary, width: 2 },
             itemStyle: { color: p.primary },
@@ -382,7 +394,7 @@ function RadarChart() {
             symbolSize: 5,
           },
           {
-            name: '上季度',
+            name: tx('上季度'),
             value: [72, 68, 74, 62, 80, 76],
             lineStyle: { color: p.teal, width: 2 },
             itemStyle: { color: p.teal },
@@ -393,7 +405,7 @@ function RadarChart() {
         ],
       },
     ],
-  }), [p]);
+  }), [p, tx]);
 
   return (
     <ReactECharts
@@ -409,6 +421,7 @@ function RadarChart() {
 ───────────────────────────────────────────────────────────── */
 function ScatterChart() {
   const p = usePalette();
+  const tx = useTemplateText();
 
   // [x: 消费金额, y: 满意度评分, z: 购买次数(bubble size)]
   const genData = (n: number, xBase: number, yBase: number, seed: number) =>
@@ -432,7 +445,7 @@ function ScatterChart() {
       borderWidth: 1,
       textStyle: { color: p.textMain, fontSize: 12 },
       formatter: (params: { seriesName: string; value: number[] }) =>
-        `${params.seriesName}<br/>消费：¥${params.value[0]}<br/>评分：${params.value[1]}<br/>次数：${params.value[2]}`,
+        `${params.seriesName}<br/>${tx('消费')}：¥${params.value[0]}<br/>${tx('评分')}：${params.value[1]}<br/>${tx('次数')}：${params.value[2]}`,
     },
     legend: {
       top: 2, right: 0,
@@ -441,7 +454,7 @@ function ScatterChart() {
     },
     xAxis: {
       type: 'value',
-      name: '消费金额(¥)',
+      name: tx('消费金额(¥)'),
       nameLocation: 'end',
       nameTextStyle: { color: p.textMuted, fontSize: 10, padding: [0, 0, 0, -10] },
       axisLine: { lineStyle: { color: p.axisLine } },
@@ -454,7 +467,7 @@ function ScatterChart() {
     },
     yAxis: {
       type: 'value',
-      name: '满意度',
+      name: tx('满意度'),
       nameLocation: 'end',
       nameTextStyle: { color: p.textMuted, fontSize: 10 },
       min: 1, max: 10,
@@ -465,21 +478,21 @@ function ScatterChart() {
     },
     series: [
       {
-        name: '高价值用户',
+        name: tx('高价值用户'),
         type: 'scatter',
         data: genData(30, 4000, 7, 1),
         symbolSize: (d: number[]) => Math.max(d[2] * 1.6, 6),
         itemStyle: { color: p.primary, opacity: 0.75, borderColor: p.primary + '44', borderWidth: 1 },
       },
       {
-        name: '普通用户',
+        name: tx('普通用户'),
         type: 'scatter',
         data: genData(40, 800, 4.5, 42),
         symbolSize: (d: number[]) => Math.max(d[2] * 1.2, 5),
         itemStyle: { color: p.teal, opacity: 0.65, borderColor: p.teal + '44', borderWidth: 1 },
       },
     ],
-  }), [p]);
+  }), [p, tx]);
 
   return (
     <ReactECharts
@@ -495,8 +508,9 @@ function ScatterChart() {
 ───────────────────────────────────────────────────────────── */
 function HBarChart() {
   const p = usePalette();
+  const tx = useTemplateText();
 
-  const categories = ['微信生态', '抖音渠道', '百度 SEO', '知乎内容', '微博推广', '线下活动', '邮件营销'];
+  const categories = ['微信生态', '抖音渠道', '百度 SEO', '知乎内容', '微博推广', '线下活动', '邮件营销'].map(tx);
   const values     = [8420, 7350, 6180, 4920, 3870, 2940, 1820];
   const maxVal     = Math.max(...values);
 
@@ -565,7 +579,7 @@ function HBarChart() {
         },
       },
     ],
-  }), [p]);
+  }), [p, tx]);
 
   return (
     <ReactECharts
@@ -580,6 +594,7 @@ function HBarChart() {
    PAGE
 ───────────────────────────────────────────────────────────── */
 export default function ChartPage() {
+  const tx = useTemplateText();
   return (
     <AdminLayout>
       <style>{`
@@ -602,9 +617,9 @@ export default function ChartPage() {
 
         {/* Header */}
         <div>
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--foreground)' }}>图表模板</h1>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--foreground)' }}>{tx('图表模板')}</h1>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--muted-foreground)' }}>
-            基于 ECharts · 折线图 · 柱状图 · 环形饼图 · 雷达图 · 散点图 · 横向条形图 · 暗色自动适配
+            {tx('基于 ECharts · 折线图 · 柱状图 · 环形饼图 · 雷达图 · 散点图 · 横向条形图 · 暗色自动适配')}
           </p>
         </div>
 
@@ -612,43 +627,43 @@ export default function ChartPage() {
         <div className="chart-grid">
 
           <ChartCard
-            title="折线图 — 面积渐变"
-            desc="访问量与转化数年度趋势，渐变填充区域增强视觉层次"
+            title={tx('折线图 — 面积渐变')}
+            desc={tx('访问量与转化数年度趋势，渐变填充区域增强视觉层次')}
           >
             <LineAreaChart />
           </ChartCard>
 
           <ChartCard
-            title="柱状图"
-            desc="本周每日新增与活跃用户对比，渐变色柱体 + 圆角顶部"
+            title={tx('柱状图')}
+            desc={tx('本周每日新增与活跃用户对比，渐变色柱体 + 圆角顶部')}
           >
             <BarChart />
           </ChartCard>
 
           <ChartCard
-            title="环形饼图"
-            desc="流量来源渠道分布，环形中心保留标题区域，右侧图例带数值"
+            title={tx('环形饼图')}
+            desc={tx('流量来源渠道分布，环形中心保留标题区域，右侧图例带数值')}
           >
             <DonutChart />
           </ChartCard>
 
           <ChartCard
-            title="雷达图"
-            desc="本季度与上季度六维能力对比，填充面积显示差距"
+            title={tx('雷达图')}
+            desc={tx('本季度与上季度六维能力对比，填充面积显示差距')}
           >
             <RadarChart />
           </ChartCard>
 
           <ChartCard
-            title="散点图"
-            desc="用户消费金额 vs 满意度评分分布，气泡大小代表购买次数"
+            title={tx('散点图')}
+            desc={tx('用户消费金额 vs 满意度评分分布，气泡大小代表购买次数')}
           >
             <ScatterChart />
           </ChartCard>
 
           <ChartCard
-            title="横向条形图"
-            desc="各渠道获客数量排名，渐变色彩条 + 背景衬底 + 行内标签"
+            title={tx('横向条形图')}
+            desc={tx('各渠道获客数量排名，渐变色彩条 + 背景衬底 + 行内标签')}
           >
             <HBarChart />
           </ChartCard>

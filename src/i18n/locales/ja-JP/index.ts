@@ -6,5 +6,14 @@ import components from './components.json';
 import theme from './theme.json';
 import auth from './auth.json';
 import ecommerce from './ecommerce.json';
+import templates from './templates.json';
+import content from './content.json';
+import feedback from './feedback.json';
+import analyticsPages from './analyticsPages.json';
+import media from './media.json';
+import marketing from './marketing.json';
+import pageExtras from './pageExtras.json';
+import business from './business.json';
+import systemPages from './systemPages.json';
 
-export default { translation: { ...common, navigation, dashboard, analytics, components, theme, auth, ecommerce } };
+export default { translation: { ...common, navigation, dashboard, analytics, components, theme, auth, ecommerce, templates, content, feedback, analyticsPages, media, marketing, pageExtras, business, systemPages } };
