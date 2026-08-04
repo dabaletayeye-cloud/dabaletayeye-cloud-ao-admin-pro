@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '../lib/localizedToast';
 import { useTheme } from '../hooks/useTheme';
 import { MOCK_USERS, type User } from '../data/mockData';
 import {

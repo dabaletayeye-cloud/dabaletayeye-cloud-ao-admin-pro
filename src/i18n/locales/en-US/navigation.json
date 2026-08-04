@@ -68,5 +68,10 @@
   "error500": "500 Server error",
   "coupons": "Coupons",
   "activities": "Activities",
-  "pushNotifications": "Push notifications"
+  "pushNotifications": "Push notifications",
+  "articleCards": "Article cards",
+  "articlePublish": "Publish article",
+  "articleList": "Article list",
+  "categoryManagement": "Category management",
+  "tagManagement": "Tag management"
 }

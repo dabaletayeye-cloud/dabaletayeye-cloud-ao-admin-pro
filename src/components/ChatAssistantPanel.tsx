@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { BotIcon, ImageIcon, PaperclipIcon, SendIcon, SmileIcon, XIcon } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useLocale } from '../hooks/useLocale';
+import LocalizedText from './LocalizedText';
 
 interface ChatMessage {
   id: number;
@@ -80,7 +81,7 @@ export default function ChatAssistantPanel({ open, onClose }: ChatAssistantPanel
   if (!open) return null;
 
   return (
-    <div
+    <LocalizedText><div
       data-cmp="ChatAssistantPanel"
       role="presentation"
       onClick={onClose}
@@ -139,6 +140,6 @@ export default function ChatAssistantPanel({ open, onClose }: ChatAssistantPanel
           </div>
         </footer>
       </aside>
-    </div>
+    </div></LocalizedText>
   );
 }

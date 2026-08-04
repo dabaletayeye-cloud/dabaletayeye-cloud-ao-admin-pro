@@ -15,5 +15,12 @@
   "signOut": "로그아웃",
   "sidebarExpand": "사이드바 펼치기",
   "sidebarCollapse": "사이드바 접기",
-  "backHome": "홈으로 돌아가기"
+  "backHome": "홈으로 돌아가기",
+  "tabActions": "탭 작업",
+  "closeTab": "현재 탭 닫기",
+  "closeLeftTabs": "왼쪽 탭 닫기",
+  "closeRightTabs": "오른쪽 탭 닫기",
+  "closeOtherTabs": "다른 탭 닫기",
+  "closeAllTabs": "모든 탭 닫기",
+  "internalMaterial": "내부 자료"
 }

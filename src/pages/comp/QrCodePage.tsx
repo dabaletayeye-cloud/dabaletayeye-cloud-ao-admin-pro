@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import QRCode from 'qrcode';
 import AdminLayout from '../../components/AdminLayout';
-import { toast } from 'sonner';
+import { toast } from '../../lib/localizedToast';
 import {
   DownloadIcon,
   UploadCloudIcon,

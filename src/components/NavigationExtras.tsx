@@ -1,12 +1,18 @@
-import { useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronRightIcon, HomeIcon, XIcon } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, CircleXIcon, HomeIcon, LayersIcon, XIcon } from 'lucide-react';
 import type { TabsStyle } from '../types';
 import { localizeNavLabel, useLocale } from '../hooks/useLocale';
 
 interface PageTab {
   path: string;
   label: string;
+}
+
+interface TabContextMenu {
+  tab: PageTab;
+  x: number;
+  y: number;
 }
 
 const TAB_STORAGE_KEY = 'admin-page-tabs';
@@ -37,6 +43,34 @@ const ROUTE_LABELS: Record<string, string> = {
   '/examples/search-form': '搜索表单',
   '/examples/split-table': '左右布局表格',
   '/examples/socket': 'Socket 连接',
+  '/dashboard/analytics': '分析页',
+  '/dashboard/ecommerce': '电子商务',
+  '/content/articles': '文章列表',
+  '/content/categories': '分类管理',
+  '/content/tags': '标签管理',
+  '/article/list': '文章卡片',
+  '/article/publish': '文章发布',
+  '/tmpl/cards': '卡片',
+  '/tmpl/banners': '横幅',
+  '/tmpl/charts': '图表',
+  '/tmpl/calendar': '日历',
+  '/tmpl/chat': '聊天',
+  '/tmpl/pricing': '定价',
+  '/marketing/coupons': '优惠券',
+  '/marketing/events': '活动管理',
+  '/marketing/push': '推送通知',
+  '/system/dict': '字典管理',
+  '/system/servers': '服务器管理',
+  '/result/success': '成功页',
+  '/result/success-page': '成功页',
+  '/result/fail': '失败页',
+  '/result/fail-page': '失败页',
+  '/error/403': '403 无权限',
+  '/error/403-page': '403 无权限',
+  '/error/404': '404 不存在',
+  '/error/404-page': '404 不存在',
+  '/error/500': '500 服务异常',
+  '/error/500-page': '500 服务异常',
   '/tmpl/map': '地图模板',
   '/comp/overview': '组件总览',
   '/comp/buttons': '按钮组件',
@@ -94,9 +128,11 @@ export function BreadcrumbTrail() {
 export function PageTabs({ style }: { style: TabsStyle }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const current = { path: location.pathname, label: labelFor(location.pathname) };
   const [tabs, setTabs] = useState<PageTab[]>(() => loadTabs(current));
+  const [contextMenu, setContextMenu] = useState<TabContextMenu | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const persist = (nextTabs: PageTab[]) => {
     setTabs(nextTabs);
@@ -106,10 +142,45 @@ export function PageTabs({ style }: { style: TabsStyle }) {
   const closeTab = (event: MouseEvent, tab: PageTab) => {
     event.stopPropagation();
     if (tab.path === '/') return;
-    const nextTabs = tabs.filter(item => item.path !== tab.path);
-    persist(nextTabs);
-    if (tab.path === location.pathname) navigate(nextTabs[nextTabs.length - 1]?.path ?? '/');
+    closePaths([tab.path]);
   };
+
+  const closePaths = (paths: string[]) => {
+    const pathSet = new Set(paths.filter(path => path !== '/'));
+    const nextTabs = tabs.filter(tab => !pathSet.has(tab.path));
+    persist(nextTabs);
+    if (!nextTabs.some(tab => tab.path === location.pathname)) navigate(nextTabs[nextTabs.length - 1]?.path ?? '/');
+  };
+
+  const showContextMenu = (event: MouseEvent<HTMLButtonElement>, tab: PageTab) => {
+    event.preventDefault();
+    const menuWidth = 190;
+    const menuHeight = 220;
+    setContextMenu({
+      tab,
+      x: Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8)),
+      y: Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8)),
+    });
+  };
+
+  useEffect(() => {
+    if (!contextMenu) return;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      if (!contextMenuRef.current?.contains(event.target as Node)) setContextMenu(null);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setContextMenu(null);
+    };
+    const closeOnResize = () => setContextMenu(null);
+    document.addEventListener('pointerdown', closeOnOutsidePress);
+    document.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('resize', closeOnResize);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePress);
+      document.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('resize', closeOnResize);
+    };
+  }, [contextMenu]);
 
   const isCard = style === 'card';
   const isChrome = style === 'chrome';
@@ -122,6 +193,7 @@ export function PageTabs({ style }: { style: TabsStyle }) {
             key={tab.path}
             type="button"
             onClick={() => navigate(tab.path)}
+            onContextMenu={event => showContextMenu(event, tab)}
             className="group flex h-8 shrink-0 items-center gap-1.5 px-3 text-xs transition-colors"
             style={{
               background: active ? (isCard || isChrome ? 'var(--accent)' : 'transparent') : 'transparent',
@@ -137,6 +209,46 @@ export function PageTabs({ style }: { style: TabsStyle }) {
           </button>
         );
       })}
+      {contextMenu && (() => {
+        const tabIndex = tabs.findIndex(tab => tab.path === contextMenu.tab.path);
+        const closeLeft = tabs.slice(0, tabIndex).filter(tab => tab.path !== '/').map(tab => tab.path);
+        const closeRight = tabs.slice(tabIndex + 1).filter(tab => tab.path !== '/').map(tab => tab.path);
+        const closeOthers = tabs.filter(tab => tab.path !== '/' && tab.path !== contextMenu.tab.path).map(tab => tab.path);
+        const menuItems = [
+          { label: t('closeTab'), icon: <XIcon size={15} />, paths: contextMenu.tab.path === '/' ? [] : [contextMenu.tab.path] },
+          { label: t('closeLeftTabs'), icon: <ChevronLeftIcon size={15} />, paths: closeLeft },
+          { label: t('closeRightTabs'), icon: <ChevronRightIcon size={15} />, paths: closeRight },
+          { label: t('closeOtherTabs'), icon: <LayersIcon size={15} />, paths: closeOthers },
+          { label: t('closeAllTabs'), icon: <CircleXIcon size={15} />, paths: tabs.filter(tab => tab.path !== '/').map(tab => tab.path) },
+        ];
+        return (
+          <div
+            ref={contextMenuRef}
+            role="menu"
+            aria-label={t('tabActions')}
+            style={{ position: 'fixed', zIndex: 80, left: contextMenu.x, top: contextMenu.y, width: 190, padding: 5, background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 7, boxShadow: '0 12px 30px rgba(0,0,0,.16)' }}
+          >
+            {menuItems.map((item, index) => (
+              <button
+                key={item.label}
+                type="button"
+                role="menuitem"
+                disabled={item.paths.length === 0}
+                onClick={() => {
+                  setContextMenu(null);
+                  closePaths(item.paths);
+                }}
+                style={{ display: 'flex', width: '100%', height: 34, alignItems: 'center', gap: 9, padding: '0 9px', color: index === menuItems.length - 1 ? 'var(--destructive)' : 'var(--foreground)', background: 'transparent', border: 'none', borderRadius: 5, cursor: item.paths.length ? 'pointer' : 'not-allowed', fontSize: 12, opacity: item.paths.length ? 1 : .42, textAlign: 'left' }}
+                onMouseEnter={event => { if (item.paths.length) event.currentTarget.style.background = 'var(--accent)'; }}
+                onMouseLeave={event => { event.currentTarget.style.background = 'transparent'; }}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }

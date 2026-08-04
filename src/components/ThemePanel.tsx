@@ -1,13 +1,36 @@
 import React from 'react';
-import { toast } from 'sonner';
+import { toast } from '../lib/localizedToast';
 import { XIcon, SunIcon, MoonIcon, CheckIcon, MenuIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { useLocale } from '../hooks/useLocale';
 import { THEMES, ACCENT_COLORS, CollapseButtonPosition } from '../types';
 
 interface ThemePanelProps {
   open?: boolean;
   onClose?: () => void;
 }
+
+const THEME_NAME_KEYS: Record<string, string> = {
+  classic: 'theme.themeClassic',
+  mono: 'theme.themeMono',
+  purple: 'theme.themePurple',
+  manga: 'theme.themeManga',
+  forest: 'theme.themeForest',
+  sunset: 'theme.themeSunset',
+  glacier: 'theme.themeGlacier',
+  rose: 'theme.themeRose',
+};
+
+const ACCENT_COLOR_KEYS: Record<string, string> = {
+  '#3B82F6': 'theme.colorBlue',
+  '#1A1A1A': 'theme.colorBlack',
+  '#8B5CF6': 'theme.colorPurple',
+  '#E91E8C': 'theme.colorPink',
+  '#16A34A': 'theme.colorGreen',
+  '#F97316': 'theme.colorOrange',
+  '#06B6D4': 'theme.colorCyan',
+  '#E11D48': 'theme.colorRed',
+};
 
 // ─── Derive panel palette from current theme + mode ───────────────────────────
 interface PanelPalette {
@@ -270,23 +293,24 @@ function CollapsePositionGroup({
   onChange: (v: CollapseButtonPosition) => void;
   palette: PanelPalette;
 }) {
+  const { t } = useLocale();
   const faint = palette.btnBorder;
   const bg = palette.btnUnselectedBg;
 
   const options: { value: CollapseButtonPosition; label: string; preview: React.ReactNode }[] = [
     {
       value: 'topbar',
-      label: '顶栏左侧',
+      label: t('theme.topbarLeft'),
       preview: <CollapsePreviewTopbar accent={palette.accentHex} faint={faint} bg={bg} />,
     },
     {
       value: 'sidebar-bottom',
-      label: '侧边栏底部',
+      label: t('theme.sidebarBottom'),
       preview: <CollapsePreviewSidebarBottom accent={palette.accentHex} faint={faint} bg={bg} />,
     },
     {
       value: 'sidebar-top',
-      label: '侧边栏顶部',
+      label: t('theme.sidebarTop'),
       preview: <CollapsePreviewSidebarTop accent={palette.accentHex} faint={faint} bg={bg} />,
     },
   ];
@@ -354,12 +378,13 @@ function CollapsePositionGroup({
 // ─── ThemeToggleButtons (exported for Topbar) ─────────────────────────────────
 export function ThemeToggleButtons({ onOpenPanel = () => {} }: { onOpenPanel?: () => void }) {
   const { themeState, toggleMode } = useTheme();
+  const { t } = useLocale();
   const isDark = themeState.mode === 'dark';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
       <button
         onClick={toggleMode}
-        title={isDark ? '切换到亮色' : '切换到暗色'}
+        title={isDark ? t('theme.toggleToLight') : t('theme.toggleToDark')}
         style={{
           width: '34px',
           height: '34px',
@@ -378,7 +403,7 @@ export function ThemeToggleButtons({ onOpenPanel = () => {} }: { onOpenPanel?: (
       </button>
       <button
         onClick={onOpenPanel}
-        title="主题设置"
+        title={t('theme.panelTitle')}
         style={{
           width: '34px',
           height: '34px',
@@ -402,6 +427,7 @@ export function ThemeToggleButtons({ onOpenPanel = () => {} }: { onOpenPanel?: (
 
 // ─── Main ThemePanel ──────────────────────────────────────────────────────────
 export default function ThemePanel({ open = false, onClose = () => {} }: ThemePanelProps) {
+  const { t } = useLocale();
   const {
     themeState,
     setThemeId,
@@ -418,19 +444,22 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
 
   const p = derivePalette(themeState.themeId, themeState.mode, themeState.accentColor);
 
+  const themeName = (themeId: string) => t(THEME_NAME_KEYS[themeId] ?? themeId);
+  const colorName = (color: string) => t(ACCENT_COLOR_KEYS[color] ?? 'theme.custom');
+
   const containerWidthLabel: Record<string, string> = {
-    compact: '紧凑 16px',
-    default: '默认 24px',
-    loose: '宽松 32px',
+    compact: `${t('theme.compact')} 16px`,
+    default: `${t('theme.default')} 24px`,
+    loose: `${t('theme.loose')} 32px`,
   };
   const boxStyleLabel: Record<string, string> = {
-    border: '描边',
-    shadow: '阴影',
+    border: t('theme.border'),
+    shadow: t('theme.shadow'),
   };
   const collapsePosLabel: Record<string, string> = {
-    topbar: '顶栏左侧',
-    'sidebar-bottom': '侧边栏底部',
-    'sidebar-top': '侧边栏顶部',
+    topbar: t('theme.topbarLeft'),
+    'sidebar-bottom': t('theme.sidebarBottom'),
+    'sidebar-top': t('theme.sidebarTop'),
   };
   const selectStyle: React.CSSProperties = {
     width: '100%',
@@ -447,9 +476,9 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
   const copyConfig = async () => {
     try {
       await navigator.clipboard.writeText(JSON.stringify(themeState, null, 2));
-      toast.success('主题配置已复制');
+      toast.success(t('theme.copied'));
     } catch {
-      toast.error('浏览器未授予剪贴板权限');
+      toast.error(t('theme.clipboardDenied'));
     }
   };
 
@@ -521,12 +550,12 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
             </div>
             <div>
               <div style={{ color: p.headerText, fontWeight: 800, fontSize: '15px', letterSpacing: '-0.2px' }}>
-                主题设置
+                {t('theme.panelTitle')}
               </div>
               <div style={{ color: p.sectionLabel, fontSize: '11px', marginTop: '1px' }}>
-                {THEMES.find(t => t.id === themeState.themeId)?.name}
+                {themeName(themeState.themeId)}
                 {' · '}
-                {themeState.mode === 'dark' ? '暗色' : '亮色'}
+                {themeState.mode === 'dark' ? t('theme.dark') : t('theme.light')}
               </div>
             </div>
           </div>
@@ -562,7 +591,7 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
           }}
         >
           {/* 1. 明暗模式 */}
-          <PanelSection title="明暗模式" palette={p}>
+          <PanelSection title={t('theme.mode')} palette={p}>
             <div style={{ display: 'flex', gap: '10px' }}>
               {/* Light button */}
               <button
@@ -588,7 +617,7 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
                 }}
               >
                 <SunIcon size={18} color="#F59E0B" />
-                <span style={{ fontSize: '11px', color: '#374151', fontWeight: 600 }}>亮色</span>
+                <span style={{ fontSize: '11px', color: '#374151', fontWeight: 600 }}>{t('theme.light')}</span>
                 {themeState.mode === 'light' && (
                   <div
                     style={{
@@ -632,7 +661,7 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
                 }}
               >
                 <MoonIcon size={18} color="#818CF8" />
-                <span style={{ fontSize: '11px', color: '#C7D2FE', fontWeight: 600 }}>暗色</span>
+                <span style={{ fontSize: '11px', color: '#C7D2FE', fontWeight: 600 }}>{t('theme.dark')}</span>
                 {themeState.mode === 'dark' && (
                   <div
                     style={{
@@ -659,7 +688,7 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
           <div style={{ height: '1px', background: p.divider, margin: '0 0 22px' }} />
 
           {/* 2. 选择主题 — 两列布局 */}
-          <PanelSection title="选择主题" palette={p}>
+          <PanelSection title={t('theme.selectTheme')} palette={p}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {THEMES.map(theme => {
                 const isActive = themeState.themeId === theme.id;
@@ -688,10 +717,7 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
                     <span style={{ fontSize: '18px', flexShrink: 0, lineHeight: 1 }}>{theme.emoji}</span>
                     <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                       <div style={{ color: p.headerText, fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {theme.name}
-                      </div>
-                      <div style={{ color: p.sectionLabel, fontSize: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {theme.nameEn}
+                        {themeName(theme.id)}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
@@ -726,13 +752,13 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
           <div style={{ height: '1px', background: p.divider, margin: '0 0 22px' }} />
 
           {/* 3. 菜单布局 */}
-          <PanelSection title="菜单布局" palette={p}>
+          <PanelSection title={t('theme.menuLayout')} palette={p}>
             <OptionGroup
               options={[
-                { label: '垂直', value: 'vertical' as const },
-                { label: '水平', value: 'horizontal' as const },
-                { label: '混合', value: 'mixed' as const },
-                { label: '双列', value: 'double' as const },
+                { label: t('theme.vertical'), value: 'vertical' as const },
+                { label: t('theme.horizontal'), value: 'horizontal' as const },
+                { label: t('theme.mixed'), value: 'mixed' as const },
+                { label: t('theme.double'), value: 'double' as const },
               ]}
               value={themeState.menuLayout}
               onChange={setMenuLayout}
@@ -741,7 +767,7 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
           </PanelSection>
 
           {/* 3b. 折叠按钮位置 — only meaningful for vertical layout */}
-          <PanelSection title="折叠按钮位置" palette={p}>
+          <PanelSection title={t('theme.collapsePosition')} palette={p}>
             <CollapsePositionGroup
               value={themeState.collapseButtonPosition}
               onChange={setCollapseButtonPosition}
@@ -749,18 +775,18 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
             />
             {themeState.menuLayout !== 'vertical' && (
               <div style={{ marginTop: '8px', fontSize: '11px', color: p.sectionLabel, fontStyle: 'italic' }}>
-                仅在垂直布局下生效
+                {t('theme.verticalOnly')}
               </div>
             )}
           </PanelSection>
 
           {/* 4. 菜单风格 */}
-          <PanelSection title="菜单风格" palette={p}>
+          <PanelSection title={t('theme.menuStyle')} palette={p}>
             <OptionGroup
               options={[
-                { label: '浅色', value: 'light' as const },
-                { label: '深色', value: 'dark' as const },
-                { label: '跟随系统', value: 'system' as const },
+                { label: t('theme.light'), value: 'light' as const },
+                { label: t('theme.dark'), value: 'dark' as const },
+                { label: t('theme.followSystem'), value: 'system' as const },
               ]}
               value={themeState.menuStyle}
               onChange={setMenuStyle}
@@ -772,7 +798,7 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
           <div style={{ height: '1px', background: p.divider, margin: '0 0 22px' }} />
 
           {/* 5. 系统主题色 */}
-          <PanelSection title="系统主题色" palette={p}>
+          <PanelSection title={t('theme.themeColor')} palette={p}>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               {ACCENT_COLORS.map(c => {
                 const isSelected = themeState.accentColor === c.value;
@@ -780,7 +806,7 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
                   <button
                     key={c.value}
                     onClick={() => setAccentColor(c.value)}
-                    title={c.label}
+                    title={colorName(c.value)}
                     style={{
                       width: '32px',
                       height: '32px',
@@ -804,16 +830,16 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
               })}
             </div>
             <div style={{ marginTop: '8px', fontSize: '11px', color: p.sectionLabel }}>
-              当前: {ACCENT_COLORS.find(c => c.value === themeState.accentColor)?.label ?? '自定义'}
+              {t('theme.current')}: {colorName(themeState.accentColor)}
             </div>
           </PanelSection>
 
           {/* 6. 盒子样式 */}
-          <PanelSection title="盒子样式" palette={p}>
+          <PanelSection title={t('theme.boxStyle')} palette={p}>
             <OptionGroup
               options={[
-                { label: '描边', value: 'border' as const },
-                { label: '阴影', value: 'shadow' as const },
+                { label: t('theme.border'), value: 'border' as const },
+                { label: t('theme.shadow'), value: 'shadow' as const },
               ]}
               value={themeState.boxStyle}
               onChange={setBoxStyle}
@@ -822,11 +848,11 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
           </PanelSection>
 
           {/* 7. 容器宽度 */}
-          <PanelSection title="容器宽度" palette={p}>
+          <PanelSection title={t('theme.contentLayout')} palette={p}>
             <OptionGroup
               options={[
-                { label: '↔ 铺满', value: 'fluid' as const },
-                { label: '↔ 定宽', value: 'fixed' as const },
+                { label: `↔ ${t('theme.fluid')}`, value: 'fluid' as const },
+                { label: `↔ ${t('theme.fixed')}`, value: 'fixed' as const },
               ]}
               value={themeState.contentLayout}
               onChange={(contentLayout) => setTheme({ contentLayout })}
@@ -834,12 +860,12 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
             />
           </PanelSection>
 
-          <PanelSection title="内容间距" palette={p}>
+          <PanelSection title={t('theme.contentSpacing')} palette={p}>
             <OptionGroup
               options={[
-                { label: '紧凑', value: 'compact' as const },
-                { label: '默认', value: 'default' as const },
-                { label: '宽松', value: 'loose' as const },
+                { label: t('theme.compact'), value: 'compact' as const },
+                { label: t('theme.default'), value: 'default' as const },
+                { label: t('theme.loose'), value: 'loose' as const },
               ]}
               value={themeState.containerWidth}
               onChange={setContainerWidth}
@@ -849,45 +875,45 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
 
           <div style={{ height: '1px', background: p.divider, margin: '0 0 22px' }} />
 
-          <PanelSection title="基础配置" palette={p}>
+          <PanelSection title={t('theme.basicSettings')} palette={p}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <SettingSwitch label="开启多标签栏" checked={themeState.multiTabs} onChange={() => setTheme({ multiTabs: !themeState.multiTabs })} palette={p} />
-              <SettingSwitch label="侧边栏开启手风琴模式" checked={themeState.sidebarAccordion} onChange={() => setTheme({ sidebarAccordion: !themeState.sidebarAccordion })} palette={p} />
-              <SettingSwitch label="显示折叠侧边栏按钮" checked={themeState.showSidebarToggle} onChange={() => setTheme({ showSidebarToggle: !themeState.showSidebarToggle })} palette={p} />
-              <SettingSwitch label="显示快速入口" checked={themeState.showQuickEntry} onChange={() => setTheme({ showQuickEntry: !themeState.showQuickEntry })} palette={p} />
-              <SettingSwitch label="显示重载页面按钮" checked={themeState.showReloadButton} onChange={() => setTheme({ showReloadButton: !themeState.showReloadButton })} palette={p} />
-              <SettingSwitch label="显示全局面包屑导航" checked={themeState.showBreadcrumb} onChange={() => setTheme({ showBreadcrumb: !themeState.showBreadcrumb })} palette={p} />
-              <SettingSwitch label="显示多语言选择" checked={themeState.showLanguageSelector} onChange={() => setTheme({ showLanguageSelector: !themeState.showLanguageSelector })} palette={p} />
-              <SettingSwitch label="显示顶部进度条" checked={themeState.showTopProgress} onChange={() => setTheme({ showTopProgress: !themeState.showTopProgress })} palette={p} />
-              <SettingSwitch label="色弱模式" checked={themeState.colorWeakMode} onChange={() => setTheme({ colorWeakMode: !themeState.colorWeakMode })} palette={p} />
-              <SettingSwitch label="全局水印" checked={themeState.globalWatermark} onChange={() => setTheme({ globalWatermark: !themeState.globalWatermark })} palette={p} />
+              <SettingSwitch label={t('theme.multiTabs')} checked={themeState.multiTabs} onChange={() => setTheme({ multiTabs: !themeState.multiTabs })} palette={p} />
+              <SettingSwitch label={t('theme.sidebarAccordion')} checked={themeState.sidebarAccordion} onChange={() => setTheme({ sidebarAccordion: !themeState.sidebarAccordion })} palette={p} />
+              <SettingSwitch label={t('theme.showSidebarToggle')} checked={themeState.showSidebarToggle} onChange={() => setTheme({ showSidebarToggle: !themeState.showSidebarToggle })} palette={p} />
+              <SettingSwitch label={t('theme.showQuickEntry')} checked={themeState.showQuickEntry} onChange={() => setTheme({ showQuickEntry: !themeState.showQuickEntry })} palette={p} />
+              <SettingSwitch label={t('theme.showReload')} checked={themeState.showReloadButton} onChange={() => setTheme({ showReloadButton: !themeState.showReloadButton })} palette={p} />
+              <SettingSwitch label={t('theme.showBreadcrumb')} checked={themeState.showBreadcrumb} onChange={() => setTheme({ showBreadcrumb: !themeState.showBreadcrumb })} palette={p} />
+              <SettingSwitch label={t('theme.showLanguage')} checked={themeState.showLanguageSelector} onChange={() => setTheme({ showLanguageSelector: !themeState.showLanguageSelector })} palette={p} />
+              <SettingSwitch label={t('theme.showProgress')} checked={themeState.showTopProgress} onChange={() => setTheme({ showTopProgress: !themeState.showTopProgress })} palette={p} />
+              <SettingSwitch label={t('theme.colorWeakMode')} checked={themeState.colorWeakMode} onChange={() => setTheme({ colorWeakMode: !themeState.colorWeakMode })} palette={p} />
+              <SettingSwitch label={t('theme.globalWatermark')} checked={themeState.globalWatermark} onChange={() => setTheme({ globalWatermark: !themeState.globalWatermark })} palette={p} />
             </div>
           </PanelSection>
 
-          <PanelSection title="显示细节" palette={p}>
+          <PanelSection title={t('theme.displayDetails')} palette={p}>
             <div style={{ display: 'grid', gap: 12 }}>
               <label style={{ display: 'grid', gap: 6, fontSize: 12, color: p.configLabelText }}>
-                菜单宽度
+                {t('theme.sidebarWidth')}
                 <input type="number" min={180} max={320} value={themeState.sidebarWidth} onChange={(event) => setTheme({ sidebarWidth: Math.max(180, Math.min(320, Number(event.target.value) || 230)) })} style={selectStyle} />
               </label>
               <label style={{ display: 'grid', gap: 6, fontSize: 12, color: p.configLabelText }}>
-                标签页风格
+                {t('theme.tabsStyle')}
                 <select value={themeState.tabsStyle} onChange={(event) => setTheme({ tabsStyle: event.target.value as 'default' | 'card' | 'chrome' })} style={selectStyle}>
-                  <option value="default">默认下划线</option>
-                  <option value="card">卡片式</option>
-                  <option value="chrome">胶囊式</option>
+                  <option value="default">{t('theme.tabsDefault')}</option>
+                  <option value="card">{t('theme.tabsCard')}</option>
+                  <option value="chrome">{t('theme.tabsChrome')}</option>
                 </select>
               </label>
               <label style={{ display: 'grid', gap: 6, fontSize: 12, color: p.configLabelText }}>
-                页面切换动画
+                {t('theme.pageTransition')}
                 <select value={themeState.pageTransition} onChange={(event) => setTheme({ pageTransition: event.target.value as 'fade' | 'slide-left' | 'slide-up' })} style={selectStyle}>
-                  <option value="slide-left">左侧滑入</option>
-                  <option value="slide-up">向上滑入</option>
-                  <option value="fade">淡入</option>
+                  <option value="slide-left">{t('theme.slideLeft')}</option>
+                  <option value="slide-up">{t('theme.slideUp')}</option>
+                  <option value="fade">{t('theme.fade')}</option>
                 </select>
               </label>
               <label style={{ display: 'grid', gap: 6, fontSize: 12, color: p.configLabelText }}>
-                自定义圆角
+                {t('theme.cornerRadius')}
                 <select value={themeState.cornerRadius} onChange={(event) => setTheme({ cornerRadius: Number(event.target.value) })} style={selectStyle}>
                   <option value={0.5}>0.5 rem</option>
                   <option value={0.75}>0.75 rem</option>
@@ -899,8 +925,8 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
           </PanelSection>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 4 }}>
-            <button type="button" onClick={() => { void copyConfig(); }} style={{ height: 36, borderRadius: 8, border: 'none', background: p.btnSelectedBg, color: p.btnSelectedText, cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>复制配置</button>
-            <button type="button" onClick={() => { resetTheme(); toast.success('主题配置已重置'); }} style={{ height: 36, borderRadius: 8, border: `1px solid ${p.accentHex}`, background: 'transparent', color: p.accentHex, cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>重置配置</button>
+            <button type="button" onClick={() => { void copyConfig(); }} style={{ height: 36, borderRadius: 8, border: 'none', background: p.btnSelectedBg, color: p.btnSelectedText, cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>{t('theme.copyConfig')}</button>
+            <button type="button" onClick={() => { resetTheme(); toast.success(t('theme.resetSuccess')); }} style={{ height: 36, borderRadius: 8, border: `1px solid ${p.accentHex}`, background: 'transparent', color: p.accentHex, cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>{t('theme.resetConfig')}</button>
           </div>
         </div>
 
@@ -935,28 +961,33 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
                 marginBottom: '2px',
               }}
             >
-              当前配置
+              {t('theme.currentConfig')}
             </div>
 
             {[
               {
-                label: '主题',
-                value: `${THEMES.find(t => t.id === themeState.themeId)?.name ?? themeState.themeId} ${themeState.mode === 'dark' ? '🌙' : '☀️'}`,
+                label: t('theme.theme'),
+                value: `${themeName(themeState.themeId)} ${themeState.mode === 'dark' ? '🌙' : '☀️'}`,
               },
               {
-                label: '盒子样式',
+                label: t('theme.boxStyle'),
                 value: boxStyleLabel[themeState.boxStyle] ?? themeState.boxStyle,
               },
               {
-                label: '容器宽度',
+                label: t('theme.contentSpacing'),
                 value: containerWidthLabel[themeState.containerWidth] ?? themeState.containerWidth,
               },
               {
-                label: '菜单布局',
-                value: ({ vertical: '垂直', horizontal: '水平', mixed: '混合', double: '双列' } as Record<string, string>)[themeState.menuLayout] ?? themeState.menuLayout,
+                label: t('theme.menuLayout'),
+                value: ({
+                  vertical: t('theme.vertical'),
+                  horizontal: t('theme.horizontal'),
+                  mixed: t('theme.mixed'),
+                  double: t('theme.double'),
+                } as Record<string, string>)[themeState.menuLayout] ?? themeState.menuLayout,
               },
               {
-                label: '折叠按钮',
+                label: t('theme.collapsePosition'),
                 value: collapsePosLabel[themeState.collapseButtonPosition] ?? themeState.collapseButtonPosition,
               },
             ].map(row => (

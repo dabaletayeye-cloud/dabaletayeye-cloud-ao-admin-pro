@@ -15,5 +15,12 @@
   "signOut": "Sign out",
   "sidebarExpand": "Expand sidebar",
   "sidebarCollapse": "Collapse sidebar",
-  "backHome": "Back to home"
+  "backHome": "Back to home",
+  "tabActions": "Tab actions",
+  "closeTab": "Close tab",
+  "closeLeftTabs": "Close tabs to the left",
+  "closeRightTabs": "Close tabs to the right",
+  "closeOtherTabs": "Close other tabs",
+  "closeAllTabs": "Close all tabs",
+  "internalMaterial": "Internal material"
 }

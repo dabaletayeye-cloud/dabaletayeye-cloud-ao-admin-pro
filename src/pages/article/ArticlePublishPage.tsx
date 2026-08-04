@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
-import { toast } from 'sonner';
+import { toast } from '../../lib/localizedToast';
 import {
   UploadCloudIcon,
   XIcon,

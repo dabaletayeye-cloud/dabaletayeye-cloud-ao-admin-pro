@@ -15,5 +15,12 @@
   "signOut": "登出",
   "sidebarExpand": "展開側邊欄",
   "sidebarCollapse": "收合側邊欄",
-  "backHome": "返回首頁"
+  "backHome": "返回首頁",
+  "tabActions": "分頁操作",
+  "closeTab": "關閉目前分頁",
+  "closeLeftTabs": "關閉左側分頁",
+  "closeRightTabs": "關閉右側分頁",
+  "closeOtherTabs": "關閉其他分頁",
+  "closeAllTabs": "關閉全部分頁",
+  "internalMaterial": "內部資料"
 }

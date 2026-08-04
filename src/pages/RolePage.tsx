@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
-import { toast } from 'sonner';
+import { toast } from '../lib/localizedToast';
 import {
   PlusIcon,
   SearchIcon,

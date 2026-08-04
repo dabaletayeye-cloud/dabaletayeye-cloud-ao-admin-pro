@@ -39,6 +39,21 @@ const EXTRA_NAVIGATION_KEYS: Record<string, string> = {
   '优惠券': 'coupons',
   '活动管理': 'activities',
   '推送通知': 'pushNotifications',
+  '文章卡片': 'articleCards',
+  '文章发布': 'articlePublish',
+  '文章列表': 'articleList',
+  '分类管理': 'categoryManagement',
+  '标签管理': 'tagManagement',
+  '卡片': 'cardsTemplate',
+  '横幅': 'bannersTemplate',
+  '图表': 'chartsTemplate',
+  '日历': 'calendarTemplate',
+  '聊天': 'chatTemplate',
+  '定价': 'pricingTemplate',
+  '仪表盘': 'dashboard',
+  '电子商务': 'ecommerce',
+  '字典管理': 'dictionaries',
+  '服务器管理': 'servers',
 };
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {

@@ -12,7 +12,7 @@ import {
   Trash2Icon,
 } from 'lucide-react';
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { toast } from 'sonner';
+import { toast } from '../../lib/localizedToast';
 
 // ─────────────────────────────────────────────
 // Mock Data

@@ -15,5 +15,12 @@
   "signOut": "ログアウト",
   "sidebarExpand": "サイドバーを展開",
   "sidebarCollapse": "サイドバーを折りたたむ",
-  "backHome": "ホームに戻る"
+  "backHome": "ホームに戻る",
+  "tabActions": "タブ操作",
+  "closeTab": "このタブを閉じる",
+  "closeLeftTabs": "左側のタブを閉じる",
+  "closeRightTabs": "右側のタブを閉じる",
+  "closeOtherTabs": "他のタブを閉じる",
+  "closeAllTabs": "すべてのタブを閉じる",
+  "internalMaterial": "社内資料"
 }

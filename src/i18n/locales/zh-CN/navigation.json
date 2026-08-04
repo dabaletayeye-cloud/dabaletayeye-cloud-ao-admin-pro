@@ -68,5 +68,10 @@
   "error500": "500 服务异常",
   "coupons": "优惠券",
   "activities": "活动管理",
-  "pushNotifications": "推送通知"
+  "pushNotifications": "推送通知",
+  "articleCards": "文章卡片",
+  "articlePublish": "文章发布",
+  "articleList": "文章列表",
+  "categoryManagement": "分类管理",
+  "tagManagement": "标签管理"
 }

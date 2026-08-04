@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { toast } from 'sonner';
+import { toast } from '../lib/localizedToast';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
 import {

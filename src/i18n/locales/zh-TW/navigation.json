@@ -68,5 +68,10 @@
   "error500": "500 伺服器錯誤",
   "coupons": "優惠券",
   "activities": "活動管理",
-  "pushNotifications": "推播通知"
+  "pushNotifications": "推播通知",
+  "articleCards": "文章卡片",
+  "articlePublish": "文章發布",
+  "articleList": "文章列表",
+  "categoryManagement": "分類管理",
+  "tagManagement": "標籤管理"
 }

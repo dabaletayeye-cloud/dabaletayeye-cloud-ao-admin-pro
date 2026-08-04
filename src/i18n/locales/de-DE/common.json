@@ -15,5 +15,12 @@
   "signOut": "Abmelden",
   "sidebarExpand": "Seitenleiste erweitern",
   "sidebarCollapse": "Seitenleiste einklappen",
-  "backHome": "Zur Startseite"
+  "backHome": "Zur Startseite",
+  "tabActions": "Registerkartenaktionen",
+  "closeTab": "Diese Registerkarte schließen",
+  "closeLeftTabs": "Registerkarten links schließen",
+  "closeRightTabs": "Registerkarten rechts schließen",
+  "closeOtherTabs": "Andere Registerkarten schließen",
+  "closeAllTabs": "Alle Registerkarten schließen",
+  "internalMaterial": "Interne Unterlage"
 }

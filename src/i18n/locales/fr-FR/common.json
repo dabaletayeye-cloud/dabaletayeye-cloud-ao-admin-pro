@@ -15,5 +15,12 @@
   "signOut": "Se déconnecter",
   "sidebarExpand": "Développer la barre latérale",
   "sidebarCollapse": "Réduire la barre latérale",
-  "backHome": "Retour à l’accueil"
+  "backHome": "Retour à l’accueil",
+  "tabActions": "Actions des onglets",
+  "closeTab": "Fermer cet onglet",
+  "closeLeftTabs": "Fermer les onglets à gauche",
+  "closeRightTabs": "Fermer les onglets à droite",
+  "closeOtherTabs": "Fermer les autres onglets",
+  "closeAllTabs": "Fermer tous les onglets",
+  "internalMaterial": "Document interne"
 }

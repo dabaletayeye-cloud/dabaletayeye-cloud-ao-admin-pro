@@ -68,5 +68,10 @@
   "error500": "500 서버 오류",
   "coupons": "쿠폰",
   "activities": "활동 관리",
-  "pushNotifications": "푸시 알림"
+  "pushNotifications": "푸시 알림",
+  "articleCards": "게시글 카드",
+  "articlePublish": "게시글 게시",
+  "articleList": "게시글 목록",
+  "categoryManagement": "카테고리 관리",
+  "tagManagement": "태그 관리"
 }

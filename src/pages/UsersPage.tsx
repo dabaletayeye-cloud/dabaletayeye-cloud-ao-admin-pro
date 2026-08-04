@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { toast } from 'sonner';
+import { toast } from '../lib/localizedToast';
 import AdminLayout from '../components/AdminLayout';
 import {
   Dialog,

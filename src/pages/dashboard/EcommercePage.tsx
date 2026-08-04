@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
+import { useLocale } from '../../hooks/useLocale';
 import {
   ArrowUpIcon,
   ShoppingCartIcon,
@@ -194,28 +195,30 @@ function StatMiniCard({ label='', value=0, prefix='', suffix='', change=0,
 }
 
 // ── Bidirectional bar chart (SVG) ─────────────────────────────────────────────
-const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const SALES_A = [42, 58, 35, 67, 80, 55, 72, 90, 63, 74, 88, 95]; // 本年
 const SALES_B = [30, 45, 52, 48, 60, 72, 50, 65, 80, 55, 70, 82]; // 去年
 
-function BidirectionalBarChart() {
+type Translate = ReturnType<typeof useLocale>['t'];
+
+function BidirectionalBarChart({ t }: { t: Translate }) {
+  const months = Array.from({ length: 12 }, (_, index) => t(`dashboard.month${index + 1}`));
   const W = 560, H = 220;
   const midY   = H / 2;
   const maxVal = 100;
   const barW   = 10;
-  const cols   = MONTHS.length;
+  const cols   = months.length;
   const colW   = W / cols;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width:'100%', height:'100%', display:'block', overflow:'visible' }}>
       <defs>
-        {MONTHS.map((_, i) => (
+        {months.map((_, i) => (
           <linearGradient key={`ga-${i}`} id={`ga-${i}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"   stopColor="#6366f1" stopOpacity="1" />
             <stop offset="100%" stopColor="#a5b4fc" stopOpacity="0.5" />
           </linearGradient>
         ))}
-        {MONTHS.map((_, i) => (
+        {months.map((_, i) => (
           <linearGradient key={`gb-${i}`} id={`gb-${i}`} x1="0" y1="1" x2="0" y2="0">
             <stop offset="0%"   stopColor="#f97316" stopOpacity="1" />
             <stop offset="100%" stopColor="#fcd34d" stopOpacity="0.5" />
@@ -235,7 +238,7 @@ function BidirectionalBarChart() {
         );
       })}
 
-      {MONTHS.map((m, i) => {
+      {months.map((m, i) => {
         const x    = i * colW + colW / 2;
         const hA   = (SALES_A[i] / maxVal) * (midY - 16);
         const hB   = (SALES_B[i] / maxVal) * (midY - 16);
@@ -257,9 +260,9 @@ function BidirectionalBarChart() {
 
       {/* legend */}
       <rect x={W - 130} y={4} width="10" height="10" rx="2" fill="#6366f1" />
-      <text x={W - 116} y={13} fontSize="9" fill="var(--muted-foreground)">本年</text>
+      <text x={W - 116} y={13} fontSize="9" fill="var(--muted-foreground)">{t('ecommerce.currentYear')}</text>
       <rect x={W - 80}  y={4} width="10" height="10" rx="2" fill="#f97316" />
-      <text x={W - 66}  y={13} fontSize="9" fill="var(--muted-foreground)">去年</text>
+      <text x={W - 66}  y={13} fontSize="9" fill="var(--muted-foreground)">{t('ecommerce.previousYear')}</text>
     </svg>
   );
 }
@@ -267,14 +270,14 @@ function BidirectionalBarChart() {
 // ── Donut chart (SVG) for 销售分类 ────────────────────────────────────────────
 interface DonutSlice { label: string; value: number; color: string; }
 const DONUT_DATA: DonutSlice[] = [
-  { label: '服装',   value: 35, color: '#6366f1' },
-  { label: '数码',   value: 25, color: '#10b981' },
-  { label: '食品',   value: 20, color: '#f59e0b' },
-  { label: '家居',   value: 12, color: '#e879f9' },
-  { label: '其他',   value:  8, color: '#38bdf8' },
+  { label: 'ecommerce.categoryClothing', value: 35, color: '#6366f1' },
+  { label: 'ecommerce.categoryDigital', value: 25, color: '#10b981' },
+  { label: 'ecommerce.categoryFood', value: 20, color: '#f59e0b' },
+  { label: 'ecommerce.categoryHome', value: 12, color: '#e879f9' },
+  { label: 'ecommerce.categoryOther', value: 8, color: '#38bdf8' },
 ];
 
-function SalesDonut() {
+function SalesDonut({ t }: { t: Translate }) {
   const cx = 90, cy = 90, R = 68, r = 44;
   const total = DONUT_DATA.reduce((s, d) => s + d.value, 0);
   let angle = -Math.PI / 2;
@@ -305,7 +308,7 @@ function SalesDonut() {
         <path key={s.label} d={s.path} fill={s.color} opacity="0.9" />
       ))}
       {/* center label */}
-      <text x={cx} y={cy - 8} textAnchor="middle" fontSize="9" fill="var(--muted-foreground)">总销售额</text>
+      <text x={cx} y={cy - 8} textAnchor="middle" fontSize="9" fill="var(--muted-foreground)">{t('ecommerce.totalSales')}</text>
       <text x={cx} y={cy + 8} textAnchor="middle" fontSize="13" fontWeight="800" fill="var(--foreground)">¥300,458</text>
     </svg>
   );
@@ -314,7 +317,7 @@ function SalesDonut() {
 // ── Large area chart for 转化率 ───────────────────────────────────────────────
 const CONV_DATA = [38, 52, 45, 68, 55, 72, 65, 80, 74, 90, 83, 95];
 
-function ConversionArea() {
+function ConversionArea({ t }: { t: Translate }) {
   const W = 340, H = 130;
   const max = Math.max(...CONV_DATA);
   const pts = CONV_DATA.map((v, i) => {
@@ -353,11 +356,11 @@ function ConversionArea() {
       <path d={linePath} fill="none" stroke="#6366f1" strokeWidth="2.5"
         strokeLinecap="round" strokeLinejoin="round" />
       {/* month ticks */}
-      {['1月','3月','5月','7月','9月','11月'].map((m, i) => {
+      {[1, 3, 5, 7, 9, 11].map((month, i) => {
         const xi = i * 2;
         const x  = (xi / (CONV_DATA.length - 1)) * W;
-        return <text key={m} x={x} y={H + 14} textAnchor="middle" fontSize="9"
-          fill="var(--muted-foreground)">{m}</text>;
+        return <text key={month} x={x} y={H + 14} textAnchor="middle" fontSize="9"
+          fill="var(--muted-foreground)">{t(`dashboard.month${month}`)}</text>;
       })}
       {/* last dot */}
       <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="4" fill="#6366f1" />
@@ -371,38 +374,38 @@ interface ActivityItem {
   id: number;
   icon: React.ReactNode;
   iconBg: string;
-  title: string;
-  sub: string;
-  status: '待处理' | '已完成' | '处理中' | '已取消';
-  time: string;
+  titleKey: string;
+  subKey: string;
+  statusKey: 'pending' | 'completed' | 'processing' | 'cancelled';
+  timeKey: string;
 }
 
 const ACTIVITIES: ActivityItem[] = [
   { id:1, icon:<ShoppingCartIcon size={14}/>, iconBg:'rgba(99,102,241,0.14)',
-    title:'新订单 #20931 已提交', sub:'客户：张小明  ·  ¥1,280',
-    status:'待处理', time:'2 分钟前' },
+    titleKey:'ecommerce.activity1Title', subKey:'ecommerce.activity1Sub',
+    statusKey:'pending', timeKey:'ecommerce.activity1Time' },
   { id:2, icon:<TruckIcon size={14}/>, iconBg:'rgba(16,185,129,0.14)',
-    title:'订单 #20928 已发货', sub:'快递：顺丰  ·  运单 SF1234567',
-    status:'已完成', time:'18 分钟前' },
+    titleKey:'ecommerce.activity2Title', subKey:'ecommerce.activity2Sub',
+    statusKey:'completed', timeKey:'ecommerce.activity2Time' },
   { id:3, icon:<BoxIcon size={14}/>, iconBg:'rgba(245,158,11,0.14)',
-    title:'商品库存预警：AirPods Pro', sub:'剩余库存：3 件',
-    status:'待处理', time:'45 分钟前' },
+    titleKey:'ecommerce.activity3Title', subKey:'ecommerce.activity3Sub',
+    statusKey:'pending', timeKey:'ecommerce.activity3Time' },
   { id:4, icon:<RefreshCwIcon size={14}/>, iconBg:'rgba(239,68,68,0.13)',
-    title:'退款申请 #20919', sub:'客户：李雅婷  ·  原因：质量问题',
-    status:'处理中', time:'1 小时前' },
+    titleKey:'ecommerce.activity4Title', subKey:'ecommerce.activity4Sub',
+    statusKey:'processing', timeKey:'ecommerce.activity4Time' },
   { id:5, icon:<CheckCircleIcon size={14}/>, iconBg:'rgba(16,185,129,0.14)',
-    title:'订单 #20915 已完成', sub:'客户：王大力  ·  好评 ⭐⭐⭐⭐⭐',
-    status:'已完成', time:'2 小时前' },
+    titleKey:'ecommerce.activity5Title', subKey:'ecommerce.activity5Sub',
+    statusKey:'completed', timeKey:'ecommerce.activity5Time' },
   { id:6, icon:<AlertCircleIcon size={14}/>, iconBg:'rgba(245,158,11,0.14)',
-    title:'支付异常 #20910', sub:'金额：¥3,660  ·  银行卡支付失败',
-    status:'待处理', time:'3 小时前' },
+    titleKey:'ecommerce.activity6Title', subKey:'ecommerce.activity6Sub',
+    statusKey:'pending', timeKey:'ecommerce.activity6Time' },
 ];
 
 const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  '待处理': { bg:'rgba(245,158,11,0.14)', color:'#d97706' },
-  '已完成': { bg:'rgba(16,185,129,0.13)', color:'#059669' },
-  '处理中': { bg:'rgba(99,102,241,0.13)', color:'#6366f1' },
-  '已取消': { bg:'rgba(148,163,184,0.15)', color:'#64748b' },
+  pending: { bg:'rgba(245,158,11,0.14)', color:'#d97706' },
+  completed: { bg:'rgba(16,185,129,0.13)', color:'#059669' },
+  processing: { bg:'rgba(99,102,241,0.13)', color:'#6366f1' },
+  cancelled: { bg:'rgba(148,163,184,0.15)', color:'#64748b' },
 };
 
 // ── Card wrapper ──────────────────────────────────────────────────────────────
@@ -431,6 +434,7 @@ function CardHeader({ title, sub }: { title: string; sub?: string }) {
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function EcommercePage() {
   const { themeState } = useTheme();
+  const { t } = useLocale();
   const isManga    = themeState.themeId === 'manga';
   const _primary   = isManga ? '#E91E8C' : '#6366f1';
 
@@ -446,9 +450,9 @@ export default function EcommercePage() {
 
         {/* page header */}
         <div>
-          <h1 style={{ margin:0, fontSize:20, fontWeight:800, color:'var(--foreground)' }}>电子商务</h1>
+          <h1 style={{ margin:0, fontSize:20, fontWeight:800, color:'var(--foreground)' }}>{t('ecommerce.title')}</h1>
           <p style={{ margin:'4px 0 0', fontSize:13, color:'var(--muted-foreground)' }}>
-            店铺总览与实时销售数据
+            {t('ecommerce.subtitle')}
           </p>
         </div>
 
@@ -471,19 +475,19 @@ export default function EcommercePage() {
                 background:'rgba(255,255,255,0.65)', border:'1px solid rgba(99,102,241,0.2)',
                 borderRadius:99, padding:'4px 12px', fontSize:11, fontWeight:700, color:'#4f46e5',
                 marginBottom:14, backdropFilter:'blur(4px)' }}>
-                <StarIcon size={10} style={{ fill:'#f59e0b', color:'#f59e0b' }} />今日实时概览
+                <StarIcon size={10} style={{ fill:'#f59e0b', color:'#f59e0b' }} />{t('ecommerce.todayOverview')}
               </div>
               <h2 style={{ margin:'0 0 6px', fontSize:24, fontWeight:900, color:'#1e1b4b', lineHeight:1.2 }}>
-                欢迎回来 Admin 👋
+                {t('ecommerce.welcome', { name: 'Admin' })} 👋
               </h2>
               <p style={{ margin:'0 0 22px', fontSize:13, color:'#4f46e5', opacity:0.75, fontWeight:500 }}>
-                您的店铺今天表现优秀，继续加油！
+                {t('ecommerce.storePerformance')}
               </p>
               <div style={{ background:'rgba(255,255,255,0.70)', backdropFilter:'blur(8px)',
                 border:'1px solid rgba(255,255,255,0.9)', borderRadius:16, padding:'14px 20px',
                 display:'inline-flex', flexDirection:'column', gap:4, minWidth:180 }}>
                 <span style={{ fontSize:11, color:'#6366f1', fontWeight:700, letterSpacing:'0.04em', textTransform:'uppercase' }}>
-                  今日销售额
+                  {t('ecommerce.todaySales')}
                 </span>
                 <span style={{ fontSize:34, fontWeight:900, color:'#1e1b4b',
                   fontVariantNumeric:'tabular-nums', letterSpacing:'-1px' }}>
@@ -495,7 +499,7 @@ export default function EcommercePage() {
                     padding:'2px 8px', borderRadius:99 }}>
                     <ArrowUpIcon size={10}/>35%
                   </span>
-                  <span style={{ fontSize:11, color:'#64748b' }}>较昨日</span>
+                  <span style={{ fontSize:11, color:'#64748b' }}>{t('ecommerce.previousDay')}</span>
                 </div>
               </div>
             </div>
@@ -508,18 +512,18 @@ export default function EcommercePage() {
           {/* ② 2×2 mini stat cards */}
           <div style={{ flex:'4 1 0', minWidth:0, display:'flex', flexDirection:'column', gap:16 }}>
             <div style={{ display:'flex', gap:16, flex:'1 1 0' }}>
-              <StatMiniCard label="总订单量" value={12849} change={18.2}
+              <StatMiniCard label={t('ecommerce.totalOrders')} value={12849} change={18.2}
                 icon={<ShoppingCartIcon size={17}/>} iconColor="#6366f1" iconBg="rgba(99,102,241,0.12)"
                 chart={<MiniDonut percent={72} color="#6366f1"/>} />
-              <StatMiniCard label="活跃用户" value={3682} change={9.4}
+              <StatMiniCard label={t('ecommerce.activeUsers')} value={3682} change={9.4}
                 icon={<UsersIcon size={17}/>} iconColor="#10b981" iconBg="rgba(16,185,129,0.12)"
                 chart={<MiniBar data={[55,72,61,88,76,95,83]} color="#10b981"/>} />
             </div>
             <div style={{ display:'flex', gap:16, flex:'1 1 0' }}>
-              <StatMiniCard label="商品总数" value={847} change={5.6}
+              <StatMiniCard label={t('ecommerce.totalProducts')} value={847} change={5.6}
                 icon={<PackageIcon size={17}/>} iconColor="#f59e0b" iconBg="rgba(245,158,11,0.12)"
                 chart={<MiniArea data={[40,55,48,67,59,78,72,85,91]} color="#f59e0b"/>} />
-              <StatMiniCard label="好评率" value={96} suffix="%" change={2.1}
+              <StatMiniCard label={t('ecommerce.rating')} value={96} suffix="%" change={2.1}
                 icon={<StarIcon size={17}/>} iconColor="#e879f9" iconBg="rgba(232,121,249,0.12)"
                 chart={<MiniDonut percent={96} color="#e879f9"/>} />
             </div>
@@ -531,23 +535,23 @@ export default function EcommercePage() {
 
           {/* ③ 销售趋势 — 双向柱状图 */}
           <Card style={{ flex:'4 1 0', minWidth:0 }}>
-            <CardHeader title="销售趋势" sub="月度对比 · 本年 vs 去年" />
+            <CardHeader title={t('ecommerce.salesTrend')} sub={t('ecommerce.salesTrendSubtitle')} />
             <div style={{ padding:'16px 22px 24px', height:240, boxSizing:'border-box' }}>
-              <BidirectionalBarChart />
+              <BidirectionalBarChart t={t} />
             </div>
           </Card>
 
           {/* ④ 销售分类 — 环形图 */}
           <Card style={{ flex:'3 1 0', minWidth:0 }}>
-            <CardHeader title="销售分类" sub="各品类占比" />
+            <CardHeader title={t('ecommerce.salesCategory')} sub={t('ecommerce.salesCategorySubtitle')} />
             <div style={{ padding:'12px 22px 20px', display:'flex', flexDirection:'column', gap:12 }}>
-              <SalesDonut />
+              <SalesDonut t={t} />
               {/* legend dots */}
               <div style={{ display:'flex', flexWrap:'wrap', gap:'6px 14px', justifyContent:'center' }}>
                 {DONUT_DATA.map(d => (
                   <div key={d.label} style={{ display:'flex', alignItems:'center', gap:5 }}>
                     <div style={{ width:8, height:8, borderRadius:'50%', background:d.color, flexShrink:0 }} />
-                    <span style={{ fontSize:11, color:'var(--muted-foreground)' }}>{d.label}</span>
+                    <span style={{ fontSize:11, color:'var(--muted-foreground)' }}>{t(d.label)}</span>
                     <span style={{ fontSize:11, fontWeight:700, color:'var(--foreground)' }}>{d.value}%</span>
                   </div>
                 ))}
@@ -560,7 +564,7 @@ export default function EcommercePage() {
                     <DollarSignIcon size={15}/>
                   </div>
                   <div>
-                    <div style={{ fontSize:11, color:'var(--muted-foreground)', fontWeight:500 }}>总收入</div>
+                    <div style={{ fontSize:11, color:'var(--muted-foreground)', fontWeight:500 }}>{t('ecommerce.revenue')}</div>
                     <div style={{ fontSize:16, fontWeight:800, color:'var(--foreground)', letterSpacing:'-0.3px' }}>¥500,458</div>
                   </div>
                 </div>
@@ -570,7 +574,7 @@ export default function EcommercePage() {
                     <TrendingUpIcon size={15}/>
                   </div>
                   <div>
-                    <div style={{ fontSize:11, color:'var(--muted-foreground)', fontWeight:500 }}>净利润</div>
+                    <div style={{ fontSize:11, color:'var(--muted-foreground)', fontWeight:500 }}>{t('ecommerce.netProfit')}</div>
                     <div style={{ fontSize:16, fontWeight:800, color:'var(--foreground)', letterSpacing:'-0.3px' }}>¥130,580</div>
                   </div>
                 </div>
@@ -580,7 +584,7 @@ export default function EcommercePage() {
 
           {/* ⑤ 购物车转化率 */}
           <Card style={{ flex:'3 1 0', minWidth:0 }}>
-            <CardHeader title="购物车转化率" sub="近12个月转化趋势" />
+            <CardHeader title={t('ecommerce.cartConversion')} sub={t('ecommerce.cartConversionSubtitle')} />
             <div style={{ padding:'14px 22px 0' }}>
               {/* big number */}
               <div style={{ display:'flex', alignItems:'baseline', gap:10, marginBottom:14 }}>
@@ -595,22 +599,22 @@ export default function EcommercePage() {
                 </span>
               </div>
               <p style={{ margin:'0 0 10px', fontSize:11, color:'var(--muted-foreground)' }}>
-                较上月新增转化用户数
+                {t('ecommerce.newConversions')}
               </p>
             </div>
             {/* area chart */}
             <div style={{ padding:'0 10px', height:160, boxSizing:'border-box' }}>
-              <ConversionArea />
+              <ConversionArea t={t} />
             </div>
           </Card>
         </div>
 
         {/* ══ 下半区 Row 2 — 最近活动 ═════════════════════════════════════════ */}
         <Card>
-          <CardHeader title="最近活动" sub="店铺实时动态" />
+          <CardHeader title={t('ecommerce.recentActivity')} sub={t('ecommerce.storeActivity')} />
           <div style={{ padding:'14px 0 8px' }}>
             {ACTIVITIES.map((item, idx) => {
-              const ss = STATUS_STYLE[item.status] ?? STATUS_STYLE['已取消'];
+              const ss = STATUS_STYLE[item.statusKey] ?? STATUS_STYLE.cancelled;
               return (
                 <div key={item.id} style={{
                   display:'flex', alignItems:'center', gap:14,
@@ -627,21 +631,21 @@ export default function EcommercePage() {
                   <div style={{ flex:'1 1 0', minWidth:0 }}>
                     <div style={{ fontSize:13, fontWeight:700, color:'var(--foreground)',
                       whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                      {item.title}
+                      {t(item.titleKey)}
                     </div>
-                    <div style={{ fontSize:11, color:'var(--muted-foreground)', marginTop:2 }}>{item.sub}</div>
+                    <div style={{ fontSize:11, color:'var(--muted-foreground)', marginTop:2 }}>{t(item.subKey)}</div>
                   </div>
                   {/* status badge */}
                   <span style={{ flexShrink:0, display:'inline-flex', alignItems:'center', gap:5,
                     background:ss.bg, color:ss.color, fontSize:11, fontWeight:700,
                     padding:'4px 10px', borderRadius:99, whiteSpace:'nowrap' }}>
-                    {item.status}
+                    {t(`ecommerce.status${item.statusKey[0].toUpperCase()}${item.statusKey.slice(1)}`)}
                   </span>
                   {/* time */}
                   <div style={{ flexShrink:0, display:'flex', alignItems:'center', gap:4,
                     fontSize:11, color:'var(--muted-foreground)', minWidth:72, justifyContent:'flex-end' }}>
                     <ClockIcon size={11}/>
-                    {item.time}
+                    {t(item.timeKey)}
                   </div>
                 </div>
               );

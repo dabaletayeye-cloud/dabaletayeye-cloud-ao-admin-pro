@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from '../lib/localizedToast';
 import {
   ArrowLeftIcon,
   CheckIcon,
@@ -35,9 +35,9 @@ type RegistrationResult = {
 };
 
 const ROLE_OPTIONS = [
-  { value: 'super-admin', label: '超级管理员' },
-  { value: 'editor', label: '内容运营' },
-  { value: 'analyst', label: '数据分析师' },
+  { value: 'super-admin', sourceLabel: '超级管理员', labelKey: 'auth.roleSuperAdmin' },
+  { value: 'editor', sourceLabel: '内容运营', labelKey: 'auth.roleContentOperator' },
+  { value: 'analyst', sourceLabel: '数据分析师', labelKey: 'auth.roleAnalyst' },
 ];
 
 const REMEMBERED_ACCOUNT_KEY = 'ao-admin-pro.remembered-account';
@@ -48,9 +48,11 @@ function getRememberedAccount() {
 }
 
 function AuthVisual() {
+  const { t } = useLocale();
+
   return (
-    <aside className="auth-showcase" aria-label="ao-admin-pro 产品展示">
-      <Link className="auth-brand" to="/" aria-label="返回 ao-admin-pro 首页">
+    <aside className="auth-showcase" aria-label={t('auth.showcaseAria')}>
+      <Link className="auth-brand" to="/" aria-label={t('auth.showcaseHomeAria')}>
         <span className="auth-brand-mark">
           <span />
           <span />
@@ -102,13 +104,13 @@ function AuthVisual() {
 
         <div className="auth-security-badge">
           <ShieldCheckIcon size={20} />
-          <span>受保护</span>
+          <span>{t('auth.protected')}</span>
         </div>
       </div>
 
       <div className="auth-showcase-copy">
-        <p>面向高效团队的管理工作台</p>
-        <span>让数据、内容与协作保持在同一节奏</span>
+        <p>{t('auth.showcaseTitle')}</p>
+        <span>{t('auth.showcaseSubtitle')}</span>
       </div>
     </aside>
   );
@@ -145,10 +147,10 @@ export default function LoginPage() {
     /[^A-Za-z0-9]/.test(password),
   ].filter(Boolean).length;
   const passwordStrength = passwordScore <= 1
-    ? { label: '弱', level: 'weak' }
+    ? { label: t('auth.weak'), level: 'weak' }
     : passwordScore <= 3
-      ? { label: '中', level: 'medium' }
-      : { label: '强', level: 'strong' };
+      ? { label: t('auth.medium'), level: 'medium' }
+      : { label: t('auth.strong'), level: 'strong' };
 
   useEffect(() => {
     setMode(location.pathname === '/register' ? 'register' : 'login');
@@ -175,29 +177,29 @@ export default function LoginPage() {
 
     if (recovery) {
       if (!email.trim()) {
-        toast.error('请输入用于找回账号的邮箱');
+        toast.error(t('auth.recoveryEmailRequired'));
         return;
       }
-      toast.success('重置链接已发送，请查看邮箱');
+      toast.success(t('auth.resetLinkSent'));
       setRecovery(false);
       return;
     }
 
     if (isRegister) {
       if (!displayName.trim() || !email.trim() || !password || !confirmPassword) {
-        toast.error('请完整填写注册信息');
+        toast.error(t('auth.registrationRequired'));
         return;
       }
       if (password.length < 6) {
-        toast.error('密码至少需要 6 位');
+        toast.error(t('auth.passwordMin'));
         return;
       }
       if (password !== confirmPassword) {
-        toast.error('两次输入的密码不一致');
+        toast.error(t('auth.passwordMismatch'));
         return;
       }
       if (!agreed) {
-        toast.error('请先同意服务条款与隐私政策');
+        toast.error(t('auth.termsRequired'));
         return;
       }
 
@@ -218,23 +220,23 @@ export default function LoginPage() {
         setRemember(true);
         setSubmitting(false);
         setRegistrationResult({ name: registeredAccount, email: email.trim() });
-        toast.success('账号创建成功');
+        toast.success(t('auth.accountCreated'));
       }, 700);
       return;
     }
 
     if (!account.trim() || !password) {
-      toast.error('请输入账号和密码');
+      toast.error(t('auth.accountPasswordRequired'));
       return;
     }
     if (!isVerified) {
-      toast.error('请先完成安全验证');
+      toast.error(t('auth.securityVerificationRequired'));
       return;
     }
 
     setSubmitting(true);
     window.setTimeout(() => {
-      const selectedRole = ROLE_OPTIONS.find((option) => option.value === role)?.label ?? '普通用户';
+      const selectedRole = ROLE_OPTIONS.find((option) => option.value === role)?.sourceLabel ?? '普通用户';
       const savedAccount = getCurrentAccount();
       saveCurrentAccount({
         ...savedAccount,
@@ -248,19 +250,19 @@ export default function LoginPage() {
         window.localStorage.removeItem(REMEMBERED_ACCOUNT_KEY);
       }
       setSubmitting(false);
-      toast.success(remember ? '登录成功，已记住本次登录' : '登录成功');
+      toast.success(remember ? t('auth.signInRemembered') : t('auth.signInSuccess'));
       navigate('/');
     }, 700);
   };
 
-  const pageTitle = registrationResult ? '账号创建完成' : recovery ? '找回密码' : isRegister ? '创建账号' : '欢迎回来';
+  const pageTitle = registrationResult ? t('auth.accountCreatedTitle') : recovery ? t('auth.passwordRecoveryTitle') : isRegister ? t('auth.createAccountTitle') : t('auth.welcomeBack');
   const pageDescription = registrationResult
-    ? '账号已保存，现在可以使用新账号登录'
+    ? t('auth.accountCreatedDescription')
     : recovery
-    ? '输入注册邮箱，我们将发送重置链接'
+    ? t('auth.passwordRecoveryDescription')
     : isRegister
-      ? '填写信息，开始使用 ao-admin-pro'
-      : '输入您的账号和密码登录';
+      ? t('auth.createAccountDescription')
+      : t('auth.signInDescription');
 
   return (
     <main className="auth-page">
@@ -320,7 +322,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="auth-icon-button"
-                title={themeState.mode === 'dark' ? '切换到亮色' : '切换到暗色'}
+                title={themeState.mode === 'dark' ? t('auth.switchToLight') : t('auth.switchToDark')}
                 onClick={toggleMode}
               >
                 {themeState.mode === 'dark' ? <SunIcon size={17} /> : <MoonIcon size={17} />}
@@ -335,7 +337,7 @@ export default function LoginPage() {
             </div>
 
             {!recovery && !registrationResult && (
-              <div className="auth-mode-tabs" role="tablist" aria-label="认证方式">
+              <div className="auth-mode-tabs" role="tablist" aria-label={t('auth.authMethod')}>
                 <button
                   type="button"
                   role="tab"
@@ -343,7 +345,7 @@ export default function LoginPage() {
                   className={!isRegister ? 'is-active' : ''}
                   onClick={() => switchMode('login')}
                 >
-                  登录
+                  {t('auth.loginNow')}
                 </button>
                 <button
                   type="button"
@@ -352,7 +354,7 @@ export default function LoginPage() {
                   className={isRegister ? 'is-active' : ''}
                   onClick={() => switchMode('register')}
                 >
-                  注册
+                  {t('auth.register')}
                 </button>
               </div>
             )}
@@ -362,26 +364,26 @@ export default function LoginPage() {
                 <div className="auth-result-icon"><CheckCircle2Icon size={25} /></div>
                 <div className="auth-result-copy">
                   <strong>{registrationResult.name}</strong>
-                  <span>已加入 ao-admin-pro</span>
+                  <span>{t('auth.joined')}</span>
                 </div>
                 <dl className="auth-result-details">
                   <div>
-                    <dt>账号</dt>
+                    <dt>{t('auth.account')}</dt>
                     <dd>{registrationResult.name}</dd>
                   </div>
                   <div>
-                    <dt>邮箱</dt>
+                    <dt>{t('auth.email')}</dt>
                     <dd><MailIcon size={15} />{registrationResult.email}</dd>
                   </div>
                 </dl>
                 <button className="auth-submit" type="button" onClick={() => switchMode('login')}>
-                  立即登录
+                  {t('auth.loginNow')}
                 </button>
               </section>
             ) : <form className="auth-form" onSubmit={handleSubmit}>
               {recovery ? (
                 <label className="auth-field">
-                  <span>邮箱地址</span>
+                  <span>{t('auth.emailAddress')}</span>
                   <div className="auth-input-wrap">
                     <UserRoundIcon size={17} />
                     <input
@@ -397,21 +399,21 @@ export default function LoginPage() {
               ) : isRegister ? (
                 <>
                   <label className="auth-field">
-                    <span>姓名</span>
+                    <span>{t('auth.name')}</span>
                     <div className="auth-input-wrap">
                       <UserRoundIcon size={17} />
                       <input
                         autoFocus
                         value={displayName}
                         onChange={(event) => setDisplayName(event.target.value)}
-                        placeholder="请输入姓名"
+                        placeholder={t('auth.namePlaceholder')}
                         autoComplete="name"
                       />
                     </div>
                   </label>
 
                   <label className="auth-field">
-                    <span>邮箱地址</span>
+                    <span>{t('auth.emailAddress')}</span>
                     <div className="auth-input-wrap">
                       <UserRoundIcon size={17} />
                       <input
@@ -427,11 +429,11 @@ export default function LoginPage() {
               ) : (
                 <>
                   <label className="auth-field">
-                    <span>登录角色</span>
+                    <span>{t('auth.loginRole')}</span>
                     <div className="auth-select-wrap">
                       <select value={role} onChange={(event) => setRole(event.target.value)}>
                         {ROLE_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
+                          <option key={option.value} value={option.value}>{t(option.labelKey)}</option>
                         ))}
                       </select>
                       <ChevronDownIcon size={17} />
@@ -439,14 +441,14 @@ export default function LoginPage() {
                   </label>
 
                   <label className="auth-field">
-                    <span>账号</span>
+                    <span>{t('auth.account')}</span>
                     <div className="auth-input-wrap">
                       <UserRoundIcon size={17} />
                       <input
                         autoFocus
                         value={account}
                         onChange={(event) => setAccount(event.target.value)}
-                        placeholder="请输入账号"
+                        placeholder={t('auth.usernamePlaceholder')}
                         autoComplete="username"
                       />
                     </div>
@@ -457,21 +459,21 @@ export default function LoginPage() {
               {!recovery && (
                 <>
                   <label className="auth-field">
-                    <span>密码</span>
+                    <span>{t('auth.password')}</span>
                     <div className="auth-input-wrap">
                       <LockKeyholeIcon size={17} />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
-                        placeholder={isRegister ? '至少 6 位字符' : '请输入密码'}
+                        placeholder={isRegister ? t('auth.passwordMinPlaceholder') : t('auth.passwordPlaceholder')}
                         autoComplete={isRegister ? 'new-password' : 'current-password'}
                       />
                       <button
                         type="button"
                         className="auth-password-toggle"
                         onClick={() => setShowPassword((visible) => !visible)}
-                        title={showPassword ? '隐藏密码' : '显示密码'}
+                        title={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                       >
                         {showPassword ? <EyeOffIcon size={17} /> : <EyeIcon size={17} />}
                       </button>
@@ -480,7 +482,7 @@ export default function LoginPage() {
 
                   {isRegister && password && (
                     <div className={'auth-password-strength level-' + passwordStrength.level} aria-live="polite">
-                      <span>密码强度</span>
+                      <span>{t('auth.passwordStrength')}</span>
                       <div aria-hidden="true"><i /><i /><i /></div>
                       <em>{passwordStrength.label}</em>
                     </div>
@@ -488,14 +490,14 @@ export default function LoginPage() {
 
                   {isRegister && (
                     <label className="auth-field">
-                      <span>确认密码</span>
+                      <span>{t('auth.confirmPassword')}</span>
                       <div className="auth-input-wrap">
                         <LockKeyholeIcon size={17} />
                         <input
                           type={showPassword ? 'text' : 'password'}
                           value={confirmPassword}
                           onChange={(event) => setConfirmPassword(event.target.value)}
-                          placeholder="再次输入密码"
+                          placeholder={t('auth.confirmPasswordPlaceholder')}
                           autoComplete="new-password"
                         />
                       </div>
@@ -512,9 +514,9 @@ export default function LoginPage() {
                   <span className="auth-verification-handle">
                     {isVerified ? <CheckIcon size={16} strokeWidth={3} /> : <SparklesIcon size={15} />}
                   </span>
-                  <span>{isVerified ? '验证通过' : '拖动滑块完成验证'}</span>
+                  <span>{isVerified ? t('auth.verificationPassed') : t('auth.verificationHint')}</span>
                   <input
-                    aria-label="安全验证滑块"
+                    aria-label={t('auth.verificationAria')}
                     type="range"
                     min="0"
                     max="100"
@@ -533,9 +535,9 @@ export default function LoginPage() {
                       onChange={(event) => setRemember(event.target.checked)}
                     />
                     <span><CheckIcon size={12} strokeWidth={3} /></span>
-                    <em>记住密码</em>
+                    <em>{t('auth.rememberPassword')}</em>
                   </label>
-                  <button type="button" onClick={() => setRecovery(true)}>忘记密码</button>
+                  <button type="button" onClick={() => setRecovery(true)}>{t('auth.forgotPassword')}</button>
                 </div>
               )}
 
@@ -547,23 +549,23 @@ export default function LoginPage() {
                     onChange={(event) => setAgreed(event.target.checked)}
                   />
                   <span><CheckIcon size={12} strokeWidth={3} /></span>
-                  <em>我已阅读并同意服务条款与隐私政策</em>
+                  <em>{t('auth.terms')}</em>
                 </label>
               )}
 
               <button className="auth-submit" type="submit" disabled={submitting}>
                 {submitting ? <i /> : null}
-                {submitting ? '处理中...' : recovery ? '发送重置链接' : isRegister ? '创建账号' : '登录'}
+                {submitting ? t('auth.processing') : recovery ? t('auth.sendResetLink') : isRegister ? t('auth.createAccount') : t('auth.loginNow')}
               </button>
             </form>}
 
             {!registrationResult && <div className="auth-footer">
               {recovery ? (
-                <button type="button" onClick={() => setRecovery(false)}>返回登录</button>
+                <button type="button" onClick={() => setRecovery(false)}>{t('auth.backToLogin')}</button>
               ) : isRegister ? (
-                <p>已有账号？<button type="button" onClick={() => switchMode('login')}>立即登录</button></p>
+                <p>{t('auth.haveAccount')}<button type="button" onClick={() => switchMode('login')}>{t('auth.loginNow')}</button></p>
               ) : (
-                <p>还没有账号？<button type="button" onClick={() => switchMode('register')}>注册</button></p>
+                <p>{t('auth.noAccount')}<button type="button" onClick={() => switchMode('register')}>{t('auth.register')}</button></p>
               )}
             </div>}
           </div>

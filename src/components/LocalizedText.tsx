@@ -1,21 +1,42 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { localizeText } from '../i18n/localizeText';
 
-function translateNode(node: React.ReactNode, language: string, entries: Array<[string, string]>): React.ReactNode {
+const TEXT_PROPS = new Set([
+  'title', 'placeholder', 'alt', 'aria-label', 'label', 'description', 'content',
+  'message', 'text', 'helper', 'error', 'emptyText', 'name', 'region', 'department',
+]);
+const STRUCTURED_TEXT_PROPS = new Set(['options', 'items', 'data', 'columns', 'records']);
+const PRESERVED_DATA_KEYS = new Set(['id', 'key', 'value', 'path', 'href', 'src', 'url', 'type', 'icon']);
+
+function translateStructuredValue(value: unknown, language: string): unknown {
+  if (typeof value === 'string') return language === 'zh-CN' ? value : localizeText(value, language);
+  if (Array.isArray(value)) return value.map((item) => translateStructuredValue(item, language));
+  if (!value || typeof value !== 'object' || React.isValidElement(value)) return value;
+
+  const record = value as Record<string, unknown>;
+  return Object.fromEntries(Object.entries(record).map(([key, item]) => [
+    key,
+    PRESERVED_DATA_KEYS.has(key) ? item : translateStructuredValue(item, language),
+  ]));
+}
+
+function translateNode(node: React.ReactNode, language: string): React.ReactNode {
   const shouldTranslate = language !== 'zh-CN';
   if (typeof node === 'string' && shouldTranslate) {
-    return entries.reduce((value, [source, target]) => value.replaceAll(source, target), node);
+    return localizeText(node, language);
   }
-  if (Array.isArray(node)) return node.map((child, index) => <React.Fragment key={index}>{translateNode(child, language, entries)}</React.Fragment>);
+  if (Array.isArray(node)) return node.map((child, index) => <React.Fragment key={index}>{translateNode(child, language)}</React.Fragment>);
   if (!React.isValidElement(node)) return node;
   const props = node.props as Record<string, unknown>;
   const nextProps: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(props)) {
-    if ((key === 'title' || key === 'placeholder' || key === 'alt' || key === 'aria-label') && typeof value === 'string' && shouldTranslate) {
-      nextProps[key] = translateNode(value, language, entries);
+    if (TEXT_PROPS.has(key) && typeof value === 'string' && shouldTranslate) {
+      nextProps[key] = translateNode(value, language);
     }
+    if (STRUCTURED_TEXT_PROPS.has(key) && shouldTranslate) nextProps[key] = translateStructuredValue(value, language);
   }
-  const children = props.children === undefined ? undefined : translateNode(props.children as React.ReactNode, language, entries);
+  const children = props.children === undefined ? undefined : translateNode(props.children as React.ReactNode, language);
   return children === undefined
     ? React.cloneElement(node, nextProps)
     : React.cloneElement(node, nextProps, children);
@@ -23,14 +44,5 @@ function translateNode(node: React.ReactNode, language: string, entries: Array<[
 
 export default function LocalizedText({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
-  type Fallback = { terms?: Record<string, string>; phrases?: Record<string, string>; traditional?: Record<string, string> };
-  type Resource = { components?: { fallback?: Fallback } };
-  const resource = i18n.getResourceBundle(i18n.language, 'translation') as Resource | undefined;
-  const englishResource = i18n.getResourceBundle('en-US', 'translation') as Resource | undefined;
-  const fallbackBundle = resource?.components?.fallback ?? englishResource?.components?.fallback;
-  const languageFallback = i18n.language === 'zh-TW'
-    ? (resource?.components?.fallback?.traditional ?? {})
-    : { ...(fallbackBundle?.terms ?? {}), ...(fallbackBundle?.phrases ?? {}) };
-  const entries = Object.entries(languageFallback).sort((a, b) => b[0].length - a[0].length);
-  return <>{translateNode(children, i18n.language, entries)}</>;
+  return <>{translateNode(children, i18n.language)}</>;
 }

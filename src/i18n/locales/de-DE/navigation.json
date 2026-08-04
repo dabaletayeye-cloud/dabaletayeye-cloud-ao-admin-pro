@@ -68,5 +68,10 @@
   "error500": "500 Serverfehler",
   "coupons": "Gutscheine",
   "activities": "Aktivitäten",
-  "pushNotifications": "Push-Benachrichtigungen"
+  "pushNotifications": "Push-Benachrichtigungen",
+  "articleCards": "Artikelkarten",
+  "articlePublish": "Artikel veröffentlichen",
+  "articleList": "Artikelliste",
+  "categoryManagement": "Kategorien verwalten",
+  "tagManagement": "Tags verwalten"
 }

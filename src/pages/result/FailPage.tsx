@@ -1,5 +1,5 @@
 import React from 'react';
-import { toast } from 'sonner';
+import { toast } from '../../lib/localizedToast';
 import { useNavigate } from 'react-router-dom';
 import { XIcon, ArrowLeftIcon, RefreshCwIcon } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';

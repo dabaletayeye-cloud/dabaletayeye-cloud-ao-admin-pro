@@ -68,5 +68,10 @@
   "error500": "500 Erreur serveur",
   "coupons": "Coupons",
   "activities": "Activités",
-  "pushNotifications": "Notifications push"
+  "pushNotifications": "Notifications push",
+  "articleCards": "Cartes d’articles",
+  "articlePublish": "Publier un article",
+  "articleList": "Liste des articles",
+  "categoryManagement": "Gestion des catégories",
+  "tagManagement": "Gestion des étiquettes"
 }

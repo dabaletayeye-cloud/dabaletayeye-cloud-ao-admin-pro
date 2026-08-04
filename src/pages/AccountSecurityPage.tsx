@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from '../lib/localizedToast';
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,

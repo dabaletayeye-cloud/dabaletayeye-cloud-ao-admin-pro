@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../hooks/useTheme';
+import LocalizedText from './LocalizedText';
 import {
   BellIcon, XIcon, CheckCheckIcon, SettingsIcon,
   WrenchIcon, UserIcon, ShieldAlertIcon, ClipboardListIcon,
@@ -81,7 +82,7 @@ function SettingsPanel({ primary, onBack }: { primary: string; onBack: () => voi
   const toggle = (key: string) => setSwitches(prev => ({ ...prev, [key]: !prev[key] }));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <LocalizedText><div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button onClick={onBack} style={{ width: 26, height: 26, border: '1px solid var(--border)', borderRadius: 6, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted-foreground)' }}>
@@ -126,7 +127,7 @@ function SettingsPanel({ primary, onBack }: { primary: string; onBack: () => voi
           <SwitchBtn k="desktop" on={switches.desktop ?? false} primary={primary} onToggle={toggle} />
         </div>
       </div>
-    </div>
+    </div></LocalizedText>
   );
 }
 
@@ -145,7 +146,7 @@ function NotifItem({
   const cfg = TYPE_CONFIG[notif.type];
 
   return (
-    <div
+    <LocalizedText><div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => onMarkRead(notif.id)}
@@ -215,7 +216,7 @@ function NotifItem({
           <XIcon size={11} />
         </button>
       </div>
-    </div>
+    </div></LocalizedText>
   );
 }
 
@@ -292,7 +293,7 @@ export default function NotificationPanel() {
   ];
 
   return (
-    <div style={{ position: 'relative' }}>
+    <LocalizedText><div style={{ position: 'relative' }}>
       {/* Bell button */}
       <button
         ref={btnRef}
@@ -490,6 +491,6 @@ export default function NotificationPanel() {
           </div>
         </div>
       </div>
-    </div>
+    </div></LocalizedText>
   );
 }

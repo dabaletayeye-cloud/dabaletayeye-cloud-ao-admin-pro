@@ -15,5 +15,12 @@
   "signOut": "退出登录",
   "sidebarExpand": "展开侧边栏",
   "sidebarCollapse": "收起侧边栏",
-  "backHome": "返回首页"
+  "backHome": "返回首页",
+  "tabActions": "标签页操作",
+  "closeTab": "关闭当前标签",
+  "closeLeftTabs": "关闭左侧标签",
+  "closeRightTabs": "关闭右侧标签",
+  "closeOtherTabs": "关闭其他标签",
+  "closeAllTabs": "关闭全部标签",
+  "internalMaterial": "内部资料"
 }

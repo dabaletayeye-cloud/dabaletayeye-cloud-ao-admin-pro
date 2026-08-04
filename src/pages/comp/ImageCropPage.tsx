@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { toast } from 'sonner';
+import { toast } from '../../lib/localizedToast';
 import {
   UploadCloudIcon,
   RotateCwIcon,

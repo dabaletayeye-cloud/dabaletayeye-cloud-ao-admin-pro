@@ -68,5 +68,10 @@
   "error500": "500 サーバーエラー",
   "coupons": "クーポン",
   "activities": "アクティビティ",
-  "pushNotifications": "プッシュ通知"
+  "pushNotifications": "プッシュ通知",
+  "articleCards": "記事カード",
+  "articlePublish": "記事を公開",
+  "articleList": "記事一覧",
+  "categoryManagement": "カテゴリ管理",
+  "tagManagement": "タグ管理"
 }

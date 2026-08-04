@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
-import { toast } from 'sonner';
+import { toast } from '../lib/localizedToast';
 import LocalizedText from './LocalizedText';
 import {
   LayoutGridIcon,

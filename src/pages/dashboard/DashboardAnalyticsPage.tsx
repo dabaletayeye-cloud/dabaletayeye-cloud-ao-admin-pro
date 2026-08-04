@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { toast } from 'sonner';
+import { toast } from '../../lib/localizedToast';
 import ReactECharts from 'echarts-for-react';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';

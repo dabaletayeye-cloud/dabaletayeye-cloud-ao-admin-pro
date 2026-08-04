@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from '../lib/localizedToast';
 import { useTheme } from '../hooks/useTheme';
 import { LANGUAGE_OPTIONS, localizeNavLabel, type AppLocale, useLocale } from '../hooks/useLocale';
 import {
@@ -169,7 +169,7 @@ export default function Topbar({
               flexShrink:      0,
               transition:      'background 0.2s',
             }}
-            title="切换侧边栏"
+            title={t('sidebarCollapse')}
           >
             <MenuIcon size={18} />
           </button>
@@ -224,7 +224,7 @@ export default function Topbar({
                 })}
               </div>
             ) : (
-              <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>ao-admin-pro 管理系统</span>
+              <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>ao-admin-pro {t('systemSettings')}</span>
             )}
           </div>
         )}
