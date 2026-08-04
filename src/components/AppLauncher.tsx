@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import { toast } from 'sonner';
+import LocalizedText from './LocalizedText';
 import {
   LayoutGridIcon,
   XIcon,
@@ -150,7 +151,7 @@ export default function AppLauncher() {
   };
 
   return (
-    <div data-cmp="AppLauncher" style={{ position: 'relative' }}>
+    <LocalizedText><div data-cmp="AppLauncher" style={{ position: 'relative' }}>
       {/* Trigger button */}
       <button
         ref={btnRef}
@@ -318,6 +319,6 @@ export default function AppLauncher() {
           </button>
         </div>
       </div>
-    </div>
+    </div></LocalizedText>
   );
 }

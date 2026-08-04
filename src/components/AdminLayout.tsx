@@ -5,6 +5,7 @@ import HorizontalNav from './HorizontalNav';
 import Topbar from './Topbar';
 import ThemePanel from './ThemePanel';
 import { BreadcrumbTrail, PageTabs } from './NavigationExtras';
+import LocalizedText from './LocalizedText';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -132,7 +133,7 @@ export default function AdminLayout({ children = null }: AdminLayoutProps) {
           }}
         >
           <div className={`page-transition-${pageTransition}`} style={{ width: '100%', maxWidth: contentLayout === 'fixed' ? '1440px' : 'none', margin: contentLayout === 'fixed' ? '0 auto' : undefined }}>
-            {children}
+            <LocalizedText>{children}</LocalizedText>
           </div>
         </main>
       </div>

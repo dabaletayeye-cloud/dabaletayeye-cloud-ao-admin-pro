@@ -1,0 +1,19 @@
+{
+  "languagePreference": "语言偏好",
+  "languageChanged": "语言已切换",
+  "search": "搜索…",
+  "refreshPage": "刷新页面",
+  "fullscreen": "全屏显示",
+  "exitFullscreen": "退出全屏",
+  "systemSettings": "系统设置",
+  "themeSettings": "主题设置",
+  "accountMenu": "账户菜单",
+  "profile": "个人中心",
+  "accountSecurity": "账号安全",
+  "messageCenter": "消息中心",
+  "helpFeedback": "帮助与反馈",
+  "signOut": "退出登录",
+  "sidebarExpand": "展开侧边栏",
+  "sidebarCollapse": "收起侧边栏",
+  "backHome": "返回首页"
+}

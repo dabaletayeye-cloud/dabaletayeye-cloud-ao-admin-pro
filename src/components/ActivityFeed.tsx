@@ -1,5 +1,6 @@
 import { MOCK_ACTIVITIES } from '../data/mockData';
 import { CheckCircleIcon, InfoIcon, AlertTriangleIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const TYPE_CONFIG = {
   success: { icon: <CheckCircleIcon size={14} />, color: '#22C55E', bg: 'rgba(34,197,94,0.12)' },
@@ -8,6 +9,7 @@ const TYPE_CONFIG = {
 };
 
 export default function ActivityFeed() {
+  const { t } = useTranslation();
   return (
     <div data-cmp="ActivityFeed" className="flex flex-col gap-0">
       {MOCK_ACTIVITIES.map((activity, idx) => {
@@ -41,16 +43,16 @@ export default function ActivityFeed() {
                   {activity.avatar}
                 </div>
                 <span className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
-                  {activity.user}
+                  {t(`dashboard.activityUser${activity.id}`, { defaultValue: activity.id === 3 ? t('dashboard.systemUser') : activity.user })}
                 </span>
               </div>
               <div className="text-sm mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                {activity.action}
+                {t(`dashboard.activity${activity.id}`, { defaultValue: activity.action })}
               </div>
             </div>
 
             <div className="text-xs flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
-              {activity.time}
+              {t(`dashboard.activityTime${activity.id}`, { defaultValue: activity.time })}
             </div>
           </div>
         );

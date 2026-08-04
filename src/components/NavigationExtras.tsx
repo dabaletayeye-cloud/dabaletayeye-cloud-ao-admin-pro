@@ -2,6 +2,7 @@ import { useState, type MouseEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronRightIcon, HomeIcon, XIcon } from 'lucide-react';
 import type { TabsStyle } from '../types';
+import { localizeNavLabel, useLocale } from '../hooks/useLocale';
 
 interface PageTab {
   path: string;
@@ -37,6 +38,26 @@ const ROUTE_LABELS: Record<string, string> = {
   '/examples/split-table': '左右布局表格',
   '/examples/socket': 'Socket 连接',
   '/tmpl/map': '地图模板',
+  '/comp/overview': '组件总览',
+  '/comp/buttons': '按钮组件',
+  '/comp/forms': '表单组件',
+  '/comp/table': '数据表格',
+  '/comp/feedback': '弹窗反馈',
+  '/comp/display': '数据展示',
+  '/comp/nav': '导航组件',
+  '/comp/icons': '图标库',
+  '/comp/number-roll': '数字滚动',
+  '/comp/rich-editor': '富文本编辑器',
+  '/comp/image-crop': '图像裁剪',
+  '/comp/qrcode': '二维码',
+  '/comp/video-player': '视频播放器',
+  '/comp/drag': '拖拽',
+  '/comp/context-menu': '右键菜单',
+  '/comp/watermark': '水印',
+  '/comp/text-scroll': '文字滚动',
+  '/comp/confetti': '礼花',
+  '/comp/excel': 'Excel 导入导出',
+  '/comp/word-cloud': '词云图',
 };
 
 function labelFor(path: string) {
@@ -59,12 +80,13 @@ function loadTabs(current: PageTab): PageTab[] {
 
 export function BreadcrumbTrail() {
   const location = useLocation();
+  const { locale } = useLocale();
   const label = labelFor(location.pathname);
   return (
     <div className="flex h-9 items-center gap-1.5 border-b px-5 text-xs" style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
       <HomeIcon size={13} />
       <ChevronRightIcon size={13} />
-      <span style={{ color: 'var(--foreground)' }}>{label}</span>
+      <span style={{ color: 'var(--foreground)' }}>{localizeNavLabel(label, locale)}</span>
     </div>
   );
 }
@@ -72,6 +94,7 @@ export function BreadcrumbTrail() {
 export function PageTabs({ style }: { style: TabsStyle }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { locale } = useLocale();
   const current = { path: location.pathname, label: labelFor(location.pathname) };
   const [tabs, setTabs] = useState<PageTab[]>(() => loadTabs(current));
 
@@ -109,7 +132,7 @@ export function PageTabs({ style }: { style: TabsStyle }) {
               fontWeight: active ? 700 : 500,
             }}
           >
-            <span>{tab.label}</span>
+            <span>{localizeNavLabel(tab.label, locale)}</span>
             {tab.path !== '/' && <XIcon size={12} className="opacity-55 transition-opacity group-hover:opacity-100" onClick={event => closeTab(event, tab)} />}
           </button>
         );

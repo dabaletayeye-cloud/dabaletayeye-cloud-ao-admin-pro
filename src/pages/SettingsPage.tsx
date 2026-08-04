@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
+import { LANGUAGE_OPTIONS, type AppLocale, useLocale } from '../hooks/useLocale';
 import {
   SaveIcon,
   GlobeIcon,
@@ -81,6 +82,7 @@ const inputStyle = (isManga: boolean) => ({
 
 export default function SettingsPage() {
   const { themeState } = useTheme();
+  const { locale, setLocale } = useLocale();
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? PINK : 'var(--primary)';
 
@@ -93,7 +95,6 @@ export default function SettingsPage() {
   // General
   const [siteName, setSiteName] = useState('漫剧工坊');
   const [siteUrl, setSiteUrl] = useState('https://manga.example.com');
-  const [language, setLanguage] = useState('zh-CN');
   const [timezone, setTimezone] = useState('Asia/Shanghai');
 
   // Notification
@@ -139,11 +140,10 @@ export default function SettingsPage() {
             <input value={siteUrl} onChange={e => setSiteUrl(e.target.value)} style={inputStyle(isManga)} />
           </SettingRow>
           <SettingRow label="默认语言" desc="后台管理界面显示语言">
-            <select value={language} onChange={e => setLanguage(e.target.value)} style={inputStyle(isManga)}>
-              <option value="zh-CN">简体中文</option>
-              <option value="zh-TW">繁體中文</option>
-              <option value="en-US">English (US)</option>
-              <option value="ja-JP">日本語</option>
+            <select value={locale} onChange={e => setLocale(e.target.value as AppLocale)} style={inputStyle(isManga)}>
+              {LANGUAGE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.nativeLabel}（{option.label}）</option>
+              ))}
             </select>
           </SettingRow>
           <SettingRow label="时区设置" desc="系统时间显示及定时任务基准">

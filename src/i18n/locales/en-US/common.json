@@ -1,0 +1,19 @@
+{
+  "languagePreference": "Language",
+  "languageChanged": "Language changed",
+  "search": "Search…",
+  "refreshPage": "Refresh page",
+  "fullscreen": "Full screen",
+  "exitFullscreen": "Exit full screen",
+  "systemSettings": "System settings",
+  "themeSettings": "Theme settings",
+  "accountMenu": "Account menu",
+  "profile": "Profile",
+  "accountSecurity": "Account security",
+  "messageCenter": "Messages",
+  "helpFeedback": "Help & feedback",
+  "signOut": "Sign out",
+  "sidebarExpand": "Expand sidebar",
+  "sidebarCollapse": "Collapse sidebar",
+  "backHome": "Back to home"
+}

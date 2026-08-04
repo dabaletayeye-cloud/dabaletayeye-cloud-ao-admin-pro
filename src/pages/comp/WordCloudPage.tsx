@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../components/AdminLayout';
 import { BarChart3Icon, CloudIcon, MousePointerClickIcon, RefreshCwIcon, TrendingUpIcon } from 'lucide-react';
 
@@ -56,10 +57,13 @@ function getFontSize(value: number) {
 }
 
 export default function WordCloudPage() {
+  const { t } = useTranslation();
   const [datasetIndex, setDatasetIndex] = useState(0);
   const [selectedWord, setSelectedWord] = useState<WordItem>(OPERATION_WORDS[0]);
   const [hoveredWord, setHoveredWord] = useState<WordItem | null>(null);
   const dataset = DATASETS[datasetIndex];
+  const datasetLabel = t(`components.wordCloud.${datasetIndex === 0 ? 'operation' : 'product'}`);
+  const datasetCaption = t(`components.wordCloud.${datasetIndex === 0 ? 'operationCaption' : 'productCaption'}`);
   const topWords = useMemo(() => [...dataset.words].sort((a, b) => b.value - a.value).slice(0, 6), [dataset]);
 
   const changeDataset = () => {
@@ -90,12 +94,12 @@ export default function WordCloudPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
             <span style={{ width: 36, height: 36, borderRadius: 10, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 7px 16px rgba(99,102,241,.25)' }}><CloudIcon size={19} /></span>
             <div>
-              <h1 style={{ margin: 0, fontSize: 20, lineHeight: 1.3, fontWeight: 700, color: 'var(--foreground)' }}>词云图</h1>
-              <p style={{ margin: '3px 0 0', fontSize: 13, color: 'var(--muted-foreground)' }}>将关键词热度映射为文字大小，快速识别关注焦点</p>
+              <h1 style={{ margin: 0, fontSize: 20, lineHeight: 1.3, fontWeight: 700, color: 'var(--foreground)' }}>{t('components.wordCloud.title')}</h1>
+              <p style={{ margin: '3px 0 0', fontSize: 13, color: 'var(--muted-foreground)' }}>{t('components.wordCloud.subtitle')}</p>
             </div>
           </div>
           <button type="button" onClick={changeDataset} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 13px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,.04)' }}>
-            <RefreshCwIcon size={14} /> 切换示例数据
+            <RefreshCwIcon size={14} /> {t('components.wordCloud.switchData')}
           </button>
         </div>
 
@@ -103,14 +107,14 @@ export default function WordCloudPage() {
           <section style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,.035)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '18px 20px 14px', borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BarChart3Icon size={17} style={{ color: 'var(--primary)' }} /><span style={{ fontSize: 15, fontWeight: 700, color: 'var(--foreground)' }}>{dataset.label}</span></div>
-                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--muted-foreground)' }}>{dataset.caption}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BarChart3Icon size={17} style={{ color: 'var(--primary)' }} /><span style={{ fontSize: 15, fontWeight: 700, color: 'var(--foreground)' }}>{datasetLabel}</span></div>
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--muted-foreground)' }}>{datasetCaption}</p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 9px', borderRadius: 999, background: 'color-mix(in srgb, var(--primary) 10%, transparent)', color: 'var(--primary)', fontSize: 12, fontWeight: 600 }}><TrendingUpIcon size={13} />{dataset.words.length} 个关键词</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 9px', borderRadius: 999, background: 'color-mix(in srgb, var(--primary) 10%, transparent)', color: 'var(--primary)', fontSize: 12, fontWeight: 600 }}><TrendingUpIcon size={13} />{t('components.wordCloud.keywordCount', { count: dataset.words.length })}</div>
             </div>
 
             <div className="word-cloud-canvas" style={{ position: 'relative', padding: '12px 14px 8px', background: 'radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 52%)' }}>
-              <svg className="word-cloud-svg" viewBox="0 0 760 430" role="img" aria-label={`${dataset.label}词云图`} preserveAspectRatio="xMidYMid meet">
+              <svg className="word-cloud-svg" viewBox="0 0 760 430" role="img" aria-label={t('components.wordCloud.cloudAria', { label: datasetLabel })} preserveAspectRatio="xMidYMid meet">
                 {dataset.words.map((word, index) => (
                   <text
                     key={`${datasetIndex}-${word.text}`}
@@ -125,7 +129,7 @@ export default function WordCloudPage() {
                     fontWeight={word.value >= 78 ? 800 : word.value >= 55 ? 700 : 600}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${word.text}，热度 ${word.value}`}
+                    aria-label={t('components.wordCloud.heatAria', { word: word.text, value: word.value })}
                     style={{ '--word-color': word.color, cursor: 'pointer', animationDelay: `${index * 18}ms` } as React.CSSProperties}
                     onMouseEnter={() => setHoveredWord(word)}
                     onMouseLeave={() => setHoveredWord(null)}
@@ -135,21 +139,21 @@ export default function WordCloudPage() {
                 ))}
               </svg>
               <div style={{ position: 'absolute', right: 18, bottom: 15, padding: '7px 10px', maxWidth: 220, borderRadius: 8, background: 'color-mix(in srgb, var(--card) 92%, transparent)', border: '1px solid var(--border)', boxShadow: '0 4px 14px rgba(0,0,0,.08)', pointerEvents: 'none', fontSize: 11, color: 'var(--muted-foreground)' }}>
-                <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 5 }}><MousePointerClickIcon size={12} /></span>{hoveredWord ? `“${hoveredWord.text}” 热度 ${hoveredWord.value}` : '悬停查看热度，点击关键词查看详情'}
+                <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 5 }}><MousePointerClickIcon size={12} /></span>{hoveredWord ? t('components.wordCloud.hoverValue', { word: hoveredWord.text, value: hoveredWord.value }) : t('components.wordCloud.hoverHint')}
               </div>
             </div>
           </section>
 
           <aside style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <section style={{ padding: 18, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: '0 2px 10px rgba(0,0,0,.035)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 15 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: selectedWord.color, boxShadow: `0 0 0 4px color-mix(in srgb, ${selectedWord.color} 14%, transparent)` }} /><span style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>当前关键词</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 15 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: selectedWord.color, boxShadow: `0 0 0 4px color-mix(in srgb, ${selectedWord.color} 14%, transparent)` }} /><span style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>{t('components.wordCloud.currentKeyword')}</span></div>
               <div style={{ fontSize: 27, fontWeight: 800, letterSpacing: '-.5px', color: selectedWord.color, marginBottom: 8 }}>{selectedWord.text}</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}><span style={{ fontSize: 24, fontWeight: 800, color: 'var(--foreground)' }}>{selectedWord.value}</span><span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>热度指数</span></div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}><span style={{ fontSize: 24, fontWeight: 800, color: 'var(--foreground)' }}>{selectedWord.value}</span><span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>{t('components.wordCloud.popularityIndex')}</span></div>
               <div style={{ height: 7, marginTop: 13, overflow: 'hidden', borderRadius: 999, background: 'var(--muted)' }}><div style={{ width: `${selectedWord.value}%`, height: '100%', borderRadius: 'inherit', background: selectedWord.color, transition: 'width .25s ease' }} /></div>
             </section>
 
             <section style={{ flex: 1, padding: 18, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: '0 2px 10px rgba(0,0,0,.035)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 13 }}><span style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>热度排行</span><span style={{ color: 'var(--muted-foreground)', fontSize: 12 }}>TOP 6</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 13 }}><span style={{ fontSize: 14, fontWeight: 700, color: 'var(--foreground)' }}>{t('components.wordCloud.ranking')}</span><span style={{ color: 'var(--muted-foreground)', fontSize: 12 }}>TOP 6</span></div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
                 {topWords.map((word, index) => (
                   <button key={word.text} type="button" onClick={() => setSelectedWord(word)} style={{ display: 'grid', gridTemplateColumns: '21px minmax(0, 1fr) 33px', alignItems: 'center', gap: 8, width: '100%', padding: '5px 6px', margin: '0 -6px', border: 0, borderRadius: 7, cursor: 'pointer', textAlign: 'left', background: selectedWord.text === word.text ? 'color-mix(in srgb, var(--primary) 9%, transparent)' : 'transparent', color: 'inherit' }}>

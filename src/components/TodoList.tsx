@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MOCK_TODOS, type TodoItem } from '../data/mockData';
 import { PlusIcon, TrashIcon } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 const PRIORITY_CONFIG = {
   high: { label: '高', color: '#EF4444', bg: 'rgba(239,68,68,0.12)' },
@@ -11,6 +12,7 @@ const PRIORITY_CONFIG = {
 
 export default function TodoList() {
   const { themeState } = useTheme();
+  const { t } = useTranslation();
   const isManga = themeState.themeId === 'manga';
 
   const [todos, setTodos] = useState<TodoItem[]>(MOCK_TODOS);
@@ -47,7 +49,7 @@ export default function TodoList() {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
-            {done}/{total} 已完成
+            {done}/{total} {t('dashboard.completed')}
           </span>
           <span className="text-xs font-bold" style={{ color: 'var(--primary)' }}>{pct}%</span>
         </div>
@@ -88,7 +90,7 @@ export default function TodoList() {
                   textDecoration: todo.done ? 'line-through' : 'none',
                 }}
               >
-                {todo.text}
+                {t(`dashboard.todo${todo.id}`, { defaultValue: todo.text })}
               </span>
 
               {/* Priority badge */}
@@ -96,7 +98,7 @@ export default function TodoList() {
                 className="text-xs px-1.5 py-0.5 rounded-full flex-shrink-0"
                 style={{ background: cfg.bg, color: cfg.color, fontWeight: 600 }}
               >
-                {cfg.label}
+                {t(`dashboard.priority${todo.priority.charAt(0).toUpperCase()}${todo.priority.slice(1)}`, { defaultValue: cfg.label })}
               </span>
 
               {/* Delete */}
@@ -119,7 +121,7 @@ export default function TodoList() {
           value={newText}
           onChange={e => setNewText(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="新增待办..."
+          placeholder={t('dashboard.addTodo')}
           className="flex-1 px-3 py-2 rounded-lg border text-sm outline-none transition-colors"
           style={{
             background: 'var(--muted)',
@@ -136,7 +138,7 @@ export default function TodoList() {
           }}
         >
           <PlusIcon size={14} />
-          添加
+          {t('dashboard.add')}
         </button>
       </div>
     </div>

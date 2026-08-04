@@ -1,4 +1,5 @@
 import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 import { TrendingUpIcon, TrendingDownIcon, UsersIcon, ActivityIcon, DollarSignIcon, FileTextIcon } from 'lucide-react';
 import { STAT_CARDS } from '../data/mockData';
 
@@ -11,7 +12,14 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 
 export default function StatCards() {
   const { themeState } = useTheme();
+  const { t } = useTranslation();
   const isManga = themeState.themeId === 'manga';
+  const titleKeys: Record<string, string> = {
+    '总用户数': 'dashboard.totalUsers',
+    '月活跃用户': 'dashboard.monthlyActiveUsers',
+    '本月收入': 'dashboard.monthlyRevenue',
+    '新增内容': 'dashboard.newContent',
+  };
 
   return (
     <div data-cmp="StatCards" className="flex gap-4 flex-wrap">
@@ -33,7 +41,7 @@ export default function StatCards() {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>
-                {card.title}
+                {t(titleKeys[card.title] ?? card.title)}
               </div>
               <div className="text-2xl font-bold mb-1.5" style={{ color: 'var(--foreground)' }}>
                 {card.value}
@@ -49,7 +57,7 @@ export default function StatCards() {
                 >
                   {card.change}
                 </span>
-                <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>环比</span>
+                <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{t('dashboard.monthOverMonth')}</span>
               </div>
             </div>
             <div

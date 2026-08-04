@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
+import { localizeNavLabel, useLocale } from '../hooks/useLocale';
 import {
   LayoutDashboardIcon,
   FileTextIcon,
@@ -79,6 +80,7 @@ const NAV_ITEMS: NavItem[] = [
 
 export default function HorizontalNav() {
   const { themeState } = useTheme();
+  const { locale } = useLocale();
   const location = useLocation();
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -116,7 +118,7 @@ export default function HorizontalNav() {
               }}
             >
               {item.icon}
-              <span>{item.label}</span>
+              <span>{localizeNavLabel(item.label, locale)}</span>
             </NavLink>
           );
         }
@@ -152,7 +154,7 @@ export default function HorizontalNav() {
               }}
             >
               {item.icon}
-              <span>{item.label}</span>
+              <span>{localizeNavLabel(item.label, locale)}</span>
               <span style={{ fontSize: '9px', marginLeft: '1px', opacity: 0.5 }}>▼</span>
             </button>
 
@@ -197,7 +199,7 @@ export default function HorizontalNav() {
                     onClick={() => setOpenId(null)}
                   >
                     {child.icon}
-                    <span>{child.label}</span>
+                    <span>{localizeNavLabel(child.label, locale)}</span>
                   </NavLink>
                 );
               })}

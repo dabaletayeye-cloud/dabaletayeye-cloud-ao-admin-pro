@@ -1,0 +1,19 @@
+{
+  "languagePreference": "언어 설정",
+  "languageChanged": "언어가 변경되었습니다",
+  "search": "검색…",
+  "refreshPage": "페이지 새로고침",
+  "fullscreen": "전체 화면",
+  "exitFullscreen": "전체 화면 종료",
+  "systemSettings": "시스템 설정",
+  "themeSettings": "테마 설정",
+  "accountMenu": "계정 메뉴",
+  "profile": "내 프로필",
+  "accountSecurity": "계정 보안",
+  "messageCenter": "메시지",
+  "helpFeedback": "도움말 및 의견",
+  "signOut": "로그아웃",
+  "sidebarExpand": "사이드바 펼치기",
+  "sidebarCollapse": "사이드바 접기",
+  "backHome": "홈으로 돌아가기"
+}

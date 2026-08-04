@@ -6,10 +6,12 @@ import ActivityFeed from '../components/ActivityFeed';
 import NewUserList from '../components/NewUserList';
 import TodoList from '../components/TodoList';
 import { useTheme } from '../hooks/useTheme';
+import { useLocale } from '../hooks/useLocale';
 import { BarChart2Icon, TrendingUpIcon } from 'lucide-react';
 
 export default function Dashboard() {
   const { themeState } = useTheme();
+  const { locale, t } = useLocale();
   const isManga = themeState.themeId === 'manga';
   const [activeChart, setActiveChart] = useState<'bar' | 'area'>('bar');
 
@@ -20,17 +22,17 @@ export default function Dashboard() {
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <h1 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
-              {isManga ? '✨ 欢迎回来，管理员' : '欢迎回来，管理员'}
+              {isManga ? `✨ ${t('dashboard.welcomeBack')}` : t('dashboard.welcomeBack')}
             </h1>
             <p className="text-sm mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-              {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
+              {new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
             </p>
           </div>
           <div
             className="px-4 py-2 rounded-xl text-sm font-semibold"
             style={{ background: 'color-mix(in srgb, var(--primary) 12%, transparent)', color: 'var(--primary)' }}
           >
-            {isManga ? '🌸 数据总览' : '数据总览'}
+            {isManga ? `🌸 ${t('dashboard.overview')}` : t('dashboard.overview')}
           </div>
         </div>
 
@@ -46,7 +48,7 @@ export default function Dashboard() {
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-                {activeChart === 'bar' ? '月度新增用户' : '年度访问趋势'}
+                {activeChart === 'bar' ? t('dashboard.monthlyNewUsers') : t('dashboard.annualVisitTrend')}
               </h2>
               <div className="flex gap-1">
                 <button
@@ -57,7 +59,7 @@ export default function Dashboard() {
                     color: activeChart === 'bar' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
                   }}
                 >
-                  <BarChart2Icon size={12} /> 月度
+                  <BarChart2Icon size={12} /> {t('dashboard.monthly')}
                 </button>
                 <button
                   onClick={() => setActiveChart('area')}
@@ -67,7 +69,7 @@ export default function Dashboard() {
                     color: activeChart === 'area' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
                   }}
                 >
-                  <TrendingUpIcon size={12} /> 年度
+                  <TrendingUpIcon size={12} /> {t('dashboard.annual')}
                 </button>
               </div>
             </div>
@@ -87,7 +89,7 @@ export default function Dashboard() {
             style={{ background: 'var(--card)', borderColor: 'var(--border)', width: 280, flexShrink: 0 }}
           >
             <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--foreground)' }}>
-              {isManga ? '✨ 最新动态' : '最新动态'}
+              {isManga ? `✨ ${t('dashboard.recentActivity')}` : t('dashboard.recentActivity')}
             </h2>
             <ActivityFeed />
           </div>
@@ -102,9 +104,9 @@ export default function Dashboard() {
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-                {isManga ? '🌸 新增用户' : '新增用户'}
+                {isManga ? `🌸 ${t('dashboard.newUsers')}` : t('dashboard.newUsers')}
               </h2>
-              <span className="text-xs font-medium" style={{ color: 'var(--primary)' }}>本周</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--primary)' }}>{t('dashboard.thisWeek')}</span>
             </div>
             <NewUserList />
           </div>
@@ -116,7 +118,7 @@ export default function Dashboard() {
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-                {isManga ? '💫 待办事项' : '待办事项'}
+                {isManga ? `💫 ${t('dashboard.todos')}` : t('dashboard.todos')}
               </h2>
             </div>
             <TodoList />

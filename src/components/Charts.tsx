@@ -12,6 +12,7 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { MONTHLY_DATA, YEARLY_TREND } from '../data/mockData';
 import { THEMES } from '../types';
+import { useTranslation } from 'react-i18next';
 
 function getThemePrimary(themeId: string, mode: string) {
   const theme = THEMES.find(t => t.id === themeId);
@@ -32,6 +33,7 @@ interface ChartTooltipProps {
 }
 
 function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
+  const { i18n } = useTranslation();
   if (!active || !payload?.length) return null;
   return (
     <div
@@ -45,7 +47,7 @@ function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
       <div className="font-semibold mb-1">{label}</div>
       {payload.map((p, i) => (
         <div key={i} style={{ color: 'var(--primary)' }}>
-          {p.value.toLocaleString()}
+          {p.value.toLocaleString(i18n.language)}
         </div>
       ))}
     </div>
@@ -65,13 +67,15 @@ export default Charts;
 
 export function BarChartComponent() {
   const { themeState } = useTheme();
+  const { t } = useTranslation();
   const primary = getThemePrimary(themeState.themeId, themeState.mode);
   const accent = getThemeAccent(themeState.themeId, themeState.mode);
+  const chartData = MONTHLY_DATA.map((item, index) => ({ ...item, month: t(`dashboard.month${index + 1}`) }));
 
   return (
     <div data-cmp="BarChartComponent" className="h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={MONTHLY_DATA} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+        <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
           <defs>
             <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={primary} stopOpacity={0.9} />
@@ -101,12 +105,14 @@ export function BarChartComponent() {
 
 export function AreaChartComponent() {
   const { themeState } = useTheme();
+  const { t } = useTranslation();
   const primary = getThemePrimary(themeState.themeId, themeState.mode);
+  const chartData = YEARLY_TREND.map((item, index) => ({ ...item, month: t(`dashboard.month${index + 1}`) }));
 
   return (
     <div data-cmp="AreaChartComponent" className="h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={YEARLY_TREND} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+        <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
           <defs>
             <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={primary} stopOpacity={0.35} />

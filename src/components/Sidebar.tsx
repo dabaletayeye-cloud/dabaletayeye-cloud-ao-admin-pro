@@ -68,6 +68,7 @@ import {
   SearchIcon,
 } from 'lucide-react';
 import type { CollapseButtonPosition } from '../types';
+import { localizeNavLabel, useLocale } from '../hooks/useLocale';
 
 interface NavChild { label: string; path: string; icon: React.ReactNode; }
 interface NavGroup { type: 'group'; icon: React.ReactNode; label: string; children: NavChild[]; }
@@ -242,6 +243,7 @@ function IconColumn({
   menuStyle: string;
 }) {
   const location = useLocation();
+  const { locale } = useLocale();
   const bgStyle: React.CSSProperties = {
     width: '64px',
     height: '100%',
@@ -276,7 +278,7 @@ function IconColumn({
                 key={item.path}
                 to={item.path}
                 end={item.path === '/'}
-                title={item.label}
+                title={localizeNavLabel(item.label, locale)}
                 className={({ isActive }) => 'sidebar-l2-icon ' + (isActive ? 'is-active' : '')}
                 style={{ width: '100%', justifyContent: 'center', marginBottom: 4 }}
                 onClick={() => onSelectGroup(null)}
@@ -290,7 +292,7 @@ function IconColumn({
           return (
             <button
               key={item.label}
-              title={item.label}
+              title={localizeNavLabel(item.label, locale)}
               onClick={() => onSelectGroup(isSelected ? null : item.label)}
               className={'sidebar-l2-icon ' + (hasActive || isSelected ? 'is-active' : '')}
               style={{ width: '100%', justifyContent: 'center', marginBottom: 4, cursor: 'pointer' }}
@@ -315,6 +317,7 @@ function SubMenuColumn({
   menuStyle: string;
 }) {
   const location = useLocation();
+  const { locale } = useLocale();
   const activeItem = NAV_ITEMS.find(
     item => item.type === 'group' && item.label === selectedGroup,
   ) as NavGroup | undefined;
@@ -339,7 +342,7 @@ function SubMenuColumn({
     <div style={{ ...subBg, background: subBg.background ?? 'var(--sidebar)' }}>
       <div style={{ height: '64px', display: 'flex', alignItems: 'center', padding: '0 16px', borderBottom: '1px solid var(--sidebar-border)', flexShrink: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sidebar-foreground)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {activeItem?.label ?? ''}
+          {activeItem ? localizeNavLabel(activeItem.label, locale) : ''}
         </span>
       </div>
       <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 8px' }}>
@@ -353,7 +356,7 @@ function SubMenuColumn({
               style={{ marginBottom: 2 }}
             >
               <span style={{ flexShrink: 0 }}>{child.icon}</span>
-              <span style={{ flex: 1 }}>{child.label}</span>
+              <span style={{ flex: 1 }}>{localizeNavLabel(child.label, locale)}</span>
             </NavLink>
           );
         })}
@@ -493,6 +496,7 @@ export default function Sidebar({
   sidebarWidth = 230,
 }: SidebarProps) {
   const { themeState } = useTheme();
+  const { locale } = useLocale();
   const { menuStyle, mode, sidebarAccordion } = themeState;
   const location = useLocation();
 
@@ -614,7 +618,7 @@ export default function Sidebar({
                     <NavLink
                       to={item.path}
                       end={item.path === '/'}
-                      title={item.label}
+                      title={localizeNavLabel(item.label, locale)}
                       className={({ isActive }) => 'sidebar-l2-icon ' + (isActive ? 'is-active' : '')}
                       style={{ width: '100%', justifyContent: 'center' }}
                     >
@@ -629,7 +633,7 @@ export default function Sidebar({
                     <NavLink
                       key={child.path}
                       to={child.path}
-                      title={child.label}
+                      title={localizeNavLabel(child.label, locale)}
                       className={({ isActive }) => 'sidebar-l2-icon ' + (isActive ? 'is-active' : '')}
                       style={{ width: '100%', justifyContent: 'center', marginBottom: 2 }}
                     >
@@ -693,7 +697,7 @@ export default function Sidebar({
                   style={{ marginBottom: 2 }}
                 >
                   <span style={{ flexShrink: 0 }}>{item.icon}</span>
-                  <span style={{ flex: 1 }}>{item.label}</span>
+                  <span style={{ flex: 1 }}>{localizeNavLabel(item.label, locale)}</span>
                 </NavLink>
               );
             }
@@ -709,7 +713,7 @@ export default function Sidebar({
                   style={{ marginBottom: 2 }}
                 >
                   <span style={{ flexShrink: 0 }}>{item.icon}</span>
-                  <span style={{ flex: 1 }}>{item.label}</span>
+                  <span style={{ flex: 1 }}>{localizeNavLabel(item.label, locale)}</span>
                   <span style={{ flexShrink: 0, color: 'var(--sidebar-foreground)', opacity: 0.5 }}>
                     {isOpen ? <ChevronDownIcon size={12} /> : <ChevronRightIcon size={12} />}
                   </span>
@@ -729,7 +733,7 @@ export default function Sidebar({
                       className={({ isActive }) => 'sidebar-l2 ' + (isActive ? 'is-active' : '')}
                     >
                       <span style={{ flexShrink: 0 }}>{child.icon}</span>
-                      <span style={{ flex: 1 }}>{child.label}</span>
+                      <span style={{ flex: 1 }}>{localizeNavLabel(child.label, locale)}</span>
                     </NavLink>
                   ))}
                 </div>

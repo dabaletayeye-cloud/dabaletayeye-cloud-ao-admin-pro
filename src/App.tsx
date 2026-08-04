@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './hooks/useTheme';
+import { LocaleProvider } from './hooks/useLocale';
 import { Toaster } from 'sonner';
 
 import LoginPage from './pages/LoginPage';
@@ -79,8 +80,9 @@ import SocketExamplePage from './pages/examples/SocketExamplePage';
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <BrowserRouter>
+    <LocaleProvider>
+      <ThemeProvider>
+        <BrowserRouter>
         <Toaster position="top-right" richColors />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -167,7 +169,8 @@ export default function App() {
           <Route path="/error/500-page" element={<Page500 />} />
           <Route path="*" element={<ErrorPage />} />
         </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+        </BrowserRouter>
+      </ThemeProvider>
+    </LocaleProvider>
   );
 }

@@ -1,0 +1,19 @@
+{
+  "languagePreference": "Sprache",
+  "languageChanged": "Sprache geändert",
+  "search": "Suchen…",
+  "refreshPage": "Seite aktualisieren",
+  "fullscreen": "Vollbild",
+  "exitFullscreen": "Vollbild beenden",
+  "systemSettings": "Systemeinstellungen",
+  "themeSettings": "Designeinstellungen",
+  "accountMenu": "Kontomenü",
+  "profile": "Profil",
+  "accountSecurity": "Kontosicherheit",
+  "messageCenter": "Nachrichten",
+  "helpFeedback": "Hilfe und Feedback",
+  "signOut": "Abmelden",
+  "sidebarExpand": "Seitenleiste erweitern",
+  "sidebarCollapse": "Seitenleiste einklappen",
+  "backHome": "Zur Startseite"
+}

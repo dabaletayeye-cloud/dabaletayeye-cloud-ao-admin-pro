@@ -1,0 +1,19 @@
+{
+  "languagePreference": "語言偏好",
+  "languageChanged": "語言已切換",
+  "search": "搜尋…",
+  "refreshPage": "重新整理頁面",
+  "fullscreen": "全螢幕顯示",
+  "exitFullscreen": "離開全螢幕",
+  "systemSettings": "系統設定",
+  "themeSettings": "主題設定",
+  "accountMenu": "帳戶選單",
+  "profile": "個人中心",
+  "accountSecurity": "帳號安全",
+  "messageCenter": "訊息中心",
+  "helpFeedback": "說明與意見回饋",
+  "signOut": "登出",
+  "sidebarExpand": "展開側邊欄",
+  "sidebarCollapse": "收合側邊欄",
+  "backHome": "返回首頁"
+}

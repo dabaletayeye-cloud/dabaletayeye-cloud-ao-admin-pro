@@ -442,6 +442,82 @@
   gap: 17px;
 }
 
+.auth-registration-result {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-result-icon {
+  display: flex;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  color: var(--auth-success);
+  background: color-mix(in srgb, var(--auth-success) 13%, var(--auth-surface));
+  border: 1px solid color-mix(in srgb, var(--auth-success) 35%, var(--auth-border));
+  border-radius: 8px;
+}
+
+.auth-result-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.auth-result-copy strong {
+  color: var(--auth-foreground);
+  font-size: 17px;
+}
+
+.auth-result-copy span {
+  color: var(--auth-muted);
+  font-size: 13px;
+}
+
+.auth-result-details {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  background: var(--auth-border);
+  border: 1px solid var(--auth-border);
+  border-radius: 7px;
+}
+
+.auth-result-details > div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  min-height: 48px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  background: var(--auth-surface);
+}
+
+.auth-result-details dt {
+  color: var(--auth-muted);
+  font-size: 12px;
+}
+
+.auth-result-details dd {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--auth-foreground);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-result-details dd svg {
+  flex: 0 0 auto;
+  color: var(--auth-primary);
+}
+
 .auth-field {
   display: block;
 }

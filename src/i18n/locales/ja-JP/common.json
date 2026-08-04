@@ -1,0 +1,19 @@
+{
+  "languagePreference": "言語設定",
+  "languageChanged": "言語を切り替えました",
+  "search": "検索…",
+  "refreshPage": "ページを更新",
+  "fullscreen": "全画面表示",
+  "exitFullscreen": "全画面表示を終了",
+  "systemSettings": "システム設定",
+  "themeSettings": "テーマ設定",
+  "accountMenu": "アカウントメニュー",
+  "profile": "プロフィール",
+  "accountSecurity": "アカウントのセキュリティ",
+  "messageCenter": "メッセージ",
+  "helpFeedback": "ヘルプとフィードバック",
+  "signOut": "ログアウト",
+  "sidebarExpand": "サイドバーを展開",
+  "sidebarCollapse": "サイドバーを折りたたむ",
+  "backHome": "ホームに戻る"
+}

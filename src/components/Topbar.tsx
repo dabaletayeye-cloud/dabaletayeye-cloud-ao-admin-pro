@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useTheme } from '../hooks/useTheme';
+import { LANGUAGE_OPTIONS, localizeNavLabel, type AppLocale, useLocale } from '../hooks/useLocale';
 import {
   MenuIcon,
   SunIcon,
@@ -50,6 +51,7 @@ export default function Topbar({
   showTopProgress = false,
 }: TopbarProps) {
   const { themeState, setMode } = useTheme();
+  const { locale, setLocale, t } = useLocale();
   const location = useLocation();
   const navigate = useNavigate();
   const isDark = themeState.mode === 'dark';
@@ -59,7 +61,6 @@ export default function Topbar({
   const [spinning, setSpinning] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<'zh-CN' | 'en-US'>('zh-CN');
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [currentAccount, setCurrentAccount] = useState(getCurrentAccount);
@@ -98,9 +99,11 @@ export default function Topbar({
     }
   };
 
-  const chooseLanguage = (nextLanguage: 'zh-CN' | 'en-US') => {
-    setLanguage(nextLanguage);
+  const chooseLanguage = (nextLanguage: AppLocale) => {
+    setLocale(nextLanguage);
     setLanguageMenuOpen(false);
+    const selected = LANGUAGE_OPTIONS.find((option) => option.value === nextLanguage);
+    toast.success(`${t('languageChanged')}：${selected?.nativeLabel ?? nextLanguage}`);
   };
 
   type NavGroup = { type: 'group'; icon: React.ReactNode; label: string; children: { label: string; path: string; icon: React.ReactNode }[] };
@@ -188,7 +191,7 @@ export default function Topbar({
             {activeGroup ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, height: '100%', overflowX: 'auto' }}>
                 <span style={{ fontSize: 12, color: 'var(--muted-foreground)', paddingRight: 6, flexShrink: 0 }}>
-                  {activeGroup.label}：
+                  {localizeNavLabel(activeGroup.label, locale)}：
                 </span>
                 {activeGroup.children.map(child => {
                   const isActive = location.pathname === child.path;
@@ -215,7 +218,7 @@ export default function Topbar({
                       }}
                     >
                       {child.icon}
-                      <span>{child.label}</span>
+                      <span>{localizeNavLabel(child.label, locale)}</span>
                     </NavLink>
                   );
                 })}
@@ -231,7 +234,7 @@ export default function Topbar({
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, maxWidth: showHorizontalNav ? 300 : 260 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 8, padding: '0 10px', height: 34, flex: 1, cursor: 'pointer' }}>
               <SearchIcon size={13} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-              <span style={{ fontSize: 12, color: 'var(--foreground)' }}>搜索…</span>
+              <span style={{ fontSize: 12, color: 'var(--foreground)' }}>{t('search')}</span>
             </div>
           </div>
         )}
@@ -251,7 +254,7 @@ export default function Topbar({
               color: 'var(--foreground)',
               transition: 'background 0.2s',
             }}
-            title="刷新页面"
+            title={t('refreshPage')}
           >
             <RefreshCwIcon
               size={15}
@@ -266,7 +269,7 @@ export default function Topbar({
           <button
             onClick={() => { void toggleFullscreen(); }}
             style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--foreground)' }}
-            title={isFullscreen ? '退出全屏' : '全屏显示'}
+            title={isFullscreen ? t('exitFullscreen') : t('fullscreen')}
           >
             {isFullscreen ? <MinimizeIcon size={16} /> : <MaximizeIcon size={16} />}
           </button>
@@ -276,25 +279,26 @@ export default function Topbar({
             <button
               onClick={() => setLanguageMenuOpen(open => !open)}
               style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: languageMenuOpen ? 'var(--accent)' : 'transparent', border: 'none', cursor: 'pointer', color: languageMenuOpen ? 'var(--accent-foreground)' : 'var(--foreground)' }}
-              title="语言偏好"
+              title={t('languagePreference')}
+              aria-label={t('languagePreference')}
               aria-expanded={languageMenuOpen}
             >
               <LanguagesIcon size={16} />
             </button>
             {languageMenuOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 42, zIndex: 120, minWidth: 148, padding: 6, borderRadius: 10, border: '1px solid var(--border)', background: 'var(--popover)', boxShadow: '0 10px 28px rgba(0,0,0,0.14)' }}>
-                {([
-                  ['zh-CN', '简体中文'],
-                  ['en-US', 'English'],
-                ] as const).map(([value, label]) => (
+              <div role="menu" aria-label={t('languagePreference')} style={{ position: 'absolute', right: 0, top: 42, zIndex: 120, minWidth: 184, padding: 6, borderRadius: 10, border: '1px solid var(--border)', background: 'var(--popover)', boxShadow: '0 10px 28px rgba(0,0,0,0.14)' }}>
+                {LANGUAGE_OPTIONS.map(({ value, label, nativeLabel }) => (
                   <button
                     key={value}
                     type="button"
+                    role="menuitemradio"
+                    aria-checked={locale === value}
                     onClick={() => chooseLanguage(value)}
-                    className="w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
-                    style={{ color: language === value ? 'var(--primary)' : 'var(--foreground)', fontWeight: language === value ? 700 : 400 }}
+                    className="flex w-full items-center justify-between gap-4 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+                    style={{ color: locale === value ? 'var(--primary)' : 'var(--foreground)', fontWeight: locale === value ? 700 : 400 }}
                   >
-                    {label}
+                    <span>{nativeLabel}</span>
+                    <small style={{ color: locale === value ? 'var(--primary)' : 'var(--muted-foreground)', fontSize: 11, fontWeight: 500 }}>{label}</small>
                   </button>
                 ))}
               </div>
@@ -326,7 +330,7 @@ export default function Topbar({
           <button
             onClick={() => navigate('/settings')}
             style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: location.pathname === '/settings' ? 'var(--accent)' : 'transparent', border: 'none', cursor: 'pointer', color: location.pathname === '/settings' ? 'var(--primary)' : 'var(--foreground)' }}
-            title="系统设置"
+            title={t('systemSettings')}
           >
             <SettingsIcon size={16} />
           </button>
@@ -335,7 +339,7 @@ export default function Topbar({
           <button
             onClick={onOpenThemePanel}
             style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--input)', border: '1px solid var(--border)', cursor: 'pointer', color: 'var(--primary)', transition: 'background 0.2s' }}
-            title="主题设置"
+            title={t('themeSettings')}
           >
             <SlidersIcon size={16} />
           </button>
@@ -348,8 +352,8 @@ export default function Topbar({
                 setAccountMenuOpen(open => !open);
                 setLanguageMenuOpen(false);
               }}
-              title="账户菜单"
-              aria-label="打开账户菜单"
+              title={t('accountMenu')}
+              aria-label={t('accountMenu')}
               aria-expanded={accountMenuOpen}
               style={{ width: 36, height: 36, borderRadius: 10, background: accountMenuOpen ? 'var(--accent)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, border: accountMenuOpen ? '1px solid var(--primary)' : '1px solid transparent', overflow: 'hidden', padding: 0 }}
             >
@@ -370,7 +374,7 @@ export default function Topbar({
             {accountMenuOpen && (
               <div
                 role="menu"
-                aria-label="账户菜单"
+                aria-label={t('accountMenu')}
                 style={{ position: 'absolute', right: 0, top: 44, zIndex: 150, width: 250, padding: 8, borderRadius: 12, border: '1px solid var(--border)', background: 'var(--popover)', boxShadow: '0 14px 32px rgba(0,0,0,0.16)' }}
               >
                 <button
@@ -405,7 +409,7 @@ export default function Topbar({
                   onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
                 >
                   <UserRoundIcon size={16} color="var(--primary)" />
-                  个人中心
+                  {t('profile')}
                 </button>
                 <button
                   type="button"
@@ -419,7 +423,7 @@ export default function Topbar({
                   onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
                 >
                   <ShieldCheckIcon size={16} color="var(--primary)" />
-                  账号安全
+                  {t('accountSecurity')}
                 </button>
                 <button
                   type="button"
@@ -433,7 +437,7 @@ export default function Topbar({
                   onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
                 >
                   <BellIcon size={16} color="var(--primary)" />
-                  消息中心
+                  {t('messageCenter')}
                 </button>
                 <button
                   type="button"
@@ -447,7 +451,7 @@ export default function Topbar({
                   onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
                 >
                   <CircleHelpIcon size={16} color="var(--primary)" />
-                  帮助与反馈
+                  {t('helpFeedback')}
                 </button>
                 <div style={{ height: 1, margin: '4px 2px', background: 'var(--border)' }} />
                 <button
@@ -455,13 +459,13 @@ export default function Topbar({
                   role="menuitem"
                   onClick={() => {
                     setAccountMenuOpen(false);
-                    toast.success('已退出登录');
+                    toast.success(t('signOut'));
                     navigate('/login');
                   }}
                   style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 3, padding: '9px 11px', color: 'var(--foreground)', background: 'var(--secondary)', border: '1px solid var(--border)', borderRadius: 7, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
                 >
                   <LogOutIcon size={15} />
-                  退出登录
+                  {t('signOut')}
                 </button>
               </div>
             )}

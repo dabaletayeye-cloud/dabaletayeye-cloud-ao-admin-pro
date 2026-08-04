@@ -1,6 +1,8 @@
 import { MOCK_NEW_USERS } from '../data/mockData';
+import { useTranslation } from 'react-i18next';
 
 export default function NewUserList() {
+  const { t } = useTranslation();
   return (
     <div data-cmp="NewUserList" className="flex flex-col gap-0">
       {MOCK_NEW_USERS.map((user, idx) => (
@@ -21,7 +23,7 @@ export default function NewUserList() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
-                {user.name}
+                {t(`dashboard.newUserName${idx + 1}`, { defaultValue: user.name })}
               </span>
               <span
                 className="text-xs px-1.5 py-0.5 rounded-full flex-shrink-0"
@@ -33,11 +35,11 @@ export default function NewUserList() {
                   fontWeight: 600,
                 }}
               >
-                {user.gender}
+                {user.gender === '女' ? t('dashboard.female') : t('dashboard.male')}
               </span>
             </div>
             <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-              {user.region}
+              {t(`dashboard.newUserRegion${idx + 1}`, { defaultValue: user.region })}
             </div>
           </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 import {
   MousePointerClickIcon,
   FormInputIcon,
@@ -102,6 +103,37 @@ const COMP_GROUPS: CompGroup[] = [
 ];
 
 const TOTAL = COMP_GROUPS.reduce((s, g) => s + g.cards.length, 0);
+
+const GROUP_I18N_KEYS: Record<string, string> = {
+  '基础组件': 'basic',
+  '表单': 'form',
+  '数据': 'data',
+  '反馈': 'feedback',
+  '导航': 'navigation',
+  '工具': 'tools',
+};
+
+const CARD_I18N_KEYS: Record<string, { name: string; desc: string }> = {
+  '/comp/buttons': { name: 'button', desc: 'buttonDesc' },
+  '/comp/icons': { name: 'icons', desc: 'iconsDesc' },
+  '/comp/forms': { name: 'form', desc: 'formDesc' },
+  '/comp/table': { name: 'table', desc: 'tableDesc' },
+  '/comp/display': { name: 'display', desc: 'displayDesc' },
+  '/comp/feedback': { name: 'dialog', desc: 'dialogDesc' },
+  '/comp/watermark': { name: 'watermark', desc: 'watermarkDesc' },
+  '/comp/confetti': { name: 'confetti', desc: 'confettiDesc' },
+  '/comp/nav': { name: 'nav', desc: 'navDesc' },
+  '/comp/context-menu': { name: 'context', desc: 'contextDesc' },
+  '/comp/rich-editor': { name: 'editor', desc: 'editorDesc' },
+  '/comp/image-crop': { name: 'crop', desc: 'cropDesc' },
+  '/comp/video-player': { name: 'video', desc: 'videoDesc' },
+  '/comp/qrcode': { name: 'qrcode', desc: 'qrcodeDesc' },
+  '/comp/drag': { name: 'drag', desc: 'dragDesc' },
+  '/comp/text-scroll': { name: 'scroll', desc: 'scrollDesc' },
+  '/comp/excel': { name: 'excel', desc: 'excelDesc' },
+  '/comp/number-roll': { name: 'number', desc: 'numberDesc' },
+  '/comp/word-cloud': { name: 'wordCloud', desc: 'wordCloudDesc' },
+};
 
 /* ─────────────── page-level fade transition ──────────────── */
 // A thin overlay that covers the page on navigate, creating a fade-out effect.
@@ -252,6 +284,7 @@ function CompCardItem({ card, accentColor, onNavigate, visible, animDelay }: Com
 
 /* ─────────────────── main page ─────────────────── */
 export default function OverviewPage() {
+  const { t } = useTranslation();
   const { themeState } = useTheme();
   const isManga = themeState?.themeId === 'manga';
   const primaryColor = isManga ? '#E91E8C' : 'var(--primary)';
@@ -259,9 +292,25 @@ export default function OverviewPage() {
   const [keyword, setKeyword] = useState('');
   const { overlayRef, fadeGo } = useFadeNavigate();
 
+  const localizedGroups = COMP_GROUPS.map((group) => {
+    const groupKey = GROUP_I18N_KEYS[group.title] ?? group.title;
+    return {
+      ...group,
+      title: t(`components.overview.groups.${groupKey}.title`, { defaultValue: group.title }),
+      cards: group.cards.map((card) => {
+        const keys = CARD_I18N_KEYS[card.path];
+        return keys ? {
+          ...card,
+          name: t(`components.overview.groups.${groupKey}.${keys.name}`, { defaultValue: card.name }),
+          desc: t(`components.overview.groups.${groupKey}.${keys.desc}`, { defaultValue: card.desc }),
+        } : card;
+      }),
+    };
+  });
+
   // filter
   const q = keyword.trim().toLowerCase();
-  const filteredGroups = COMP_GROUPS.map((g) => ({
+  const filteredGroups = localizedGroups.map((g) => ({
     ...g,
     cards: q
       ? g.cards.filter(
@@ -327,11 +376,11 @@ export default function OverviewPage() {
                 letterSpacing: '-0.3px',
               }}
             >
-              组件总览
+              {t('components.overview.title')}
             </h1>
           </div>
           <p style={{ fontSize: 14, color: 'var(--muted-foreground)', margin: 0, paddingLeft: 46 }}>
-            共 {TOTAL} 个组件，按分类快速导航
+            {t('components.overview.subtitle', { count: TOTAL })}
           </p>
         </div>
 
@@ -355,7 +404,7 @@ export default function OverviewPage() {
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            placeholder="搜索组件名称或说明…"
+            placeholder={t('components.overview.searchPlaceholder')}
             style={{
               width: '100%',
               height: 38,
@@ -416,7 +465,7 @@ export default function OverviewPage() {
             transition: 'opacity 0.2s',
           }}
         >
-          {COMP_GROUPS.map((g) => (
+          {localizedGroups.map((g) => (
             <div
               key={g.title}
               style={{
@@ -461,10 +510,10 @@ export default function OverviewPage() {
         >
           <div style={{ fontSize: 13, color: 'var(--muted-foreground)', paddingBottom: 8 }}>
             {noResult ? (
-              <span>没有找到包含「{keyword}」的组件</span>
+              <span>{t('components.overview.noMatch', { keyword })}</span>
             ) : (
               <span>
-                找到 <strong style={{ color: 'var(--foreground)' }}>{totalFiltered}</strong> 个匹配组件
+                {t('components.overview.matchCount', { count: totalFiltered })}
               </span>
             )}
           </div>
@@ -501,10 +550,10 @@ export default function OverviewPage() {
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 4 }}>
-              未找到匹配组件
+              {t('components.overview.emptyTitle')}
             </div>
             <div style={{ fontSize: 13, color: 'var(--muted-foreground)' }}>
-              换个关键词试试，或直接浏览所有分类
+              {t('components.overview.emptyDesc')}
             </div>
           </div>
           <button
@@ -521,7 +570,7 @@ export default function OverviewPage() {
               transition: 'background 0.15s',
             }}
           >
-            清空搜索
+            {t('components.overview.clearSearch')}
           </button>
         </div>
 
@@ -560,7 +609,7 @@ export default function OverviewPage() {
                     {group.title}
                   </span>
                   <span style={{ fontSize: 12, color: 'var(--muted-foreground)', marginLeft: 2 }}>
-                    {group.cards.length} 个组件
+                    {t('components.overview.cardCount', { count: group.cards.length })}
                   </span>
                   <div style={{ flex: 1, height: 1, background: 'var(--border)', marginLeft: 6 }} />
                 </div>
@@ -600,7 +649,7 @@ export default function OverviewPage() {
           }}
         >
           <LayersIcon size={14} />
-          <span>点击任意卡片即可跳转到对应组件演示页面</span>
+          <span>{t('components.overview.cardHint')}</span>
         </div>
       </div>
     </AdminLayout>

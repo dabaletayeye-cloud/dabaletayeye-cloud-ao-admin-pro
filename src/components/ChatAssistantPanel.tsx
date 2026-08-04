@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { BotIcon, ImageIcon, PaperclipIcon, SendIcon, SmileIcon, XIcon } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { useLocale } from '../hooks/useLocale';
 
 interface ChatMessage {
   id: number;
@@ -32,6 +33,7 @@ interface ChatAssistantPanelProps {
 
 export default function ChatAssistantPanel({ open, onClose }: ChatAssistantPanelProps) {
   const { themeState } = useTheme();
+  const { locale } = useLocale();
   const primary = themeState.themeId === 'manga' ? '#E91E8C' : 'var(--primary)';
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState('');
@@ -41,7 +43,7 @@ export default function ChatAssistantPanel({ open, onClose }: ChatAssistantPanel
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const appendConversation = (content: string, reply: string, imageUrl?: string) => {
-    const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const time = new Date().toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
     setMessages(previous => [
       ...previous,
       { id: Date.now(), author: 'user', content, time, imageUrl },

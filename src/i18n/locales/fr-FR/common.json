@@ -1,0 +1,19 @@
+{
+  "languagePreference": "Langue",
+  "languageChanged": "Langue modifiée",
+  "search": "Rechercher…",
+  "refreshPage": "Actualiser la page",
+  "fullscreen": "Plein écran",
+  "exitFullscreen": "Quitter le plein écran",
+  "systemSettings": "Paramètres système",
+  "themeSettings": "Paramètres du thème",
+  "accountMenu": "Menu du compte",
+  "profile": "Profil",
+  "accountSecurity": "Sécurité du compte",
+  "messageCenter": "Messages",
+  "helpFeedback": "Aide et commentaires",
+  "signOut": "Se déconnecter",
+  "sidebarExpand": "Développer la barre latérale",
+  "sidebarCollapse": "Réduire la barre latérale",
+  "backHome": "Retour à l’accueil"
+}

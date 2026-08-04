@@ -5,12 +5,14 @@ import { toast } from 'sonner';
 import {
   ArrowLeftIcon,
   CheckIcon,
+  CheckCircle2Icon,
   ChevronDownIcon,
   EyeIcon,
   EyeOffIcon,
   FolderCheckIcon,
   Globe2Icon,
   LockKeyholeIcon,
+  MailIcon,
   MoonIcon,
   ShieldCheckIcon,
   SlidersIcon,
@@ -19,11 +21,18 @@ import {
   UserRoundIcon,
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { LANGUAGE_OPTIONS, useLocale } from '../hooks/useLocale';
 import ThemePanel from '../components/ThemePanel';
+import LocalizedText from '../components/LocalizedText';
 import { getCurrentAccount, saveCurrentAccount } from '../lib/currentAccount';
 import './AuthPage.css';
 
 type AuthMode = 'login' | 'register';
+
+type RegistrationResult = {
+  name: string;
+  email: string;
+};
 
 const ROLE_OPTIONS = [
   { value: 'super-admin', label: '超级管理员' },
@@ -109,6 +118,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { themeState, toggleMode } = useTheme();
+  const { locale, setLocale, t } = useLocale();
   const [mode, setMode] = useState<AuthMode>(location.pathname === '/register' ? 'register' : 'login');
   const [recovery, setRecovery] = useState(false);
   const [role, setRole] = useState('super-admin');
@@ -121,8 +131,10 @@ export default function LoginPage() {
   const [agreed, setAgreed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [themePanelOpen, setThemePanelOpen] = useState(false);
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [verification, setVerification] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [registrationResult, setRegistrationResult] = useState<RegistrationResult | null>(null);
 
   const isRegister = mode === 'register';
   const isVerified = verification >= 92;
@@ -141,6 +153,7 @@ export default function LoginPage() {
   useEffect(() => {
     setMode(location.pathname === '/register' ? 'register' : 'login');
     setRecovery(false);
+    setRegistrationResult(null);
   }, [location.pathname]);
 
   const switchMode = (nextMode: AuthMode) => {
@@ -149,6 +162,7 @@ export default function LoginPage() {
     setPassword('');
     setConfirmPassword('');
     setVerification(0);
+    setRegistrationResult(null);
     navigate(nextMode === 'login' ? '/login' : '/register');
   };
 
@@ -203,8 +217,8 @@ export default function LoginPage() {
         setAccount(registeredAccount);
         setRemember(true);
         setSubmitting(false);
-        toast.success('账号创建成功，请登录');
-        switchMode('login');
+        setRegistrationResult({ name: registeredAccount, email: email.trim() });
+        toast.success('账号创建成功');
       }, 700);
       return;
     }
@@ -239,8 +253,10 @@ export default function LoginPage() {
     }, 700);
   };
 
-  const pageTitle = recovery ? '找回密码' : isRegister ? '创建账号' : '欢迎回来';
-  const pageDescription = recovery
+  const pageTitle = registrationResult ? '账号创建完成' : recovery ? '找回密码' : isRegister ? '创建账号' : '欢迎回来';
+  const pageDescription = registrationResult
+    ? '账号已保存，现在可以使用新账号登录'
+    : recovery
     ? '输入注册邮箱，我们将发送重置链接'
     : isRegister
       ? '填写信息，开始使用 ao-admin-pro'
@@ -248,32 +264,59 @@ export default function LoginPage() {
 
   return (
     <main className="auth-page">
-      <div className="auth-frame">
+      <LocalizedText><div className="auth-frame">
         <AuthVisual />
 
         <section className="auth-main" aria-labelledby="auth-title">
           <header className="auth-toolbar">
-            <Link className="auth-back" to="/" title="返回首页">
+            <Link className="auth-back" to="/" title={t('backHome')}>
               <ArrowLeftIcon size={16} />
-              <span>返回首页</span>
+              <span>{t('backHome')}</span>
             </Link>
             <div className="auth-toolbar-actions">
               <button
                 type="button"
                 className="auth-icon-button"
-                title="主题设置"
+                title={t('themeSettings')}
                 onClick={() => setThemePanelOpen(true)}
               >
                 <SlidersIcon size={17} />
               </button>
-              <button
-                type="button"
-                className="auth-icon-button"
-                title="语言偏好"
-                onClick={() => toast.info('当前提供简体中文界面')}
-              >
-                <Globe2Icon size={17} />
-              </button>
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  className="auth-icon-button"
+                  title={t('languagePreference')}
+                  aria-label={t('languagePreference')}
+                  aria-expanded={languageMenuOpen}
+                  onClick={() => setLanguageMenuOpen((open) => !open)}
+                >
+                  <Globe2Icon size={17} />
+                </button>
+                {languageMenuOpen && (
+                  <div role="menu" aria-label={t('languagePreference')} style={{ position: 'absolute', right: 0, top: 38, zIndex: 30, minWidth: 180, padding: 6, border: '1px solid var(--border)', borderRadius: 10, background: 'var(--popover)', boxShadow: '0 10px 28px rgba(0,0,0,.14)' }}>
+                    {LANGUAGE_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={locale === option.value}
+                        onClick={() => {
+                          setLocale(option.value);
+                          setLanguageMenuOpen(false);
+                          toast.success(`${t('languageChanged')}：${option.nativeLabel}`);
+                        }}
+                        style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '8px 9px', color: locale === option.value ? 'var(--primary)' : 'var(--foreground)', background: 'transparent', border: 'none', borderRadius: 7, cursor: 'pointer', fontSize: 13, fontWeight: locale === option.value ? 700 : 400, textAlign: 'left' }}
+                        onMouseEnter={(event) => { event.currentTarget.style.background = 'var(--accent)'; }}
+                        onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
+                      >
+                        <span>{option.nativeLabel}</span>
+                        <small style={{ color: 'var(--muted-foreground)', fontSize: 11 }}>{option.label}</small>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 className="auth-icon-button"
@@ -291,7 +334,7 @@ export default function LoginPage() {
               <p>{pageDescription}</p>
             </div>
 
-            {!recovery && (
+            {!recovery && !registrationResult && (
               <div className="auth-mode-tabs" role="tablist" aria-label="认证方式">
                 <button
                   type="button"
@@ -314,7 +357,28 @@ export default function LoginPage() {
               </div>
             )}
 
-            <form className="auth-form" onSubmit={handleSubmit}>
+            {registrationResult ? (
+              <section className="auth-registration-result" aria-live="polite">
+                <div className="auth-result-icon"><CheckCircle2Icon size={25} /></div>
+                <div className="auth-result-copy">
+                  <strong>{registrationResult.name}</strong>
+                  <span>已加入 ao-admin-pro</span>
+                </div>
+                <dl className="auth-result-details">
+                  <div>
+                    <dt>账号</dt>
+                    <dd>{registrationResult.name}</dd>
+                  </div>
+                  <div>
+                    <dt>邮箱</dt>
+                    <dd><MailIcon size={15} />{registrationResult.email}</dd>
+                  </div>
+                </dl>
+                <button className="auth-submit" type="button" onClick={() => switchMode('login')}>
+                  立即登录
+                </button>
+              </section>
+            ) : <form className="auth-form" onSubmit={handleSubmit}>
               {recovery ? (
                 <label className="auth-field">
                   <span>邮箱地址</span>
@@ -491,9 +555,9 @@ export default function LoginPage() {
                 {submitting ? <i /> : null}
                 {submitting ? '处理中...' : recovery ? '发送重置链接' : isRegister ? '创建账号' : '登录'}
               </button>
-            </form>
+            </form>}
 
-            <div className="auth-footer">
+            {!registrationResult && <div className="auth-footer">
               {recovery ? (
                 <button type="button" onClick={() => setRecovery(false)}>返回登录</button>
               ) : isRegister ? (
@@ -501,12 +565,12 @@ export default function LoginPage() {
               ) : (
                 <p>还没有账号？<button type="button" onClick={() => switchMode('register')}>注册</button></p>
               )}
-            </div>
+            </div>}
           </div>
 
           <footer className="auth-copyright">© 2026 ao-admin-pro</footer>
         </section>
-      </div>
+      </div></LocalizedText>
       <ThemePanel open={themePanelOpen} onClose={() => setThemePanelOpen(false)} />
     </main>
   );
