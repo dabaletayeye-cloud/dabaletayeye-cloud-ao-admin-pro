@@ -29,7 +29,7 @@ import PermissionPage from './pages/PermissionPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import AccountSecurityPage from './pages/AccountSecurityPage';
-/* CLEAN_DEMO_START: imports */
+/* CLEAN_DEMO_START: components:imports */
 import OverviewPage from './pages/comp/OverviewPage';
 import ButtonsPage from './pages/comp/ButtonsPage';
 import FormsPage from './pages/comp/FormsPage';
@@ -50,6 +50,8 @@ import TextScrollPage from './pages/comp/TextScrollPage';
 import ConfettiPage from './pages/comp/ConfettiPage';
 import ExcelPage from './pages/comp/ExcelPage';
 import WordCloudPage from './pages/comp/WordCloudPage';
+/* CLEAN_DEMO_END: components:imports */
+/* CLEAN_DEMO_START: templates:imports */
 import CardPage from './pages/tmpl/CardPage';
 import BannerPage from './pages/tmpl/BannerPage';
 import ChartPage from './pages/tmpl/ChartPage';
@@ -57,6 +59,7 @@ import CalendarPage from './pages/tmpl/CalendarPage';
 import ChatPage from './pages/tmpl/ChatPage';
 import PricingPage from './pages/tmpl/PricingPage';
 import MapPage from './pages/tmpl/MapPage';
+/* CLEAN_DEMO_END: templates:imports */
 import ArticleGridPage from './pages/article/ArticleGridPage';
 import ArticlePublishPage from './pages/article/ArticlePublishPage';
 import DashboardAnalyticsPage from './pages/dashboard/DashboardAnalyticsPage';
@@ -66,12 +69,13 @@ import FailPage from './pages/result/FailPage';
 import Page403 from './pages/error/Page403';
 import Page404 from './pages/error/Page404';
 import Page500 from './pages/error/Page500';
+/* CLEAN_DEMO_START: examples:imports */
 import BasicTableExamplePage from './pages/examples/BasicTableExamplePage';
 import FrontendPermissionExamplePage from './pages/examples/FrontendPermissionExamplePage';
 import SearchFormExamplePage from './pages/examples/SearchFormExamplePage';
 import SplitTableExamplePage from './pages/examples/SplitTableExamplePage';
 import SocketExamplePage from './pages/examples/SocketExamplePage';
-/* CLEAN_DEMO_END: imports */
+/* CLEAN_DEMO_END: examples:imports */
 
 export default function App() {
   return (
@@ -106,7 +110,7 @@ export default function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/account-security" element={<AccountSecurityPage />} />
-          {/* CLEAN_DEMO_START: routes */}
+          {/* CLEAN_DEMO_START: components:routes */}
           <Route path="/comp/overview" element={<OverviewPage />} />
           <Route path="/comp/buttons" element={<ButtonsPage />} />
           <Route path="/comp/forms" element={<FormsPage />} />
@@ -127,6 +131,8 @@ export default function App() {
           <Route path="/comp/confetti" element={<ConfettiPage />} />
           <Route path="/comp/excel" element={<ExcelPage />} />
           <Route path="/comp/word-cloud" element={<WordCloudPage />} />
+          {/* CLEAN_DEMO_END: components:routes */}
+          {/* CLEAN_DEMO_START: examples:routes */}
           <Route path="/examples/permissions" element={<FrontendPermissionExamplePage />} />
           <Route path="/examples/tabs" element={<NavPage />} />
           <Route path="/examples/basic-table" element={<BasicTableExamplePage />} />
@@ -135,6 +141,8 @@ export default function App() {
           <Route path="/examples/search-form" element={<SearchFormExamplePage />} />
           <Route path="/examples/split-table" element={<SplitTableExamplePage />} />
           <Route path="/examples/socket" element={<SocketExamplePage />} />
+          {/* CLEAN_DEMO_END: examples:routes */}
+          {/* CLEAN_DEMO_START: templates:routes */}
           <Route path="/tmpl/cards" element={<CardPage />} />
           <Route path="/tmpl/banners" element={<BannerPage />} />
           <Route path="/tmpl/charts" element={<ChartPage />} />
@@ -142,7 +150,7 @@ export default function App() {
           <Route path="/tmpl/chat" element={<ChatPage />} />
           <Route path="/tmpl/pricing" element={<PricingPage />} />
           <Route path="/tmpl/map" element={<MapPage />} />
-          {/* CLEAN_DEMO_END: routes */}
+          {/* CLEAN_DEMO_END: templates:routes */}
           <Route path="/article/list" element={<ArticleGridPage />} />
           <Route path="/article/publish" element={<ArticlePublishPage />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalyticsPage />} />

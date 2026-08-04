@@ -6,8 +6,10 @@
   "scripts": {
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "clean:demo": "node scripts/clean-demo.mjs --yes",
-    "clean:demo:dry": "node scripts/clean-demo.mjs --dry-run",
+    "clean:demo": "node scripts/clean-demo.mjs --interactive",
+    "clean:demo:dry": "node scripts/clean-demo.mjs --preset=basic --dry-run",
+    "clean:basic": "node scripts/clean-demo.mjs --preset=basic --yes",
+    "clean:basic:dry": "node scripts/clean-demo.mjs --preset=basic --dry-run",
     "dev": "vite",
     "lint": "eslint .",
     "preview": "vite preview"

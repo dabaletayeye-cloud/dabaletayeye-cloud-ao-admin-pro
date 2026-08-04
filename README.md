@@ -60,8 +60,10 @@ npm run dev
 | `npm run build:dev` | 使用 `development` 模式构建 |
 | `npm run preview` | 在 `5174` 端口预览生产构建 |
 | `npm run lint` | 执行 ESLint 检查 |
-| `npm run clean:demo:dry` | 预览演示内容清理范围，不修改文件 |
-| `npm run clean:demo` | 清理组件中心、功能示例、模板中心及关联地图演示 |
+| `npm run clean:demo` | 打开交互式精简向导，可选择保留哪些演示模块 |
+| `npm run clean:demo:dry` | 预览“仅保留基础业务页面”的清理范围 |
+| `npm run clean:basic` | 仅保留基础业务页面，移除全部演示模块 |
+| `npm run clean:basic:dry` | 预览基础业务模式，不修改文件 |
 
 > Windows PowerShell 如因执行策略无法运行 `npm`，可使用 `npm.cmd run build` 等等效命令。
 
@@ -109,20 +111,37 @@ ao-admin-pro/
 
 ## 清爽开发模式
 
-若项目进入实际业务开发、无需保留演示页面，可先查看清理范围：
-
-```bash
-npm run clean:demo:dry
-```
-
-确认后执行：
+若项目进入实际业务开发、无需保留全部演示页面，可使用精简向导：
 
 ```bash
 npm run clean:demo
+```
+
+向导支持两种模式：
+
+- **仅保留基础业务页面**：移除组件中心、功能示例和模板中心。
+- **自定义保留模块**：逐项决定是否保留“组件中心”“功能示例”“模板中心”。模板中心包含中国地图、世界地图及其数据文件。
+
+也可以使用非交互命令，便于在自动化流程中执行：
+
+```bash
+# 先预览基础业务模式
+npm run clean:basic:dry
+
+# 确认后仅保留基础业务页面
+npm run clean:basic
+
+# 保留组件中心和模板中心，删除功能示例
+npm run clean:demo -- --keep=components,templates --yes
+
+# 预览自定义清理范围，不修改文件
+npm run clean:demo -- --keep=components,templates --dry-run
 npm run build
 ```
 
-该命令会删除 `src/pages/comp`、`src/pages/examples`、`src/pages/tmpl`、地图演示数据及其路由、侧栏入口。操作不可逆，建议先提交当前代码或创建分支再执行。
+可保留模块的标识为 `components`、`examples`、`templates`；使用 `--keep=all` 时不会删除任何演示内容。清理会同步移除对应页面目录、地图演示数据、路由导入与侧栏入口。操作不可逆，建议先提交当前代码或创建分支再执行。
+
+> 功能示例会复用组件中心中的部分页面，因此保留 `examples` 时，清理脚本会自动保留 `components`，避免留下无效路由。
 
 ## 二次开发建议
 

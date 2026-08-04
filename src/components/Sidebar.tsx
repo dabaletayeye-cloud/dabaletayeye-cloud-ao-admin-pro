@@ -92,6 +92,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: '电子商务', path: '/dashboard/ecommerce', icon: <ShoppingCartIcon size={13} /> },
     ],
   },
+  /* CLEAN_DEMO_START: components:navigation */
   {
     type: 'group', icon: <PuzzleIcon size={16} />, label: '组件中心',
     children: [
@@ -117,6 +118,8 @@ export const NAV_ITEMS: NavItem[] = [
       { label: '词云图', path: '/comp/word-cloud', icon: <CloudIcon size={13} /> },
     ],
   },
+  /* CLEAN_DEMO_END: components:navigation */
+  /* CLEAN_DEMO_START: examples:navigation */
   {
     type: 'group', icon: <SparklesIcon size={16} />, label: '功能示例',
     children: [
@@ -130,6 +133,8 @@ export const NAV_ITEMS: NavItem[] = [
       { label: 'Socket 连接', path: '/examples/socket', icon: <ServerIcon size={13} /> },
     ],
   },
+  /* CLEAN_DEMO_END: examples:navigation */
+  /* CLEAN_DEMO_START: templates:navigation */
   {
     type: 'group', icon: <LayoutTemplateIcon size={16} />, label: '模板中心',
     children: [
@@ -142,6 +147,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: '地图', path: '/tmpl/map', icon: <MapIcon size={13} /> },
     ],
   },
+  /* CLEAN_DEMO_END: templates:navigation */
   {
     type: 'group', icon: <FileTextIcon size={16} />, label: '内容管理',
     children: [
