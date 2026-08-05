@@ -163,10 +163,12 @@ export default function App() {
           {/* CLEAN_DEMO_END: components:routes */}
           {/* CLEAN_DEMO_START: examples:routes */}
           <Route path="/examples/permissions" element={<FrontendPermissionExamplePage />} />
+          {/* CLEAN_DEMO_START: components:example-routes */}
           <Route path="/examples/tabs" element={<NavPage />} />
-          <Route path="/examples/basic-table" element={<BasicTableExamplePage />} />
           <Route path="/examples/advanced-table" element={<DataTablePage />} />
           <Route path="/examples/forms" element={<FormsPage />} />
+          {/* CLEAN_DEMO_END: components:example-routes */}
+          <Route path="/examples/basic-table" element={<BasicTableExamplePage />} />
           <Route path="/examples/search-form" element={<SearchFormExamplePage />} />
           <Route path="/examples/split-table" element={<SplitTableExamplePage />} />
           <Route path="/examples/socket" element={<SocketExamplePage />} />

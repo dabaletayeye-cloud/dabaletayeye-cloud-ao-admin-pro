@@ -1,6 +1,8 @@
 import { access, readFile, rm, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
+import { promisify } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -11,17 +13,22 @@ const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const confirmed = args.includes('--yes');
 const interactive = args.includes('--interactive');
+const allowDirty = args.includes('--allow-dirty');
+const execFileAsync = promisify(execFile);
 
 const DEMO_MODULES = [
   {
     id: 'components',
     label: '组件中心',
-    description: '表单、表格、词云图、二维码等组件演示页面',
+    description: '表单、表格、词云图、二维码等组件演示页面（不会删除 src/components 下的通用组件）',
     targets: ['src/pages/comp'],
     blocks: [
       { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: components:imports */', end: '/* CLEAN_DEMO_END: components:imports */' },
       { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: components:routes */}', end: '{/* CLEAN_DEMO_END: components:routes */}' },
+      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: components:example-routes */}', end: '{/* CLEAN_DEMO_END: components:example-routes */}' },
       { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: components:navigation */', end: '/* CLEAN_DEMO_END: components:navigation */' },
+      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: components:example-navigation */', end: '/* CLEAN_DEMO_END: components:example-navigation */' },
+      { file: 'src/components/NavigationExtras.tsx', start: '/* CLEAN_DEMO_START: components:example-route-labels */', end: '/* CLEAN_DEMO_END: components:example-route-labels */' },
     ],
   },
   {
@@ -48,13 +55,9 @@ const DEMO_MODULES = [
   },
 ];
 
-const MODULE_DEPENDENCIES = [
-  {
-    module: 'examples',
-    dependency: 'components',
-    reason: '功能示例中的标签页、高级表格和表单会复用组件中心页面。',
-  },
-];
+// Component-page references from the examples module are removed by dedicated
+// markers above, so deleting the component center never needs to delete all examples.
+const MODULE_DEPENDENCIES = [];
 
 function optionValue(name) {
   const prefix = `${name}=`;
@@ -64,20 +67,25 @@ function optionValue(name) {
 
 function printUsage() {
   console.log(`\n用法：
+  npm run clean                              # 打开交互式精简向导
   npm run clean:demo                         # 打开交互式精简向导
+  npm run clean:components                   # 交互确认后仅清理组件中心
+  npm run clean:components:dry               # 预览组件中心清理范围
   npm run clean:basic                        # 仅保留基础业务页面
   npm run clean:basic:dry                    # 预览“仅保留基础业务”的清理范围
   npm run clean:demo -- --keep=components,templates --yes
                                               # 保留指定模块并立即清理其他模块
+  npm run clean:demo -- --remove=components --yes
+                                              # 仅清理组件中心
   npm run clean:demo                         # 交互选择：基础 / 编号多选 / 全部 / 取消
   npm run clean:demo -- --preset=basic --dry-run
                                               # 非交互预览基础业务模式
 
 可保留模块：${DEMO_MODULES.map((module) => module.id).join('、')}
-参数：--keep=<模块列表>  --preset=basic  --dry-run  --yes  --interactive  --help\n`);
+参数：--keep=<模块列表>  --remove=<模块列表>  --preset=basic  --dry-run  --yes  --interactive  --allow-dirty  --help\n`);
 }
 
-function parseKeepList(value) {
+function parseModuleList(value) {
   if (value === undefined) return undefined;
   if (value === 'all') return DEMO_MODULES.map((module) => module.id);
   if (value === 'none' || value.trim() === '') return [];
@@ -102,6 +110,25 @@ function resolveKeepDependencies(ids) {
   }
 
   return { ids: [...keep], autoKept };
+}
+
+function resolveRemoveDependencies(ids) {
+  const remove = new Set(ids);
+  const autoRemoved = [];
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+    for (const dependency of MODULE_DEPENDENCIES) {
+      if (remove.has(dependency.dependency) && !remove.has(dependency.module)) {
+        remove.add(dependency.module);
+        autoRemoved.push(dependency);
+        changed = true;
+      }
+    }
+  }
+
+  return { ids: [...remove], autoRemoved };
 }
 
 function removeMarkedBlock(source, block) {
@@ -135,6 +162,27 @@ async function exists(filePath) {
     return true;
   } catch {
     return false;
+  }
+}
+
+async function verifyGitCheckpoint() {
+  try {
+    const { stdout: insideWorkTree } = await execFileAsync('git', ['rev-parse', '--is-inside-work-tree'], { cwd: projectRoot });
+    if (insideWorkTree.trim() !== 'true') throw new Error('当前目录不是 Git 仓库。');
+
+    const [{ stdout: revision }, { stdout: status }] = await Promise.all([
+      execFileAsync('git', ['rev-parse', '--short', 'HEAD'], { cwd: projectRoot }),
+      execFileAsync('git', ['status', '--short', '--untracked-files=all'], { cwd: projectRoot }),
+    ]);
+    const dirty = status.trim().length > 0;
+
+    if (dirty && !allowDirty) {
+      throw new Error('检测到未提交的 Git 修改，已取消清理。请先提交或暂存修改；如已确认风险，可显式添加 --allow-dirty。');
+    }
+
+    return { revision: revision.trim(), dirty };
+  } catch (error) {
+    throw new Error(`无法通过 Git 安全检查：${error.message}`);
   }
 }
 
@@ -183,17 +231,29 @@ async function promptForKeepModules() {
 
 async function chooseKeepModules() {
   const keepValue = optionValue('--keep');
+  const removeValue = optionValue('--remove');
   const preset = optionValue('--preset');
 
-  if (keepValue !== undefined && preset !== undefined) {
-    throw new Error('--keep 与 --preset 不能同时使用。');
+  const selectedOptions = [keepValue, removeValue, preset].filter((value) => value !== undefined);
+  if (selectedOptions.length > 1) {
+    throw new Error('--keep、--remove 与 --preset 不能同时使用。');
   }
   if (preset !== undefined) {
     if (preset !== 'basic') throw new Error('当前只支持 --preset=basic。');
-    return [];
+    return { ids: [], autoRemoved: [] };
   }
-  if (keepValue !== undefined) return parseKeepList(keepValue);
-  if (interactive || input.isTTY) return promptForKeepModules();
+  if (keepValue !== undefined) return { ids: parseModuleList(keepValue), autoRemoved: [] };
+  if (removeValue !== undefined) {
+    const { ids: removeIds, autoRemoved } = resolveRemoveDependencies(parseModuleList(removeValue));
+    return {
+      ids: DEMO_MODULES.filter((module) => !removeIds.includes(module.id)).map((module) => module.id),
+      autoRemoved,
+    };
+  }
+  if (interactive || input.isTTY) {
+    const ids = await promptForKeepModules();
+    return ids === null ? null : { ids, autoRemoved: [] };
+  }
 
   throw new Error('当前环境不支持交互输入，请使用 --preset=basic 或 --keep=<模块列表> 指定清理范围。');
 }
@@ -218,7 +278,7 @@ async function buildSourceChanges(removeModules) {
   return changes;
 }
 
-function printPlan(removeModules, existingTargets) {
+function printPlan(removeModules, existingTargets, sourceChanges) {
   const keepModules = DEMO_MODULES.filter((module) => !removeModules.includes(module));
   console.log('\n将保留：');
   console.log(keepModules.length > 0 ? `  - ${keepModules.map((module) => module.label).join('、')}` : '  - 仅保留基础业务页面');
@@ -228,7 +288,10 @@ function printPlan(removeModules, existingTargets) {
     console.log('\n将删除的目录或文件：');
     for (const target of existingTargets) console.log(`  - ${target}`);
   }
-  console.log('\n同时会移除对应的路由、导入和侧边栏菜单项。');
+  if (sourceChanges.length > 0) {
+    console.log('\n将更新的路由、导航或页签文件：');
+    for (const change of sourceChanges) console.log(`  - ${path.relative(projectRoot, change.filePath)}`);
+  }
 }
 
 async function main() {
@@ -237,17 +300,22 @@ async function main() {
     return;
   }
 
-  const selectedModuleIds = await chooseKeepModules();
-  if (selectedModuleIds === null) {
+  const selection = await chooseKeepModules();
+  if (selection === null) {
     console.log('\n已取消，未修改任何文件。');
     return;
   }
 
-  const { ids: keepModuleIds, autoKept } = resolveKeepDependencies(selectedModuleIds);
+  const { ids: keepModuleIds, autoKept } = resolveKeepDependencies(selection.ids);
   for (const dependency of autoKept) {
     const module = DEMO_MODULES.find((item) => item.id === dependency.module);
     const required = DEMO_MODULES.find((item) => item.id === dependency.dependency);
     console.log(`\n已自动保留「${required.label}」：${module.label}依赖该模块。${dependency.reason}`);
+  }
+  for (const dependency of selection.autoRemoved) {
+    const module = DEMO_MODULES.find((item) => item.id === dependency.module);
+    const required = DEMO_MODULES.find((item) => item.id === dependency.dependency);
+    console.log(`\n已自动清理「${module.label}」：它依赖即将移除的「${required.label}」。${dependency.reason}`);
   }
 
   const removeModules = DEMO_MODULES.filter((module) => !keepModuleIds.includes(module.id));
@@ -265,12 +333,19 @@ async function main() {
   }
 
   const sourceChanges = await buildSourceChanges(removeModules);
-  printPlan(removeModules, existingTargets);
+  printPlan(removeModules, existingTargets, sourceChanges);
 
   if (dryRun) {
     console.log('\n预览结束，未修改任何文件。');
     return;
   }
+
+  const gitCheckpoint = await verifyGitCheckpoint();
+  console.log(
+    gitCheckpoint.dirty
+      ? `\nGit 保护已被 --allow-dirty 显式绕过；当前提交：${gitCheckpoint.revision}`
+      : `\nGit 保护：工作区干净，当前提交：${gitCheckpoint.revision}`,
+  );
 
   let approved = confirmed;
   if (!approved) {

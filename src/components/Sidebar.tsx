@@ -135,10 +135,12 @@ export const NAV_ITEMS: NavItem[] = [
     type: 'group', icon: <SparklesIcon size={16} />, label: '功能示例',
     children: [
       { label: '前端权限', path: '/examples/permissions', icon: <ShieldCheckIcon size={13} /> },
+      /* CLEAN_DEMO_START: components:example-navigation */
       { label: '标签页', path: '/examples/tabs', icon: <NavigationIcon size={13} /> },
-      { label: '基础表格', path: '/examples/basic-table', icon: <TableIcon size={13} /> },
       { label: '高级表格', path: '/examples/advanced-table', icon: <TableIcon size={13} /> },
       { label: '表单', path: '/examples/forms', icon: <FormInputIcon size={13} /> },
+      /* CLEAN_DEMO_END: components:example-navigation */
+      { label: '基础表格', path: '/examples/basic-table', icon: <TableIcon size={13} /> },
       { label: '搜索表单', path: '/examples/search-form', icon: <SearchIcon size={13} /> },
       { label: '左右布局表格', path: '/examples/split-table', icon: <PanelTopIcon size={13} /> },
       { label: 'Socket 连接', path: '/examples/socket', icon: <ServerIcon size={13} /> },

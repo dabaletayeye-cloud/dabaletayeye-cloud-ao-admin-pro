@@ -36,10 +36,12 @@ const ROUTE_LABELS: Record<string, string> = {
   '/analytics/portrait': '用户画像',
   '/analytics/funnel': '转化漏斗',
   '/examples/permissions': '前端权限',
+  /* CLEAN_DEMO_START: components:example-route-labels */
   '/examples/tabs': '标签页',
-  '/examples/basic-table': '基础表格',
   '/examples/advanced-table': '高级表格',
   '/examples/forms': '表单',
+  /* CLEAN_DEMO_END: components:example-route-labels */
+  '/examples/basic-table': '基础表格',
   '/examples/search-form': '搜索表单',
   '/examples/split-table': '左右布局表格',
   '/examples/socket': 'Socket 连接',
