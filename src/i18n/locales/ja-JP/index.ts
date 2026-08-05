@@ -15,5 +15,7 @@ import marketing from './marketing.json';
 import pageExtras from './pageExtras.json';
 import business from './business.json';
 import systemPages from './systemPages.json';
+import lowcode from './lowcode.json';
+import ai from './ai.json';
 
-export default { translation: { ...common, navigation, dashboard, analytics, components, theme, auth, ecommerce, templates, content, feedback, analyticsPages, media, marketing, pageExtras, business, systemPages } };
+export default { translation: { ...common, navigation, dashboard, analytics, components, theme, auth, ecommerce, templates, content, feedback, analyticsPages, media, marketing, pageExtras, business, systemPages, lowcode, ai } };
