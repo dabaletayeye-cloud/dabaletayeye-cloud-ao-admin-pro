@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { toast } from '../lib/localizedToast';
 import AdminLayout from '../components/AdminLayout';
+import PageHeader from '../components/PageHeader';
+import MetricCards from '../components/MetricCards';
+import FilterToolbar, { SearchInput } from '../components/FilterToolbar';
 import { useTheme } from '../hooks/useTheme';
 import {
-  SearchIcon, PlusIcon, RotateCcwIcon, TicketIcon,
+  PlusIcon, RotateCcwIcon, TicketIcon,
   CheckCircleIcon, ClockIcon, XCircleIcon, MinusCircleIcon,
   EditIcon, CopyIcon, Trash2Icon,
 } from 'lucide-react';
@@ -105,52 +108,22 @@ export default function CouponPage() {
   return (
     <AdminLayout>
       <div data-cmp="CouponPage" style={{ padding: '24px', minHeight: '100%' }}>
-        {/* Header */}
-        <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', margin: 0 }}>优惠券管理</h1>
-          <p style={{ fontSize: 13, color: 'var(--muted-foreground)', marginTop: 4 }}>管理所有优惠券的发放、使用及有效期</p>
-        </div>
+        <PageHeader title="优惠券管理" description="管理所有优惠券的发放、使用及有效期" />
 
-        {/* Stat Cards */}
-        <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-          {statCards.map(card => (
-            <div
-              key={card.label}
-              style={{
-                flex: '1 1 180px',
-                background: 'var(--card)',
-                border: '1px solid var(--border)',
-                borderRadius: 12,
-                padding: '18px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 14,
-                boxShadow: 'var(--shadow-x, 0) var(--shadow-y, 2px) var(--shadow-blur, 8px) var(--shadow-spread, 0) var(--shadow-color, rgba(0,0,0,0.06))',
-              }}
+        <MetricCards items={statCards} />
+
+        <FilterToolbar
+          style={{ marginBottom: 16 }}
+          actions={(
+            <button
+              onClick={() => handleCouponAction('新建优惠券')}
+              style={{ height: 34, padding: '0 16px', border: 'none', borderRadius: 8, background: primary, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
             >
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: `color-mix(in srgb, ${card.color} 12%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: card.color, flexShrink: 0 }}>
-                {card.icon}
-              </div>
-              <div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', lineHeight: 1.2 }}>{card.value}</div>
-                <div style={{ fontSize: 12, color: 'var(--muted-foreground)', marginTop: 2 }}>{card.label}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Filter Bar */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px 20px', marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 160 }}>
-            <SearchIcon size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-foreground)' }} />
-            <input
-              value={tempSearch}
-              onChange={e => setTempSearch(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleQuery()}
-              placeholder="搜索券名称/ID"
-              style={{ width: '100%', height: 34, paddingLeft: 30, paddingRight: 10, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--background)', color: 'var(--foreground)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-            />
-          </div>
+              <PlusIcon size={14} />新建优惠券
+            </button>
+          )}
+        >
+          <SearchInput value={tempSearch} onChange={setTempSearch} onEnter={handleQuery} placeholder="搜索券名称/ID" />
           <select
             value={tempType}
             onChange={e => setTempType(e.target.value as CouponType | '全部')}
@@ -185,13 +158,7 @@ export default function CouponPage() {
           >
             查询
           </button>
-          <button
-            onClick={() => handleCouponAction('新建优惠券')}
-            style={{ height: 34, padding: '0 16px', border: 'none', borderRadius: 8, background: primary, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}
-          >
-            <PlusIcon size={14} />新建优惠券
-          </button>
-        </div>
+        </FilterToolbar>
 
         {/* Table */}
         <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--shadow-x, 0) var(--shadow-y, 2px) var(--shadow-blur, 8px) var(--shadow-spread, 0) var(--shadow-color, rgba(0,0,0,0.06))' }}>

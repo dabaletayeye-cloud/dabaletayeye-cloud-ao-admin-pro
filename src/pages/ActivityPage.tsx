@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { toast } from '../lib/localizedToast';
 import AdminLayout from '../components/AdminLayout';
+import PageHeader from '../components/PageHeader';
+import MetricCards from '../components/MetricCards';
+import FilterToolbar, { SearchInput } from '../components/FilterToolbar';
 import { useTheme } from '../hooks/useTheme';
 import {
-  SearchIcon, PlusIcon, RotateCcwIcon,
+  PlusIcon, RotateCcwIcon,
   CalendarIcon, UsersIcon, ZapIcon, TagIcon,
   EditIcon, Trash2Icon, EyeIcon, CopyIcon,
 } from 'lucide-react';
@@ -142,45 +145,21 @@ export default function ActivityPage() {
   return (
     <AdminLayout>
       <div data-cmp="ActivityPage" style={{ padding: '24px', minHeight: '100%' }}>
-        {/* Header */}
-        <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', margin: 0 }}>活动管理</h1>
-          <p style={{ fontSize: 13, color: 'var(--muted-foreground)', marginTop: 4 }}>创建并管理各类营销活动，提升用户参与度</p>
-        </div>
+        <PageHeader title="活动管理" description="创建并管理各类营销活动，提升用户参与度" />
 
-        {/* Stat Cards */}
-        <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-          {statCards.map(card => (
-            <div
-              key={card.label}
-              style={{
-                flex: '1 1 160px',
-                background: 'var(--card)',
-                border: '1px solid var(--border)',
-                borderRadius: 12,
-                padding: '18px 20px',
-                textAlign: 'center',
-                boxShadow: 'var(--shadow-x, 0) var(--shadow-y, 2px) var(--shadow-blur, 8px) var(--shadow-spread, 0) var(--shadow-color, rgba(0,0,0,0.06))',
-              }}
+        <MetricCards items={statCards} variant="center" minWidth={160} />
+
+        <FilterToolbar
+          actions={(
+            <button
+              onClick={() => toast.success('已打开新建活动操作')}
+              style={{ height: 34, padding: '0 16px', border: 'none', borderRadius: 8, background: primary, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
             >
-              <div style={{ fontSize: 28, fontWeight: 800, color: card.color, lineHeight: 1.2 }}>{card.value}</div>
-              <div style={{ fontSize: 13, color: 'var(--muted-foreground)', marginTop: 4 }}>{card.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Filter Bar */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 160 }}>
-            <SearchIcon size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-foreground)' }} />
-            <input
-              value={tempSearch}
-              onChange={e => setTempSearch(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleQuery()}
-              placeholder="搜索活动名称/ID"
-              style={{ width: '100%', height: 34, paddingLeft: 30, paddingRight: 10, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--background)', color: 'var(--foreground)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-            />
-          </div>
+              <PlusIcon size={14} />新建活动
+            </button>
+          )}
+        >
+          <SearchInput value={tempSearch} onChange={setTempSearch} onEnter={handleQuery} placeholder="搜索活动名称/ID" />
           <select
             value={tempType}
             onChange={e => setTempType(e.target.value as ActivityType | '全部')}
@@ -221,13 +200,7 @@ export default function ActivityPage() {
           >
             查询
           </button>
-          <button
-            onClick={() => toast.success('已打开新建活动操作')}
-            style={{ height: 34, padding: '0 16px', border: 'none', borderRadius: 8, background: primary, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}
-          >
-            <PlusIcon size={14} />新建活动
-          </button>
-        </div>
+        </FilterToolbar>
 
         {/* Activity Cards Grid */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20 }}>
