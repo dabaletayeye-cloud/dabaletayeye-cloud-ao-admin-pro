@@ -1,1 +1,42 @@
-{}
+{
+  "fileManager": {
+    "title": "文件管理",
+    "description": "集中管理系统文件，支持上传、筛选、下载和删除操作",
+    "upload": "上传文件",
+    "folders": "文件夹",
+    "allFiles": "全部文件",
+    "uploads": "上传文件",
+    "documents": "文档",
+    "images": "图片",
+    "archives": "压缩包",
+    "searchPlaceholder": "搜索文件名称",
+    "allTypes": "全部类型",
+    "types": {
+      "document": "文档",
+      "spreadsheet": "表格",
+      "image": "图片",
+      "archive": "压缩包"
+    },
+    "name": "文件名称",
+    "type": "类型",
+    "size": "大小",
+    "path": "存储路径",
+    "uploader": "上传人",
+    "updatedAt": "更新时间",
+    "actions": "操作",
+    "download": "下载",
+    "delete": "删除",
+    "selectAll": "选择全部文件",
+    "selectFile": "选择 {{name}}",
+    "selected": "已选择 {{count}} 个文件",
+    "clearSelection": "取消选择",
+    "batchDelete": "批量删除",
+    "noResults": "暂无匹配的文件",
+    "showing": "显示 {{count}} / {{total}} 个文件",
+    "fileAdded": "已添加 {{name}}",
+    "filesAdded": "已添加 {{count}} 个文件",
+    "downloadStarted": "开始下载 {{name}}",
+    "fileDeleted": "文件已删除",
+    "filesDeleted": "已删除 {{count}} 个文件"
+  }
+}

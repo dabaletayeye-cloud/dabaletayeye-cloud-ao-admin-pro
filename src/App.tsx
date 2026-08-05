@@ -27,6 +27,7 @@ import SystemConfigPage from './pages/SystemConfigPage';
 import ResultPage from './pages/ResultPage';
 import ErrorPage from './pages/ErrorPage';
 import ServerPage from './pages/ServerPage';
+import FileManagementPage from './pages/FileManagementPage';
 import PermissionPage from './pages/PermissionPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
@@ -120,6 +121,7 @@ export default function App() {
           <Route path="/system/dict" element={<DictPage />} />
           <Route path="/system/config" element={<SystemConfigPage />} />
           <Route path="/system/servers" element={<ServerPage />} />
+          <Route path="/system/files" element={<FileManagementPage />} />
           <Route path="/permissions" element={<PermissionPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />

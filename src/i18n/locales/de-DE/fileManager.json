@@ -1,0 +1,19 @@
+{
+  "fileManager": {
+    "title": "Dateiverwaltung",
+    "description": "Systemdateien zentral verwalten: hochladen, filtern, herunterladen und löschen",
+    "upload": "Datei hochladen",
+    "folders": "Ordner",
+    "allFiles": "Alle Dateien",
+    "uploads": "Hochgeladene Dateien",
+    "documents": "Dokumente",
+    "images": "Bilder",
+    "archives": "Archive",
+    "searchPlaceholder": "Nach Dateinamen suchen",
+    "allTypes": "Alle Typen",
+    "types": { "document": "Dokument", "spreadsheet": "Tabelle", "image": "Bild", "archive": "Archiv" },
+    "name": "Name", "type": "Typ", "size": "Größe", "path": "Pfad", "uploader": "Hochgeladen von", "updatedAt": "Aktualisiert", "actions": "Aktionen",
+    "download": "Herunterladen", "delete": "Löschen", "selectAll": "Alle Dateien auswählen", "selectFile": "{{name}} auswählen", "selected": "{{count}} Datei(en) ausgewählt", "clearSelection": "Auswahl aufheben", "batchDelete": "Auswahl löschen",
+    "noResults": "Keine passenden Dateien", "showing": "{{count}} von {{total}} Dateien angezeigt", "fileAdded": "{{name}} wurde hinzugefügt", "filesAdded": "{{count}} Dateien wurden hinzugefügt", "downloadStarted": "{{name}} wird heruntergeladen", "fileDeleted": "Datei gelöscht", "filesDeleted": "{{count}} Dateien gelöscht"
+  }
+}

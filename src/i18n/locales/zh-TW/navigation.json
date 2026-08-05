@@ -22,6 +22,7 @@
   "dictionaries": "字典管理",
   "configuration": "系統設定",
   "servers": "伺服器管理",
+  "fileManager": "檔案管理",
   "permissions": "權限管理",
   "componentOverview": "元件總覽",
   "componentButtons": "按鈕元件",

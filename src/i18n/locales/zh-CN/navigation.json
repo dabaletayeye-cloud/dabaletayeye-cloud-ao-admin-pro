@@ -59,6 +59,7 @@
   "dictionaries": "字典管理",
   "configuration": "系统配置",
   "servers": "服务器管理",
+  "fileManager": "文件管理",
   "permissions": "权限管理",
   "formsExample": "表单",
   "successPage": "成功页",

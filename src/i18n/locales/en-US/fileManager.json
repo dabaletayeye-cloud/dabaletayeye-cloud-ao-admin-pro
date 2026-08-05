@@ -1,0 +1,42 @@
+{
+  "fileManager": {
+    "title": "File manager",
+    "description": "Manage system files with upload, filtering, download, and delete actions",
+    "upload": "Upload file",
+    "folders": "Folders",
+    "allFiles": "All files",
+    "uploads": "Uploads",
+    "documents": "Documents",
+    "images": "Images",
+    "archives": "Archives",
+    "searchPlaceholder": "Search file names",
+    "allTypes": "All types",
+    "types": {
+      "document": "Document",
+      "spreadsheet": "Spreadsheet",
+      "image": "Image",
+      "archive": "Archive"
+    },
+    "name": "Name",
+    "type": "Type",
+    "size": "Size",
+    "path": "Path",
+    "uploader": "Uploader",
+    "updatedAt": "Updated",
+    "actions": "Actions",
+    "download": "Download",
+    "delete": "Delete",
+    "selectAll": "Select all files",
+    "selectFile": "Select {{name}}",
+    "selected": "{{count}} file(s) selected",
+    "clearSelection": "Clear selection",
+    "batchDelete": "Delete selected",
+    "noResults": "No matching files",
+    "showing": "Showing {{count}} of {{total}} files",
+    "fileAdded": "Added {{name}}",
+    "filesAdded": "Added {{count}} files",
+    "downloadStarted": "Downloading {{name}}",
+    "fileDeleted": "File deleted",
+    "filesDeleted": "Deleted {{count}} files"
+  }
+}

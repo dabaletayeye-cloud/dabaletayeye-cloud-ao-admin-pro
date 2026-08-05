@@ -1,0 +1,19 @@
+{
+  "fileManager": {
+    "title": "ファイル管理",
+    "description": "システムファイルを一元管理し、アップロード、絞り込み、ダウンロード、削除ができます",
+    "upload": "ファイルをアップロード",
+    "folders": "フォルダー",
+    "allFiles": "すべてのファイル",
+    "uploads": "アップロード済み",
+    "documents": "ドキュメント",
+    "images": "画像",
+    "archives": "アーカイブ",
+    "searchPlaceholder": "ファイル名を検索",
+    "allTypes": "すべての種類",
+    "types": { "document": "ドキュメント", "spreadsheet": "スプレッドシート", "image": "画像", "archive": "アーカイブ" },
+    "name": "ファイル名", "type": "種類", "size": "サイズ", "path": "パス", "uploader": "アップロード者", "updatedAt": "更新日時", "actions": "操作",
+    "download": "ダウンロード", "delete": "削除", "selectAll": "全ファイルを選択", "selectFile": "{{name}} を選択", "selected": "{{count}} 件のファイルを選択中", "clearSelection": "選択を解除", "batchDelete": "選択項目を削除",
+    "noResults": "一致するファイルはありません", "showing": "{{count}} / {{total}} 件を表示", "fileAdded": "{{name}} を追加しました", "filesAdded": "{{count}} 件のファイルを追加しました", "downloadStarted": "{{name}} のダウンロードを開始しました", "fileDeleted": "ファイルを削除しました", "filesDeleted": "{{count}} 件のファイルを削除しました"
+  }
+}

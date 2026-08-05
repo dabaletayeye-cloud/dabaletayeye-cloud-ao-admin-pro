@@ -1,0 +1,19 @@
+{
+  "fileManager": {
+    "title": "파일 관리",
+    "description": "시스템 파일을 한곳에서 관리하고 업로드, 필터링, 다운로드 및 삭제를 지원합니다",
+    "upload": "파일 업로드",
+    "folders": "폴더",
+    "allFiles": "모든 파일",
+    "uploads": "업로드됨",
+    "documents": "문서",
+    "images": "이미지",
+    "archives": "압축 파일",
+    "searchPlaceholder": "파일 이름 검색",
+    "allTypes": "모든 유형",
+    "types": { "document": "문서", "spreadsheet": "스프레드시트", "image": "이미지", "archive": "압축 파일" },
+    "name": "파일 이름", "type": "유형", "size": "크기", "path": "경로", "uploader": "업로더", "updatedAt": "업데이트 시간", "actions": "작업",
+    "download": "다운로드", "delete": "삭제", "selectAll": "모든 파일 선택", "selectFile": "{{name}} 선택", "selected": "{{count}}개 파일 선택됨", "clearSelection": "선택 해제", "batchDelete": "선택 항목 삭제",
+    "noResults": "일치하는 파일이 없습니다", "showing": "{{total}}개 중 {{count}}개 표시", "fileAdded": "{{name}} 추가됨", "filesAdded": "{{count}}개 파일 추가됨", "downloadStarted": "{{name}} 다운로드를 시작했습니다", "fileDeleted": "파일이 삭제되었습니다", "filesDeleted": "{{count}}개 파일이 삭제되었습니다"
+  }
+}

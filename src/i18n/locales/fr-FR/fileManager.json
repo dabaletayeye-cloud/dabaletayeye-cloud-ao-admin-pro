@@ -1,0 +1,19 @@
+{
+  "fileManager": {
+    "title": "Gestionnaire de fichiers",
+    "description": "Gérez les fichiers système avec des actions d'import, de filtrage, de téléchargement et de suppression",
+    "upload": "Importer un fichier",
+    "folders": "Dossiers",
+    "allFiles": "Tous les fichiers",
+    "uploads": "Fichiers importés",
+    "documents": "Documents",
+    "images": "Images",
+    "archives": "Archives",
+    "searchPlaceholder": "Rechercher par nom de fichier",
+    "allTypes": "Tous les types",
+    "types": { "document": "Document", "spreadsheet": "Feuille de calcul", "image": "Image", "archive": "Archive" },
+    "name": "Nom", "type": "Type", "size": "Taille", "path": "Chemin", "uploader": "Importé par", "updatedAt": "Mis à jour", "actions": "Actions",
+    "download": "Télécharger", "delete": "Supprimer", "selectAll": "Sélectionner tous les fichiers", "selectFile": "Sélectionner {{name}}", "selected": "{{count}} fichier(s) sélectionné(s)", "clearSelection": "Annuler la sélection", "batchDelete": "Supprimer la sélection",
+    "noResults": "Aucun fichier correspondant", "showing": "{{count}} sur {{total}} fichiers affichés", "fileAdded": "{{name}} a été ajouté", "filesAdded": "{{count}} fichiers ont été ajoutés", "downloadStarted": "Téléchargement de {{name}}", "fileDeleted": "Fichier supprimé", "filesDeleted": "{{count}} fichiers supprimés"
+  }
+}

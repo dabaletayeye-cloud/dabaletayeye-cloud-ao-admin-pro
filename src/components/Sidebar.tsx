@@ -5,6 +5,7 @@ import {
   LayoutDashboardIcon,
   FileTextIcon,
   FolderIcon,
+  FolderOpenIcon,
   TagIcon,
   BarChart2Icon,
   UsersIcon,
@@ -240,6 +241,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: '字典管理', path: '/system/dict', icon: <BookOpenIcon size={13} /> },
       { label: '系统配置', path: '/system/config', icon: <ListIcon size={13} /> },
       { label: '服务器管理', path: '/system/servers', icon: <ServerIcon size={13} /> },
+      { label: '文件管理', path: '/system/files', icon: <FolderOpenIcon size={13} /> },
     ],
   }
 ];

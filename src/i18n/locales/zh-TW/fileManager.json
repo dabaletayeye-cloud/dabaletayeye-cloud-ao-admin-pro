@@ -1,0 +1,19 @@
+{
+  "fileManager": {
+    "title": "檔案管理",
+    "description": "集中管理系統檔案，支援上傳、篩選、下載和刪除作業",
+    "upload": "上傳檔案",
+    "folders": "資料夾",
+    "allFiles": "全部檔案",
+    "uploads": "上傳檔案",
+    "documents": "文件",
+    "images": "圖片",
+    "archives": "壓縮檔",
+    "searchPlaceholder": "搜尋檔案名稱",
+    "allTypes": "全部類型",
+    "types": { "document": "文件", "spreadsheet": "試算表", "image": "圖片", "archive": "壓縮檔" },
+    "name": "檔案名稱", "type": "類型", "size": "大小", "path": "儲存路徑", "uploader": "上傳者", "updatedAt": "更新時間", "actions": "操作",
+    "download": "下載", "delete": "刪除", "selectAll": "選取全部檔案", "selectFile": "選取 {{name}}", "selected": "已選取 {{count}} 個檔案", "clearSelection": "取消選取", "batchDelete": "批次刪除",
+    "noResults": "暫無符合條件的檔案", "showing": "顯示 {{count}} / {{total}} 個檔案", "fileAdded": "已新增 {{name}}", "filesAdded": "已新增 {{count}} 個檔案", "downloadStarted": "開始下載 {{name}}", "fileDeleted": "檔案已刪除", "filesDeleted": "已刪除 {{count}} 個檔案"
+  }
+}
