@@ -92,6 +92,21 @@ const ROUTE_LABELS: Record<string, string> = {
   '/comp/confetti': '礼花',
   '/comp/excel': 'Excel 导入导出',
   '/comp/word-cloud': '词云图',
+  '/lowcode/api': '接口编排',
+  '/lowcode/page': '页面设计器',
+  '/lowcode/form': '表单引擎',
+  '/lowcode/report': '报表引擎',
+  '/lowcode/print': '打印模板',
+  '/lowcode/generator': '代码生成器',
+  '/lowcode/datasource': '数据源管理',
+  '/lowcode/release': '发布管理',
+  '/ai/chat': 'AI对话',
+  '/ai/agent': 'AI助手',
+  '/ai/customer-service': 'AI客服',
+  '/ai/knowledge': '知识库',
+  '/ai/prompt': '提示词模板',
+  '/ai/model': '模型管理',
+  '/ai/workflow': 'AI工作流',
 };
 
 function labelFor(path: string) {

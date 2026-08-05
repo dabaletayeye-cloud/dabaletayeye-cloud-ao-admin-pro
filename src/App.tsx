@@ -31,6 +31,16 @@ import PermissionPage from './pages/PermissionPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import AccountSecurityPage from './pages/AccountSecurityPage';
+import ApiOrchestrationPage from './pages/lowcode/ApiOrchestrationPage';
+import PageDesignerPage from './pages/lowcode/PageDesignerPage';
+import DataSourcePage from './pages/lowcode/DataSourcePage';
+import ReleasePage from './pages/lowcode/ReleasePage';
+import FormEnginePage from './pages/lowcode/FormEnginePage';
+import ReportEnginePage from './pages/lowcode/ReportEnginePage';
+import { PrintTemplatePage, CodeGeneratorPage } from './pages/lowcode/LowcodeToolPages';
+import AiChatPage from './pages/ai/AiChatPage';
+import AiAgentPage from './pages/ai/AiAgentPage';
+import { AiCustomerServicePage, AiKnowledgePage, AiPromptPage, AiModelPage, AiWorkflowPage } from './pages/ai/AiOtherPages';
 /* CLEAN_DEMO_START: components:imports */
 import OverviewPage from './pages/comp/OverviewPage';
 import ButtonsPage from './pages/comp/ButtonsPage';
@@ -114,6 +124,21 @@ export default function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/account-security" element={<AccountSecurityPage />} />
+          <Route path="/lowcode/api" element={<ApiOrchestrationPage />} />
+          <Route path="/lowcode/page" element={<PageDesignerPage />} />
+          <Route path="/lowcode/form" element={<FormEnginePage />} />
+          <Route path="/lowcode/report" element={<ReportEnginePage />} />
+          <Route path="/lowcode/print" element={<PrintTemplatePage />} />
+          <Route path="/lowcode/generator" element={<CodeGeneratorPage />} />
+          <Route path="/lowcode/datasource" element={<DataSourcePage />} />
+          <Route path="/lowcode/release" element={<ReleasePage />} />
+          <Route path="/ai/chat" element={<AiChatPage />} />
+          <Route path="/ai/agent" element={<AiAgentPage />} />
+          <Route path="/ai/customer-service" element={<AiCustomerServicePage />} />
+          <Route path="/ai/knowledge" element={<AiKnowledgePage />} />
+          <Route path="/ai/prompt" element={<AiPromptPage />} />
+          <Route path="/ai/model" element={<AiModelPage />} />
+          <Route path="/ai/workflow" element={<AiWorkflowPage />} />
           {/* CLEAN_DEMO_START: components:routes */}
           <Route path="/comp/overview" element={<OverviewPage />} />
           <Route path="/comp/buttons" element={<ButtonsPage />} />

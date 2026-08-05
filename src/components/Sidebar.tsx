@@ -66,6 +66,16 @@ import {
   ServerCrashIcon,
   CloudIcon,
   SearchIcon,
+  WorkflowIcon,
+  PanelsTopLeftIcon,
+  DatabaseIcon,
+  SendIcon,
+  BotIcon,
+  Settings2Icon,
+  ClipboardListIcon,
+  ChartNoAxesCombinedIcon,
+  PrinterIcon,
+  FileCode2Icon,
 } from 'lucide-react';
 import type { CollapseButtonPosition } from '../types';
 import { localizeNavLabel, useLocale } from '../hooks/useLocale';
@@ -149,6 +159,31 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   /* CLEAN_DEMO_END: templates:navigation */
+  {
+    type: 'group', icon: <WorkflowIcon size={16} />, label: '低代码中心',
+    children: [
+      { label: '接口编排', path: '/lowcode/api', icon: <WorkflowIcon size={13} /> },
+      { label: '页面设计器', path: '/lowcode/page', icon: <PanelsTopLeftIcon size={13} /> },
+      { label: '表单引擎', path: '/lowcode/form', icon: <ClipboardListIcon size={13} /> },
+      { label: '报表引擎', path: '/lowcode/report', icon: <ChartNoAxesCombinedIcon size={13} /> },
+      { label: '打印模板', path: '/lowcode/print', icon: <PrinterIcon size={13} /> },
+      { label: '代码生成器', path: '/lowcode/generator', icon: <FileCode2Icon size={13} /> },
+      { label: '数据源管理', path: '/lowcode/datasource', icon: <DatabaseIcon size={13} /> },
+      { label: '发布管理', path: '/lowcode/release', icon: <SendIcon size={13} /> },
+    ],
+  },
+  {
+    type: 'group', icon: <BotIcon size={16} />, label: 'AI中心',
+    children: [
+      { label: 'AI对话', path: '/ai/chat', icon: <MessageCircleIcon size={13} /> },
+      { label: 'AI助手', path: '/ai/agent', icon: <BotIcon size={13} /> },
+      { label: 'AI客服', path: '/ai/customer-service', icon: <MessageSquareIcon size={13} /> },
+      { label: '知识库', path: '/ai/knowledge', icon: <DatabaseIcon size={13} /> },
+      { label: '提示词模板', path: '/ai/prompt', icon: <FileTextIcon size={13} /> },
+      { label: '模型管理', path: '/ai/model', icon: <Settings2Icon size={13} /> },
+      { label: 'AI工作流', path: '/ai/workflow', icon: <WorkflowIcon size={13} /> },
+    ],
+  },
   {
     type: 'group', icon: <FileTextIcon size={16} />, label: '内容管理',
     children: [

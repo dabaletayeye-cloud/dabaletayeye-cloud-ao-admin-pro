@@ -73,5 +73,22 @@
   "articlePublish": "Publier un article",
   "articleList": "Liste des articles",
   "categoryManagement": "Gestion des catégories",
-  "tagManagement": "Gestion des étiquettes"
+  "tagManagement": "Gestion des étiquettes",
+  "lowcode": "Centre low-code",
+  "lowcodeApi": "Orchestration d’API",
+  "lowcodePage": "Concepteur de pages",
+  "lowcodeDatasource": "Sources de données",
+  "lowcodeRelease": "Gestion des versions",
+  "aiCenter": "Centre IA",
+  "aiChat": "Chat IA",
+  "aiAgent": "Assistants IA",
+  "aiCustomerService": "Service client IA",
+  "knowledgeBase": "Base de connaissances",
+  "promptTemplates": "Modèles de prompts",
+  "modelManagement": "Gestion des modèles",
+  "aiWorkflow": "Workflows IA",
+  "lowcodeForm": "Moteur de formulaires",
+  "lowcodeReport": "Moteur de rapports",
+  "lowcodePrint": "Modèles d’impression",
+  "lowcodeGenerator": "Générateur de code"
 }

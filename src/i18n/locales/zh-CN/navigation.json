@@ -73,5 +73,22 @@
   "articlePublish": "文章发布",
   "articleList": "文章列表",
   "categoryManagement": "分类管理",
-  "tagManagement": "标签管理"
+  "tagManagement": "标签管理",
+  "lowcode": "低代码中心",
+  "lowcodeApi": "接口编排",
+  "lowcodePage": "页面设计器",
+  "lowcodeDatasource": "数据源管理",
+  "lowcodeRelease": "发布管理",
+  "aiCenter": "AI中心",
+  "aiChat": "AI对话",
+  "aiAgent": "AI助手",
+  "aiCustomerService": "AI客服",
+  "knowledgeBase": "知识库",
+  "promptTemplates": "提示词模板",
+  "modelManagement": "模型管理",
+  "aiWorkflow": "AI工作流",
+  "lowcodeForm": "表单引擎",
+  "lowcodeReport": "报表引擎",
+  "lowcodePrint": "打印模板",
+  "lowcodeGenerator": "代码生成器"
 }

@@ -73,5 +73,22 @@
   "articlePublish": "記事を公開",
   "articleList": "記事一覧",
   "categoryManagement": "カテゴリ管理",
-  "tagManagement": "タグ管理"
+  "tagManagement": "タグ管理",
+  "lowcode": "ローコードセンター",
+  "lowcodeApi": "APIオーケストレーション",
+  "lowcodePage": "ページデザイナー",
+  "lowcodeDatasource": "データソース管理",
+  "lowcodeRelease": "リリース管理",
+  "aiCenter": "AIセンター",
+  "aiChat": "AIチャット",
+  "aiAgent": "AIアシスタント",
+  "aiCustomerService": "AIカスタマーサービス",
+  "knowledgeBase": "ナレッジベース",
+  "promptTemplates": "プロンプトテンプレート",
+  "modelManagement": "モデル管理",
+  "aiWorkflow": "AIワークフロー",
+  "lowcodeForm": "フォームエンジン",
+  "lowcodeReport": "レポートエンジン",
+  "lowcodePrint": "印刷テンプレート",
+  "lowcodeGenerator": "コードジェネレーター"
 }

@@ -73,5 +73,22 @@
   "articlePublish": "게시글 게시",
   "articleList": "게시글 목록",
   "categoryManagement": "카테고리 관리",
-  "tagManagement": "태그 관리"
+  "tagManagement": "태그 관리",
+  "lowcode": "로우 코드 센터",
+  "lowcodeApi": "API 오케스트레이션",
+  "lowcodePage": "페이지 디자이너",
+  "lowcodeDatasource": "데이터 소스 관리",
+  "lowcodeRelease": "릴리스 관리",
+  "aiCenter": "AI 센터",
+  "aiChat": "AI 대화",
+  "aiAgent": "AI 어시스턴트",
+  "aiCustomerService": "AI 고객센터",
+  "knowledgeBase": "지식 베이스",
+  "promptTemplates": "프롬프트 템플릿",
+  "modelManagement": "모델 관리",
+  "aiWorkflow": "AI 워크플로",
+  "lowcodeForm": "폼 엔진",
+  "lowcodeReport": "리포트 엔진",
+  "lowcodePrint": "인쇄 템플릿",
+  "lowcodeGenerator": "코드 생성기"
 }

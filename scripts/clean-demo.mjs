@@ -69,6 +69,7 @@ function printUsage() {
   npm run clean:basic:dry                    # 预览“仅保留基础业务”的清理范围
   npm run clean:demo -- --keep=components,templates --yes
                                               # 保留指定模块并立即清理其他模块
+  npm run clean:demo                         # 交互选择：基础 / 编号多选 / 全部 / 取消
   npm run clean:demo -- --preset=basic --dry-run
                                               # 非交互预览基础业务模式
 
@@ -151,22 +152,30 @@ async function askYesNo(question, defaultValue = true) {
 async function promptForKeepModules() {
   const readline = createInterface({ input, output });
   try {
-    console.log('\n请选择精简模式：');
-    console.log('  1. 仅保留基础业务页面（移除组件中心、功能示例和模板中心）');
-    console.log('  2. 自定义选择需要保留的演示模块');
-    console.log('  3. 取消');
-    const mode = (await readline.question('请输入 1、2 或 3：')).trim();
+    console.log('\n请选择清理方式：');
+    console.log('  1. 只保留最基础内容（移除所有演示模块）');
+    console.log('  2. 按编号选择要保留的模块（支持逗号或空格多选）');
+    console.log('  3. 保留全部演示模块（不执行清理）');
+    console.log('  4. 取消');
+    const mode = (await readline.question('请输入 1、2、3 或 4：')).trim();
 
     if (mode === '1') return [];
-    if (mode === '3' || !mode) return null;
-    if (mode !== '2') throw new Error('请输入 1、2 或 3。');
+    if (mode === '3') return DEMO_MODULES.map((module) => module.id);
+    if (mode === '4' || !mode) return null;
+    if (mode !== '2') throw new Error('请输入 1、2、3 或 4。');
 
-    const keep = [];
-    for (const module of DEMO_MODULES) {
-      const answer = (await readline.question(`保留「${module.label}」吗？（Y/n）`)).trim().toLowerCase();
-      if (!answer || ['y', 'yes', '是'].includes(answer)) keep.push(module.id);
+    console.log('\n可保留模块：');
+    DEMO_MODULES.forEach((module, index) => console.log(`  ${index + 1}. ${module.label}：${module.description}`));
+    const answer = (await readline.question('请输入要保留的编号（例如 1,3；输入 all 保留全部；输入 none 只保留基础内容）：')).trim().toLowerCase();
+    if (answer === 'all') return DEMO_MODULES.map((module) => module.id);
+    if (answer === 'none' || answer === '') return [];
+
+    const values = [...new Set(answer.split(/[\s,，、]+/).filter(Boolean))];
+    const indexes = values.map((value) => Number(value));
+    if (indexes.some((index) => !Number.isInteger(index) || index < 1 || index > DEMO_MODULES.length)) {
+      throw new Error(`模块编号无效，请输入 1-${DEMO_MODULES.length} 范围内的编号。`);
     }
-    return keep;
+    return indexes.map((index) => DEMO_MODULES[index - 1].id);
   } finally {
     readline.close();
   }

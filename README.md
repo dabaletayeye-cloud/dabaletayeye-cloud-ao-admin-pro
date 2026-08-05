@@ -65,6 +65,7 @@ npm run dev
 | `npm run clean:demo:dry` | 预览“仅保留基础业务页面”的清理范围 |
 | `npm run clean:basic` | 仅保留基础业务页面，移除全部演示模块 |
 | `npm run clean:basic:dry` | 预览基础业务模式，不修改文件 |
+| `npm run clean` | 打开交互式清理向导：只保留基础内容、按编号选择保留模块、全部保留或取消 |
 
 > Windows PowerShell 如因执行策略无法运行 `npm`，可使用 `npm.cmd run build` 等等效命令。
 

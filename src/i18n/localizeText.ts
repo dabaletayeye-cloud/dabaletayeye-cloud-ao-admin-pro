@@ -38,6 +38,12 @@ type Resource = {
   systemPages?: {
     fallback?: Fallback;
   };
+  lowcode?: {
+    fallback?: Fallback;
+  };
+  ai?: {
+    fallback?: Fallback;
+  };
 };
 
 function getEntries(language: string) {
@@ -53,6 +59,8 @@ function getEntries(language: string) {
   const pageExtrasFallback = resource?.pageExtras?.fallback ?? englishResource?.pageExtras?.fallback;
   const businessFallback = resource?.business?.fallback ?? englishResource?.business?.fallback;
   const systemPagesFallback = resource?.systemPages?.fallback ?? englishResource?.systemPages?.fallback;
+  const lowcodeFallback = resource?.lowcode?.fallback ?? englishResource?.lowcode?.fallback;
+  const aiFallback = resource?.ai?.fallback ?? englishResource?.ai?.fallback;
   const dictionary = language === 'zh-TW'
     ? {
         ...(componentFallback?.traditional ?? {}),
@@ -93,6 +101,14 @@ function getEntries(language: string) {
         ...(systemPagesFallback?.terms ?? {}),
         ...(systemPagesFallback?.phrases ?? {}),
         ...(systemPagesFallback?.supplemental ?? {}),
+        ...(lowcodeFallback?.traditional ?? {}),
+        ...(lowcodeFallback?.terms ?? {}),
+        ...(lowcodeFallback?.phrases ?? {}),
+        ...(lowcodeFallback?.supplemental ?? {}),
+        ...(aiFallback?.traditional ?? {}),
+        ...(aiFallback?.terms ?? {}),
+        ...(aiFallback?.phrases ?? {}),
+        ...(aiFallback?.supplemental ?? {}),
       }
     : {
         ...(componentFallback?.terms ?? {}),
@@ -125,6 +141,12 @@ function getEntries(language: string) {
         ...(systemPagesFallback?.terms ?? {}),
         ...(systemPagesFallback?.phrases ?? {}),
         ...(systemPagesFallback?.supplemental ?? {}),
+        ...(lowcodeFallback?.terms ?? {}),
+        ...(lowcodeFallback?.phrases ?? {}),
+        ...(lowcodeFallback?.supplemental ?? {}),
+        ...(aiFallback?.terms ?? {}),
+        ...(aiFallback?.phrases ?? {}),
+        ...(aiFallback?.supplemental ?? {}),
       };
 
   return Object.entries(dictionary).sort((a, b) => b[0].length - a[0].length);

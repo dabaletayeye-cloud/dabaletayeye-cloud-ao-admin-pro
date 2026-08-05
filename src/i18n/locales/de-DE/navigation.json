@@ -73,5 +73,22 @@
   "articlePublish": "Artikel veröffentlichen",
   "articleList": "Artikelliste",
   "categoryManagement": "Kategorien verwalten",
-  "tagManagement": "Tags verwalten"
+  "tagManagement": "Tags verwalten",
+  "lowcode": "Low-Code-Zentrum",
+  "lowcodeApi": "API-Orchestrierung",
+  "lowcodePage": "Seitendesigner",
+  "lowcodeDatasource": "Datenquellenverwaltung",
+  "lowcodeRelease": "Release-Verwaltung",
+  "aiCenter": "KI-Zentrum",
+  "aiChat": "KI-Chat",
+  "aiAgent": "KI-Assistenten",
+  "aiCustomerService": "KI-Kundenservice",
+  "knowledgeBase": "Wissensdatenbank",
+  "promptTemplates": "Prompt-Vorlagen",
+  "modelManagement": "Modellverwaltung",
+  "aiWorkflow": "KI-Workflows",
+  "lowcodeForm": "Formular-Engine",
+  "lowcodeReport": "Berichts-Engine",
+  "lowcodePrint": "Druckvorlagen",
+  "lowcodeGenerator": "Code-Generator"
 }

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "clean": "node scripts/clean-demo.mjs --interactive",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "clean:demo": "node scripts/clean-demo.mjs --interactive",
