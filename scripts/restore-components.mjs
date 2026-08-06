@@ -5,6 +5,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import { promisify } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadCleanDemoConfig } from './load-clean-demo-config.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDir, '..');
@@ -14,55 +15,46 @@ const confirmed = args.includes('--yes');
 const interactive = args.includes('--interactive');
 const showMenu = args.includes('--show-menu');
 const execFileAsync = promisify(execFile);
+const { modules } = await loadCleanDemoConfig();
+const componentModule = modules.find((module) => module.id === 'components');
+if (!componentModule || componentModule.targets.length !== 1) {
+  throw new Error('清理配置中缺少组件中心模块，或组件目录配置无效。');
+}
 
-const COMPONENT_DIRECTORY = 'src/pages/comp';
-const BLOCKS = [
-  {
-    file: 'src/App.tsx',
-    start: '/* CLEAN_DEMO_START: components:imports */',
-    end: '/* CLEAN_DEMO_END: components:imports */',
+const [COMPONENT_DIRECTORY] = componentModule.targets;
+const COMPONENT_RESTORE_OPTIONS = new Map([
+  ['/* CLEAN_DEMO_START: components:imports */', {
     anchor: '/* CLEAN_DEMO_START: templates:imports */',
     fallbackAnchors: ["import FileManagementPage from './pages/FileManagementPage';"],
-  },
-  {
-    file: 'src/App.tsx',
-    start: '{/* CLEAN_DEMO_START: components:routes */}',
-    end: '{/* CLEAN_DEMO_END: components:routes */}',
+  }],
+  ['{/* CLEAN_DEMO_START: components:routes */}', {
     anchor: '{/* CLEAN_DEMO_START: examples:routes */}',
     fallbackAnchors: ['<Route path="/result/success" element={<ResultPage />} />'],
-  },
-  {
-    file: 'src/App.tsx',
-    start: '{/* CLEAN_DEMO_START: components:example-routes */}',
-    end: '{/* CLEAN_DEMO_END: components:example-routes */}',
+  }],
+  ['{/* CLEAN_DEMO_START: components:example-routes */}', {
     anchor: '<Route path="/examples/basic-table" element={<BasicTableExamplePage />} />',
     optional: true,
-  },
-  {
-    file: 'src/components/Sidebar.tsx',
-    start: '/* CLEAN_DEMO_START: components:navigation */',
-    end: '/* CLEAN_DEMO_END: components:navigation */',
+  }],
+  ['/* CLEAN_DEMO_START: components:navigation */', {
     anchor: '/* CLEAN_DEMO_START: examples:navigation */',
     fallbackAnchors: ["{ type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },"],
     showMenuOnly: true,
     optional: true,
-  },
-  {
-    file: 'src/components/Sidebar.tsx',
-    start: '/* CLEAN_DEMO_START: components:example-navigation */',
-    end: '/* CLEAN_DEMO_END: components:example-navigation */',
+  }],
+  ['/* CLEAN_DEMO_START: components:example-navigation */', {
     anchor: "{ label: '基础表格', path: '/examples/basic-table', icon: <TableIcon size={13} /> },",
     showMenuOnly: true,
     optional: true,
-  },
-  {
-    file: 'src/components/NavigationExtras.tsx',
-    start: '/* CLEAN_DEMO_START: components:example-route-labels */',
-    end: '/* CLEAN_DEMO_END: components:example-route-labels */',
+  }],
+  ['/* CLEAN_DEMO_START: components:example-route-labels */', {
     anchor: "'/examples/basic-table': '基础表格',",
     optional: true,
-  },
-];
+  }],
+]);
+const BLOCKS = componentModule.blocks.map((block) => ({
+  ...block,
+  ...COMPONENT_RESTORE_OPTIONS.get(block.start),
+}));
 
 function printUsage() {
   console.log(`\n用法：

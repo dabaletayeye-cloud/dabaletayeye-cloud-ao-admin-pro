@@ -5,6 +5,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import { promisify } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadCleanDemoConfig } from './load-clean-demo-config.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDir, '..');
@@ -16,90 +17,7 @@ const interactive = args.includes('--interactive');
 const allowDirty = args.includes('--allow-dirty');
 const execFileAsync = promisify(execFile);
 
-const DEMO_MODULES = [
-  {
-    id: 'components',
-    label: '组件中心',
-    description: '表单、表格、词云图、二维码等组件演示页面（不会删除 src/components 下的通用组件）',
-    targets: ['src/pages/comp'],
-    blocks: [
-      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: components:imports */', end: '/* CLEAN_DEMO_END: components:imports */' },
-      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: components:routes */}', end: '{/* CLEAN_DEMO_END: components:routes */}' },
-      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: components:example-routes */}', end: '{/* CLEAN_DEMO_END: components:example-routes */}' },
-      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: components:navigation */', end: '/* CLEAN_DEMO_END: components:navigation */' },
-      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: components:example-navigation */', end: '/* CLEAN_DEMO_END: components:example-navigation */' },
-      { file: 'src/components/NavigationExtras.tsx', start: '/* CLEAN_DEMO_START: components:example-route-labels */', end: '/* CLEAN_DEMO_END: components:example-route-labels */' },
-    ],
-  },
-  {
-    id: 'component-navigation',
-    label: '组件中心入口',
-    description: '仅隐藏侧栏中的组件中心入口，保留 src/components、组件演示页面及其路由，供开发人员继续使用',
-    targets: [],
-    blocks: [
-      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: components:navigation */', end: '/* CLEAN_DEMO_END: components:navigation */' },
-    ],
-  },
-  {
-    id: 'extras',
-    label: '扩展业务模块',
-    description: '内容、分析、营销、低代码、AI、个人中心等扩展页面（保留工作台、系统管理、结果、异常、媒体、订单、消息与组件页面）',
-    targets: [
-      'src/pages/ArticleListPage.tsx', 'src/pages/CategoryPage.tsx', 'src/pages/TagPage.tsx',
-      'src/pages/VisitStatsPage.tsx', 'src/pages/UserPortraitPage.tsx', 'src/pages/FunnelPage.tsx',
-      'src/pages/CouponPage.tsx', 'src/pages/ActivityPage.tsx', 'src/pages/PushPage.tsx',
-      'src/pages/PermissionPage.tsx', 'src/pages/SettingsPage.tsx', 'src/pages/ProfilePage.tsx',
-      'src/pages/AccountSecurityPage.tsx',
-      'src/pages/lowcode', 'src/pages/ai', 'src/pages/article', 'src/pages/dashboard',
-    ],
-    blocks: [
-      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:content-imports */', end: '/* CLEAN_DEMO_END: extras:content-imports */' },
-      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:marketing-imports */', end: '/* CLEAN_DEMO_END: extras:marketing-imports */' },
-      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:account-imports */', end: '/* CLEAN_DEMO_END: extras:account-imports */' },
-      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:platform-imports */', end: '/* CLEAN_DEMO_END: extras:platform-imports */' },
-      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:secondary-imports */', end: '/* CLEAN_DEMO_END: extras:secondary-imports */' },
-      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:content-routes */}', end: '{/* CLEAN_DEMO_END: extras:content-routes */}' },
-      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:marketing-routes */}', end: '{/* CLEAN_DEMO_END: extras:marketing-routes */}' },
-      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:account-routes */}', end: '{/* CLEAN_DEMO_END: extras:account-routes */}' },
-      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:platform-routes */}', end: '{/* CLEAN_DEMO_END: extras:platform-routes */}' },
-      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:secondary-routes */}', end: '{/* CLEAN_DEMO_END: extras:secondary-routes */}' },
-      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: extras:dashboard-navigation */', end: '/* CLEAN_DEMO_END: extras:dashboard-navigation */' },
-      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: extras:platform-content-navigation */', end: '/* CLEAN_DEMO_END: extras:platform-content-navigation */' },
-      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: extras:analysis-navigation */', end: '/* CLEAN_DEMO_END: extras:analysis-navigation */' },
-      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: extras:marketing-navigation */', end: '/* CLEAN_DEMO_END: extras:marketing-navigation */' },
-      { file: 'src/components/HorizontalNav.tsx', start: '/* CLEAN_DEMO_START: extras:content-analytics-navigation */', end: '/* CLEAN_DEMO_END: extras:content-analytics-navigation */' },
-      { file: 'src/components/HorizontalNav.tsx', start: '/* CLEAN_DEMO_START: extras:marketing-users-navigation */', end: '/* CLEAN_DEMO_END: extras:marketing-users-navigation */' },
-      { file: 'src/components/HorizontalNav.tsx', start: '/* CLEAN_DEMO_START: extras:permissions-navigation */', end: '/* CLEAN_DEMO_END: extras:permissions-navigation */' },
-      { file: 'src/components/HorizontalNav.tsx', start: '/* CLEAN_DEMO_START: extras:settings-navigation */', end: '/* CLEAN_DEMO_END: extras:settings-navigation */' },
-    ],
-  },
-  {
-    id: 'examples',
-    label: '功能示例',
-    description: '前端权限、表格、表单、Socket 等功能示例页面',
-    targets: ['src/pages/examples'],
-    blocks: [
-      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: examples:imports */', end: '/* CLEAN_DEMO_END: examples:imports */' },
-      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: examples:routes */}', end: '{/* CLEAN_DEMO_END: examples:routes */}' },
-      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: examples:navigation */', end: '/* CLEAN_DEMO_END: examples:navigation */' },
-    ],
-  },
-  {
-    id: 'templates',
-    label: '模板中心',
-    description: '卡片、横幅、图表、日历、聊天、地图等模板页面',
-    targets: ['src/pages/tmpl', 'src/data/geo', 'src/data/mapData.ts'],
-    blocks: [
-      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: templates:imports */', end: '/* CLEAN_DEMO_END: templates:imports */' },
-      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: templates:routes */}', end: '{/* CLEAN_DEMO_END: templates:routes */}' },
-      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: templates:navigation */', end: '/* CLEAN_DEMO_END: templates:navigation */' },
-    ],
-  },
-];
-
-// Component-page references from the examples module are removed by dedicated
-// markers above, so deleting the component center never needs to delete all examples.
-const MODULE_DEPENDENCIES = [];
+const { modules: DEMO_MODULES, core: CORE_CONFIG, dependencies: MODULE_DEPENDENCIES } = await loadCleanDemoConfig();
 
 function optionValue(name) {
   const prefix = `${name}=`;
@@ -126,7 +44,8 @@ function printUsage() {
                                               # 非交互预览核心版模式
 
 可保留模块：${DEMO_MODULES.map((module) => module.id).join('、')}
-参数：--keep=<模块列表>  --remove=<模块列表>  --preset=basic  --dry-run  --yes  --interactive  --allow-dirty  --help\n`);
+参数：--keep=<模块列表>  --remove=<模块列表>  --preset=basic  --dry-run  --yes  --interactive  --allow-dirty  --help
+配置：scripts/clean-demo.config.json（核心版保留范围和模块清理范围）\n`);
 }
 
 function parseModuleList(value) {
@@ -284,7 +203,7 @@ async function chooseKeepModules() {
   }
   if (preset !== undefined) {
     if (preset !== 'basic') throw new Error('当前只支持 --preset=basic。');
-    return { ids: ['components'], autoRemoved: [] };
+    return { ids: CORE_CONFIG.keepModuleIds, autoRemoved: [] };
   }
   if (keepValue !== undefined) return { ids: parseModuleList(keepValue), autoRemoved: [] };
   if (removeValue !== undefined) {
@@ -324,8 +243,8 @@ async function buildSourceChanges(removeModules) {
 
 function printPlan(removeModules, existingTargets, sourceChanges) {
   const keepModules = DEMO_MODULES.filter((module) => !removeModules.includes(module));
-  console.log('\n基础保留：');
-  console.log('  - 登录、工作台、系统管理、结果页面、异常页面、媒体库、订单管理、消息中心');
+  console.log(`\n${CORE_CONFIG.name}保留：`);
+  for (const item of CORE_CONFIG.retained) console.log(`  - ${item.label}`);
   console.log('\n将保留：');
   console.log(keepModules.length > 0 ? `  - ${keepModules.map((module) => module.label).join('、')}` : '  - 仅保留基础业务页面');
   console.log('\n将移除：');

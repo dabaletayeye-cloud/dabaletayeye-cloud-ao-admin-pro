@@ -100,7 +100,10 @@ ao-admin-pro/
 ├── public/                 # 静态资源
 ├── scripts/
 │   ├── clean-build.mjs     # 构建产物清理脚本
-│   └── clean-demo.mjs      # 演示内容精简脚本
+│   ├── clean-demo.mjs      # 演示内容精简脚本
+│   ├── clean-demo.config.json # 清理/恢复范围配置
+│   ├── restore-components.mjs # 组件中心恢复脚本
+│   └── restore-core.mjs    # 核心版清理内容恢复脚本
 ├── src/
 │   ├── components/         # 布局、导航、主题、消息及通用组件
 │   ├── components/ui/      # 基于 Radix UI 封装的基础组件
@@ -177,6 +180,17 @@ src/i18n/
 
 - **核心版**：保留工作台、系统管理、结果页面、异常页面、媒体库、订单管理和消息中心；保留组件代码、演示页面和路由，但隐藏组件中心菜单；移除扩展业务模块、功能示例和模板中心。
 - **自定义保留模块**：逐项决定是否保留“组件中心”“扩展业务模块”“功能示例”“模板中心”。模板中心包含中国地图、世界地图及其数据文件。
+
+### 清理范围配置
+
+核心版最终保留的内容由 [`scripts/clean-demo.config.json`](scripts/clean-demo.config.json) 统一管理：登录与注册、工作台、系统管理、结果页面、异常页面、媒体库、订单管理、消息中心，以及组件演示页与路由（隐藏侧栏入口）。
+
+后续只需修改该 JSON，不需要改清理或恢复脚本：
+
+- `core.retained`：展示“核心版剩下什么”的清单；
+- `core.keepModuleIds`：执行 `npm run clean:core` 时保留的演示模块；
+- `core.restoreModuleIds`：执行 `npm run restore:core` 时恢复的模块；
+- `modules`：每个模块要删除/恢复的文件、目录、路由和导航标记。
 
 也可以使用非交互命令，便于在自动化流程中执行：
 

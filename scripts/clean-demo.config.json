@@ -1,0 +1,99 @@
+{
+  "core": {
+    "name": "核心版",
+    "retained": [
+      { "label": "登录与注册", "routes": ["/login", "/register"] },
+      { "label": "工作台", "routes": ["/"] },
+      { "label": "系统管理", "routes": ["/system/users", "/system/roles", "/system/menus", "/system/logs", "/system/dict", "/system/config", "/system/servers", "/system/files"] },
+      { "label": "结果页面", "routes": ["/result/success", "/result/success-page", "/result/fail", "/result/fail-page"] },
+      { "label": "异常页面", "routes": ["/error/403", "/error/403-page", "/error/404", "/error/404-page", "/error/500", "/error/500-page"] },
+      { "label": "媒体库", "routes": ["/media"] },
+      { "label": "订单管理", "routes": ["/orders"] },
+      { "label": "消息中心", "routes": ["/messages"] },
+      { "label": "组件演示页与路由（侧栏入口隐藏）", "moduleId": "components" }
+    ],
+    "keepModuleIds": ["components"],
+    "restoreModuleIds": ["extras", "examples", "templates"]
+  },
+  "dependencies": [],
+  "modules": [
+    {
+      "id": "components",
+      "label": "组件中心",
+      "description": "表单、表格、词云图、二维码等组件演示页面（不会删除 src/components 下的通用组件）",
+      "targets": ["src/pages/comp"],
+      "blocks": [
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: components:imports */", "end": "/* CLEAN_DEMO_END: components:imports */" },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: components:routes */}", "end": "{/* CLEAN_DEMO_END: components:routes */}" },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: components:example-routes */}", "end": "{/* CLEAN_DEMO_END: components:example-routes */}" },
+        { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: components:navigation */", "end": "/* CLEAN_DEMO_END: components:navigation */" },
+        { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: components:example-navigation */", "end": "/* CLEAN_DEMO_END: components:example-navigation */" },
+        { "file": "src/components/NavigationExtras.tsx", "start": "/* CLEAN_DEMO_START: components:example-route-labels */", "end": "/* CLEAN_DEMO_END: components:example-route-labels */" }
+      ]
+    },
+    {
+      "id": "component-navigation",
+      "label": "组件中心入口",
+      "description": "仅隐藏侧栏中的组件中心入口，保留 src/components、组件演示页面及其路由，供开发人员继续使用",
+      "targets": [],
+      "blocks": [
+        { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: components:navigation */", "end": "/* CLEAN_DEMO_END: components:navigation */" }
+      ]
+    },
+    {
+      "id": "extras",
+      "label": "扩展业务模块",
+      "description": "内容、分析、营销、低代码、AI、个人中心等扩展页面",
+      "targets": [
+        "src/pages/ArticleListPage.tsx", "src/pages/CategoryPage.tsx", "src/pages/TagPage.tsx",
+        "src/pages/VisitStatsPage.tsx", "src/pages/UserPortraitPage.tsx", "src/pages/FunnelPage.tsx",
+        "src/pages/CouponPage.tsx", "src/pages/ActivityPage.tsx", "src/pages/PushPage.tsx",
+        "src/pages/PermissionPage.tsx", "src/pages/SettingsPage.tsx", "src/pages/ProfilePage.tsx",
+        "src/pages/AccountSecurityPage.tsx", "src/pages/lowcode", "src/pages/ai",
+        "src/pages/article", "src/pages/dashboard"
+      ],
+      "blocks": [
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:content-imports */", "end": "/* CLEAN_DEMO_END: extras:content-imports */", "restoreAnchors": ["import MediaPage from './pages/MediaPage';"] },
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:marketing-imports */", "end": "/* CLEAN_DEMO_END: extras:marketing-imports */", "restoreAnchors": ["import UsersPage from './pages/UsersPage';"] },
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:account-imports */", "end": "/* CLEAN_DEMO_END: extras:account-imports */", "restoreAnchors": ["/* CLEAN_DEMO_START: components:imports */", "import SuccessPage from './pages/result/SuccessPage';"] },
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:platform-imports */", "end": "/* CLEAN_DEMO_END: extras:platform-imports */", "restoreAnchors": ["/* CLEAN_DEMO_START: components:imports */", "import SuccessPage from './pages/result/SuccessPage';"] },
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:secondary-imports */", "end": "/* CLEAN_DEMO_END: extras:secondary-imports */", "restoreAnchors": ["import SuccessPage from './pages/result/SuccessPage';"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:content-routes */}", "end": "{/* CLEAN_DEMO_END: extras:content-routes */}", "restoreAnchors": ["<Route path=\"/media\" element={<MediaPage />} />"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:marketing-routes */}", "end": "{/* CLEAN_DEMO_END: extras:marketing-routes */}", "restoreAnchors": ["<Route path=\"/users\" element={<UsersPage />} />"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:account-routes */}", "end": "{/* CLEAN_DEMO_END: extras:account-routes */}", "restoreAnchors": ["{/* CLEAN_DEMO_START: components:routes */}", "<Route path=\"/result/success\" element={<ResultPage />} />"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:platform-routes */}", "end": "{/* CLEAN_DEMO_END: extras:platform-routes */}", "restoreAnchors": ["{/* CLEAN_DEMO_START: components:routes */}", "<Route path=\"/result/success\" element={<ResultPage />} />"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:secondary-routes */}", "end": "{/* CLEAN_DEMO_END: extras:secondary-routes */}", "restoreAnchors": ["<Route path=\"/result/success\" element={<ResultPage />} />"], "restoreOrder": 1000 },
+        { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: extras:dashboard-navigation */", "end": "/* CLEAN_DEMO_END: extras:dashboard-navigation */", "restoreAnchors": ["/* CLEAN_DEMO_START: components:navigation */", "  {\n    type: 'group', icon: <CheckCircle2Icon size={16} />, label: '结果页面',"] },
+        { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: extras:platform-content-navigation */", "end": "/* CLEAN_DEMO_END: extras:platform-content-navigation */", "restoreAnchors": ["  {\n    type: 'group', icon: <CheckCircle2Icon size={16} />, label: '结果页面',"] },
+        { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: extras:analysis-navigation */", "end": "/* CLEAN_DEMO_END: extras:analysis-navigation */", "restoreAnchors": ["{ type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },"] },
+        { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: extras:marketing-navigation */", "end": "/* CLEAN_DEMO_END: extras:marketing-navigation */", "restoreAnchors": ["{ type: 'link', icon: <ShoppingCartIcon size={16} />, label: '订单管理', path: '/orders' },"] },
+        { "file": "src/components/HorizontalNav.tsx", "start": "/* CLEAN_DEMO_START: extras:content-analytics-navigation */", "end": "/* CLEAN_DEMO_END: extras:content-analytics-navigation */", "restoreAnchors": ["{ type: 'link', id: 'media', icon: <ImageIcon size={14} />, label: '媒体库', path: '/media' },"] },
+        { "file": "src/components/HorizontalNav.tsx", "start": "/* CLEAN_DEMO_START: extras:marketing-users-navigation */", "end": "/* CLEAN_DEMO_END: extras:marketing-users-navigation */", "restoreAnchors": ["{ type: 'link', id: 'orders', icon: <ShoppingCartIcon size={14} />, label: '订单管理', path: '/orders' },"] },
+        { "file": "src/components/HorizontalNav.tsx", "start": "/* CLEAN_DEMO_START: extras:permissions-navigation */", "end": "/* CLEAN_DEMO_END: extras:permissions-navigation */", "restoreAnchors": ["{ type: 'link', id: 'messages', icon: <MessageSquareIcon size={14} />, label: '消息中心', path: '/messages' },"] },
+        { "file": "src/components/HorizontalNav.tsx", "start": "/* CLEAN_DEMO_START: extras:settings-navigation */", "end": "/* CLEAN_DEMO_END: extras:settings-navigation */", "restoreAnchors": ["{\n    type: 'group', id: 'system',"] }
+      ]
+    },
+    {
+      "id": "examples",
+      "label": "功能示例",
+      "description": "前端权限、表格、表单、Socket 等功能示例页面",
+      "targets": ["src/pages/examples"],
+      "blocks": [
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: examples:imports */", "end": "/* CLEAN_DEMO_END: examples:imports */", "restoreAnchors": ["export default function App()"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: examples:routes */}", "end": "{/* CLEAN_DEMO_END: examples:routes */}", "restoreAnchors": ["<Route path=\"/result/success\" element={<ResultPage />} />"] },
+        { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: examples:navigation */", "end": "/* CLEAN_DEMO_END: examples:navigation */", "restoreAnchors": ["{ type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },"] }
+      ]
+    },
+    {
+      "id": "templates",
+      "label": "模板中心",
+      "description": "卡片、横幅、图表、日历、聊天、地图等模板页面",
+      "targets": ["src/pages/tmpl", "src/data/geo", "src/data/mapData.ts"],
+      "blocks": [
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: templates:imports */", "end": "/* CLEAN_DEMO_END: templates:imports */", "restoreAnchors": ["import SuccessPage from './pages/result/SuccessPage';"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: templates:routes */}", "end": "{/* CLEAN_DEMO_END: templates:routes */}", "restoreAnchors": ["<Route path=\"/result/success\" element={<ResultPage />} />"] },
+        { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: templates:navigation */", "end": "/* CLEAN_DEMO_END: templates:navigation */", "restoreAnchors": ["{ type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },"] }
+      ]
+    }
+  ]
+}

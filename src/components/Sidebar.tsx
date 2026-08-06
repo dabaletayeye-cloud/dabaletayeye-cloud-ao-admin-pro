@@ -103,8 +103,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 
 
-  {
-    type: 'group', icon: <CheckCircle2Icon size={16} />, /* CLEAN_DEMO_START: extras:platform-content-navigation */
+  /* CLEAN_DEMO_START: extras:platform-content-navigation */
   {
     type: 'group', icon: <WorkflowIcon size={16} />, label: '低代码中心',
     children: [
@@ -141,7 +140,8 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   /* CLEAN_DEMO_END: extras:platform-content-navigation */
-label: '结果页面',
+  {
+    type: 'group', icon: <CheckCircle2Icon size={16} />, label: '结果页面',
     children: [
       { label: '成功页', path: '/result/success-page', icon: <CheckCircleIcon size={13} /> },
       { label: '失败页', path: '/result/fail-page', icon: <XCircleIcon size={13} /> },
