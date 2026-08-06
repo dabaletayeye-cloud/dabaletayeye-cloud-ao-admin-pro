@@ -129,10 +129,22 @@ async function exists(filePath) {
 }
 
 async function verifyGitCheckpoint() {
+  let repositoryRoot;
   try {
-    const { stdout: insideWorkTree } = await execFileAsync('git', ['rev-parse', '--is-inside-work-tree'], { cwd: projectRoot });
-    if (insideWorkTree.trim() !== 'true') throw new Error('当前目录不是 Git 仓库。');
+    const { stdout } = await execFileAsync('git', ['rev-parse', '--show-toplevel'], { cwd: projectRoot });
+    repositoryRoot = path.resolve(stdout.trim());
+  } catch (error) {
+    if (await exists(path.join(projectRoot, '.git'))) {
+      throw new Error(`无法通过 Git 安全检查：${error.message}`);
+    }
+    return null;
+  }
 
+  if (repositoryRoot !== projectRoot) {
+    return null;
+  }
+
+  try {
     const [{ stdout: revision }, { stdout: status }] = await Promise.all([
       execFileAsync('git', ['rev-parse', '--short', 'HEAD'], { cwd: projectRoot }),
       execFileAsync('git', ['status', '--short', '--untracked-files=all'], { cwd: projectRoot }),
@@ -409,11 +421,15 @@ async function main() {
   }
 
   const gitCheckpoint = await verifyGitCheckpoint();
-  console.log(
-    gitCheckpoint.dirty
+  if (gitCheckpoint) {
+    console.log(
+      gitCheckpoint.dirty
       ? `\nGit 保护已被 --allow-dirty 显式绕过；当前提交：${gitCheckpoint.revision}`
       : `\nGit 保护：工作区干净，当前提交：${gitCheckpoint.revision}`,
-  );
+    );
+  } else {
+    console.log('\nGit 保护：当前项目不是独立 Git 仓库，已跳过 Git 状态检查。');
+  }
 
   let approved = confirmed;
   if (!approved) {
