@@ -50,8 +50,8 @@
       "description": "个人资料与账号安全页面，核心版保留",
       "targets": ["src/pages/ProfilePage.tsx", "src/pages/AccountSecurityPage.tsx"],
       "blocks": [
-        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:account-imports */", "end": "/* CLEAN_DEMO_END: extras:account-imports */", "restoreAnchors": ["import LoginPage from './pages/LoginPage';"] },
-        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:account-routes */}", "end": "{/* CLEAN_DEMO_END: extras:account-routes */}", "restoreAnchors": ["<Route path=\"/\" element={<Dashboard />} />"] }
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: account:imports */", "end": "/* CLEAN_DEMO_END: account:imports */", "restoreAnchors": ["import LoginPage from './pages/LoginPage';"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: account:routes */}", "end": "{/* CLEAN_DEMO_END: account:routes */}", "restoreAnchors": ["<Route path=\"/\" element={<Dashboard />} />"] }
       ]
     },
     {
@@ -89,11 +89,13 @@
       "blocks": [
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:content-imports */", "end": "/* CLEAN_DEMO_END: extras:content-imports */", "restoreAnchors": ["import MediaPage from './pages/MediaPage';"] },
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:analytics-imports */", "end": "/* CLEAN_DEMO_END: extras:analytics-imports */", "restoreAnchors": ["import MediaPage from './pages/MediaPage';"] },
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:access-imports */", "end": "/* CLEAN_DEMO_END: extras:access-imports */", "restoreAnchors": ["/* CLEAN_DEMO_START: account:imports */", "import SuccessPage from './pages/result/SuccessPage';"] },
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:marketing-imports */", "end": "/* CLEAN_DEMO_END: extras:marketing-imports */", "restoreAnchors": ["import UsersPage from './pages/UsersPage';"] },
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:platform-imports */", "end": "/* CLEAN_DEMO_END: extras:platform-imports */", "restoreAnchors": ["/* CLEAN_DEMO_START: components:imports */", "import SuccessPage from './pages/result/SuccessPage';"] },
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:secondary-imports */", "end": "/* CLEAN_DEMO_END: extras:secondary-imports */", "restoreAnchors": ["import SuccessPage from './pages/result/SuccessPage';"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:content-routes */}", "end": "{/* CLEAN_DEMO_END: extras:content-routes */}", "restoreAnchors": ["<Route path=\"/media\" element={<MediaPage />} />"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:analytics-routes */}", "end": "{/* CLEAN_DEMO_END: extras:analytics-routes */}", "restoreAnchors": ["<Route path=\"/media\" element={<MediaPage />} />"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:access-routes */}", "end": "{/* CLEAN_DEMO_END: extras:access-routes */}", "restoreAnchors": ["{/* CLEAN_DEMO_START: account:routes */}", "{/* CLEAN_DEMO_START: components:routes */}"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:marketing-routes */}", "end": "{/* CLEAN_DEMO_END: extras:marketing-routes */}", "restoreAnchors": ["<Route path=\"/users\" element={<UsersPage />} />"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:platform-routes */}", "end": "{/* CLEAN_DEMO_END: extras:platform-routes */}", "restoreAnchors": ["{/* CLEAN_DEMO_START: components:routes */}", "<Route path=\"/result/success\" element={<ResultPage />} />"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:secondary-routes */}", "end": "{/* CLEAN_DEMO_END: extras:secondary-routes */}", "restoreAnchors": ["<Route path=\"/result/success\" element={<ResultPage />} />"], "restoreOrder": 1000 },

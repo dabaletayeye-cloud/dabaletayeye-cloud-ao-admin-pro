@@ -22,8 +22,6 @@
     "clean:core:no-git": "node scripts/clean-demo.mjs --preset=basic --interactive --allow-dirty",
     "clean:core:no-git:dry": "node scripts/clean-demo.mjs --preset=basic --dry-run",
     "clean:core:no-git:yes": "node scripts/clean-demo.mjs --preset=basic --yes --allow-dirty",
-    "clean:archive": "node scripts/clean-demo.mjs --preset=basic --interactive --allow-dirty",
-    "clean:archive:dry": "node scripts/clean-demo.mjs --preset=basic --dry-run",
     "clean:basic": "node scripts/clean-demo.mjs --preset=basic --yes",
     "clean:basic:dry": "node scripts/clean-demo.mjs --preset=basic --dry-run",
     "dev": "vite",

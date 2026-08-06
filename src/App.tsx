@@ -45,12 +45,14 @@ import FileManagementPage from './pages/FileManagementPage';
 
 
 
-/* CLEAN_DEMO_START: extras:account-imports */
+/* CLEAN_DEMO_START: extras:access-imports */
 import PermissionPage from './pages/PermissionPage';
 import SettingsPage from './pages/SettingsPage';
+/* CLEAN_DEMO_END: extras:access-imports */
+/* CLEAN_DEMO_START: account:imports */
 import ProfilePage from './pages/ProfilePage';
 import AccountSecurityPage from './pages/AccountSecurityPage';
-/* CLEAN_DEMO_END: extras:account-imports */
+/* CLEAN_DEMO_END: account:imports */
 /* CLEAN_DEMO_START: extras:platform-imports */
 import ApiOrchestrationPage from './pages/lowcode/ApiOrchestrationPage';
 import PageDesignerPage from './pages/lowcode/PageDesignerPage';
@@ -171,12 +173,14 @@ export default function App() {
 
 
 
-{/* CLEAN_DEMO_START: extras:account-routes */}
+{/* CLEAN_DEMO_START: extras:access-routes */}
           <Route path="/permissions" element={<PermissionPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          {/* CLEAN_DEMO_END: extras:access-routes */}
+{/* CLEAN_DEMO_START: account:routes */}
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/account-security" element={<AccountSecurityPage />} />
-          {/* CLEAN_DEMO_END: extras:account-routes */}
+          {/* CLEAN_DEMO_END: account:routes */}
 {/* CLEAN_DEMO_START: extras:platform-routes */}
           <Route path="/lowcode/api" element={<ApiOrchestrationPage />} />
           <Route path="/lowcode/page" element={<PageDesignerPage />} />
