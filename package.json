@@ -11,8 +11,6 @@
     "build:dev": "vite build --mode development",
     "clean:demo": "node scripts/clean-demo.mjs --interactive",
     "clean:demo:dry": "node scripts/clean-demo.mjs --preset=basic --dry-run",
-    "clean:components": "node scripts/clean-demo.mjs --remove=components --interactive",
-    "clean:components:dry": "node scripts/clean-demo.mjs --remove=components --dry-run",
     "restore:components": "node scripts/restore-components.mjs --interactive",
     "restore:components:dry": "node scripts/restore-components.mjs --dry-run",
     "restore:demo": "node scripts/restore-demo.mjs --interactive",

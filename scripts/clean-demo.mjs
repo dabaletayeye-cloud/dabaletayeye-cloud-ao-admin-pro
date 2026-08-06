@@ -30,16 +30,12 @@ function printUsage() {
   console.log(`\n用法：
   npm run clean                              # 打开交互式精简向导
   npm run clean:demo                         # 打开交互式精简向导
-  npm run clean:components                   # 交互确认后仅清理组件中心
-  npm run clean:components:dry               # 预览组件中心清理范围
-  npm run clean:core                         # 交互确认后保留核心页面与组件页面
+  npm run clean:core                         # 交互确认后仅保留核心页面和固定组件
   npm run clean:core:dry                     # 预览核心版清理范围
   npm run clean:basic                        # 与 clean:core 相同，但跳过交互确认
   npm run clean:basic:dry                    # 预览核心版清理范围
-  npm run clean:demo -- --keep=components,templates --yes
+  npm run clean:demo -- --keep=templates --yes
                                               # 保留指定模块并立即清理其他模块
-  npm run clean:demo -- --remove=components --yes
-                                              # 仅清理组件中心
   npm run clean:demo                         # 方向键移动，空格勾选保留模块，回车确认
   npm run clean:demo -- --preset=basic --dry-run
                                               # 非交互预览核心版模式
@@ -65,6 +61,9 @@ function parseModuleList(value) {
 function resolveKeepDependencies(ids) {
   const keep = new Set(ids);
   const autoKept = [];
+  const alwaysKept = DEMO_MODULES.filter((module) => module.alwaysKeep);
+
+  for (const module of alwaysKept) keep.add(module.id);
 
   for (const dependency of MODULE_DEPENDENCIES) {
     if (keep.has(dependency.module) && !keep.has(dependency.dependency)) {
@@ -73,7 +72,7 @@ function resolveKeepDependencies(ids) {
     }
   }
 
-  return { ids: [...keep], autoKept };
+  return { ids: [...keep], autoKept, alwaysKept };
 }
 
 function resolveRemoveDependencies(ids) {
@@ -225,14 +224,15 @@ async function selectCleanupMode() {
 }
 
 async function selectKeepModules() {
-  const selected = new Set(CORE_CONFIG.keepModuleIds);
+  const alwaysKeptIds = new Set(DEMO_MODULES.filter((module) => module.alwaysKeep).map((module) => module.id));
+  const selected = new Set([...CORE_CONFIG.keepModuleIds, ...alwaysKeptIds]);
   const actions = ['确认保留选择', '全选模块', '取消全选', '返回上一步'];
   const itemCount = DEMO_MODULES.length + actions.length;
   let cursor = 0;
 
   const render = () => {
     const lines = DEMO_MODULES.map((module, index) => {
-      const checked = selected.has(module.id) ? '●' : '○';
+      const checked = module.alwaysKeep ? '🔒' : (selected.has(module.id) ? '●' : '○');
       return `${index === cursor ? '❯' : ' '} [${checked}] ${module.label}\n    ${module.description}`;
     });
     lines.push('');
@@ -240,7 +240,7 @@ async function selectKeepModules() {
       const actionIndex = DEMO_MODULES.length + index;
       lines.push(`${actionIndex === cursor ? '❯' : ' '} ${action}`);
     });
-    renderSelection('选择要保留的模块', lines, '↑/↓ 移动   空格 勾选/操作   Enter 确认   Esc 取消');
+    renderSelection('选择要保留的模块', lines, '↑/↓ 移动   空格 勾选/操作   Enter 确认   🔒 固定保留   Esc 取消');
   };
 
   return runKeypressSession(render, ({ key, finish, render: redraw }) => {
@@ -253,8 +253,10 @@ async function selectKeepModules() {
       return;
     } else if (cursor < DEMO_MODULES.length && key?.name === 'space') {
       const module = DEMO_MODULES[cursor];
-      if (selected.has(module.id)) selected.delete(module.id);
-      else selected.add(module.id);
+      if (!module.alwaysKeep) {
+        if (selected.has(module.id)) selected.delete(module.id);
+        else selected.add(module.id);
+      }
     } else if (cursor === DEMO_MODULES.length && (key?.name === 'space' || key?.name === 'return')) {
       finish([...selected]);
       return;
@@ -262,6 +264,7 @@ async function selectKeepModules() {
       DEMO_MODULES.forEach((module) => selected.add(module.id));
     } else if (cursor === DEMO_MODULES.length + 2 && key?.name === 'space') {
       selected.clear();
+      alwaysKeptIds.forEach((id) => selected.add(id));
     } else if (cursor === DEMO_MODULES.length + 3 && (key?.name === 'space' || key?.name === 'return')) {
       finish('back');
       return;
@@ -367,7 +370,11 @@ async function main() {
     return;
   }
 
-  const { ids: keepModuleIds, autoKept } = resolveKeepDependencies(selection.ids);
+  const { ids: keepModuleIds, autoKept, alwaysKept } = resolveKeepDependencies(selection.ids);
+  if (alwaysKept.length > 0) {
+    console.log('\n固定保留：');
+    for (const module of alwaysKept) console.log(`  - ${module.label}`);
+  }
   for (const dependency of autoKept) {
     const module = DEMO_MODULES.find((item) => item.id === dependency.module);
     const required = DEMO_MODULES.find((item) => item.id === dependency.dependency);

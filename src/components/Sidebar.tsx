@@ -181,6 +181,33 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   /* CLEAN_DEMO_END: extras:analysis-navigation */
+/* CLEAN_DEMO_START: components:navigation */
+  {
+    type: 'group', icon: <PuzzleIcon size={16} />, label: '组件中心',
+    children: [
+      { label: '组件总览', path: '/comp/overview', icon: <LayersIcon size={13} /> },
+      { label: '按钮组件', path: '/comp/buttons', icon: <MousePointerClickIcon size={13} /> },
+      { label: '表单组件', path: '/comp/forms', icon: <FormInputIcon size={13} /> },
+      { label: '数据表格', path: '/comp/table', icon: <TableIcon size={13} /> },
+      { label: '弹窗反馈', path: '/comp/feedback', icon: <MessageSquareWarningIcon size={13} /> },
+      { label: '数据展示', path: '/comp/display', icon: <LayoutGridIcon size={13} /> },
+      { label: '导航组件', path: '/comp/nav',         icon: <NavigationIcon size={13} /> },
+      { label: '图标库',   path: '/comp/icons',        icon: <SmileIcon size={13} /> },
+      { label: '数字滚动', path: '/comp/number-roll',  icon: <HashIcon size={13} /> },
+      { label: '富文本编辑器', path: '/comp/rich-editor', icon: <TypeIcon size={13} /> },
+      { label: '图像裁剪',  path: '/comp/image-crop',   icon: <CropIcon size={13} /> },
+      { label: '二维码',    path: '/comp/qrcode',        icon: <QrCodeIcon size={13} /> },
+      { label: '视频播放器', path: '/comp/video-player',  icon: <PlayCircleIcon size={13} /> },
+      { label: '拖拽',      path: '/comp/drag',           icon: <GripVerticalIcon size={13} /> },
+      { label: '右键菜单',  path: '/comp/context-menu',   icon: <MousePointer2Icon size={13} /> },
+      { label: '水印',      path: '/comp/watermark',       icon: <DropletsIcon size={13} /> },
+      { label: '文字滚动',  path: '/comp/text-scroll',     icon: <GalleryVerticalIcon size={13} /> },
+      { label: '礼花',      path: '/comp/confetti',         icon: <PartyPopperIcon size={13} /> },
+      { label: 'Excel 导入导出', path: '/comp/excel',        icon: <FileSpreadsheetIcon size={13} /> },
+      { label: '词云图', path: '/comp/word-cloud', icon: <CloudIcon size={13} /> },
+    ],
+  },
+  /* CLEAN_DEMO_END: components:navigation */
 /* CLEAN_DEMO_START: examples:navigation */
   {
     type: 'group', icon: <SparklesIcon size={16} />, label: '功能示例',

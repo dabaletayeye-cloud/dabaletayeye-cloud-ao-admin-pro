@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadCleanDemoConfig } from './load-clean-demo-config.mjs';
+import { createMarkerBaselineResolver } from './git-marker-baseline.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDir, '..');
@@ -186,7 +187,7 @@ function selectedModules(moduleIds) {
 }
 
 function restoreBlocks(moduleIds) {
-  const includeComponentMenu = moduleIds.includes('component-navigation');
+  const includeComponentMenu = moduleIds.includes('components') || moduleIds.includes('component-navigation');
   const unique = new Map();
   selectedModules(moduleIds).flatMap((module) => module.blocks).forEach((block, index) => {
     if (block.restoreShowMenuOnly && !includeComponentMenu) return;
@@ -199,6 +200,8 @@ function restoreBlocks(moduleIds) {
 async function runGit(gitArgs) {
   return execFileAsync('git', gitArgs, { cwd: projectRoot });
 }
+
+const getBaseline = createMarkerBaselineResolver(runGit);
 
 function extractBlock(source, block) {
   const startIndex = source.indexOf(block.start);
@@ -288,13 +291,11 @@ async function main() {
   const filesToWrite = new Map();
   for (const [relativePath, fileBlocks] of blocksByFile) {
     const absolutePath = path.join(projectRoot, relativePath);
-    const [current, baseline] = await Promise.all([
-      readFile(absolutePath, 'utf8'),
-      runGit(['show', `HEAD:${relativePath}`]).then(({ stdout }) => stdout),
-    ]);
+    const current = await readFile(absolutePath, 'utf8');
     let content = current;
     let changed = false;
     for (const block of fileBlocks) {
+      const baseline = await getBaseline(relativePath, block);
       const result = restoreBlock(content, baseline, block);
       content = result.content;
       changed ||= result.changed;

@@ -42,6 +42,9 @@ export async function loadCleanDemoConfig() {
     requireString(module.label, `modules.${module.id}.label`);
     requireString(module.description, `modules.${module.id}.description`);
     requireStringArray(module.targets, `modules.${module.id}.targets`);
+    if (module.alwaysKeep !== undefined && typeof module.alwaysKeep !== 'boolean') {
+      throw new Error(`配置项无效：modules.${module.id}.alwaysKeep 必须是布尔值。`);
+    }
     if (ids.has(module.id)) throw new Error(`配置项无效：模块 ID 重复：${module.id}。`);
     ids.add(module.id);
 

@@ -65,15 +65,13 @@ npm run dev
 | `npm run clean:dist` | 删除构建产物 `dist/` |
 | `npm run clean:dist:dry` | 预览构建产物清理，不修改文件 |
 | `npm run clean:demo:dry` | 预览核心版清理范围 |
-| `npm run clean:components` | 交互确认后仅移除组件中心，不删除 `src/components` 通用组件 |
-| `npm run clean:components:dry` | 预览组件中心清理范围，不修改文件 |
-| `npm run restore:components` | 从当前 Git 提交恢复被未提交清理掉的组件页面与路由，保持组件菜单隐藏 |
+| `npm run restore:components` | 从 Git 历史恢复缺失的组件页面、路由和侧栏入口 |
 | `npm run restore:components:dry` | 预览组件恢复范围，不修改文件 |
 | `npm run restore:demo` | 打开键盘交互式恢复向导，可选择恢复哪些模块 |
 | `npm run restore:demo:dry` | 预览核心版默认恢复范围，不修改文件 |
 | `npm run restore:core` | 恢复由核心版清理删除的扩展业务、功能示例、模板中心及其入口 |
 | `npm run restore:core:dry` | 预览核心版内容恢复范围，不修改文件 |
-| `npm run clean:core` | 交互确认后仅保留核心业务入口；组件代码与路由保留，但隐藏组件中心菜单 |
+| `npm run clean:core` | 交互确认后仅保留核心业务页面及全部组件页面/入口 |
 | `npm run clean:core:dry` | 预览核心版清理范围，不修改文件 |
 | `npm run clean:basic` | 与 `clean:core` 相同，但跳过交互确认 |
 | `npm run clean:basic:dry` | 预览核心版清理范围，不修改文件 |
@@ -178,28 +176,28 @@ src/i18n/
  npm run clean:demo
 ```
 
-向导支持键盘选择：方向键移动，空格键勾选要保留的模块，回车确认，`Esc` 取消。首项“仅保留核心版”可直接使用 JSON 中的核心保留范围；选择“自定义保留模块”后可逐项勾选组件中心、扩展业务、功能示例和模板中心。
+向导支持键盘选择：方向键移动，空格键勾选要保留的模块，回车确认，`Esc` 取消。首项“仅保留核心版”可直接使用 JSON 中的核心保留范围；选择“自定义保留模块”后可逐项勾选扩展业务、功能示例和模板中心。组件中心和入口会显示为 🔒，始终保留且不可取消。
 
 向导支持两种模式：
 
-- **核心版**：保留工作台、系统管理、结果页面、异常页面、媒体库、订单管理和消息中心；保留组件代码、演示页面和路由，但隐藏组件中心菜单；移除扩展业务模块、功能示例和模板中心。
-- **自定义保留模块**：逐项决定是否保留“组件中心”“扩展业务模块”“功能示例”“模板中心”。模板中心包含中国地图、世界地图及其数据文件。
+- **核心版**：保留工作台、系统管理、结果页面、异常页面、媒体库、订单管理、消息中心和组件中心；移除扩展业务模块、功能示例和模板中心。
+- **自定义保留模块**：组件中心及其入口始终保留；逐项决定是否保留“扩展业务模块”“功能示例”“模板中心”。模板中心包含中国地图、世界地图及其数据文件。
 
 ### 清理范围配置
 
-核心版最终保留的内容由 [`scripts/clean-demo.config.json`](scripts/clean-demo.config.json) 统一管理：登录与注册、工作台、系统管理、结果页面、异常页面、媒体库、订单管理、消息中心，以及组件演示页与路由（隐藏侧栏入口）。
+核心版最终保留的内容由 [`scripts/clean-demo.config.json`](scripts/clean-demo.config.json) 统一管理：登录与注册、工作台、系统管理、结果页面、异常页面、媒体库、订单管理、消息中心，以及组件中心、组件演示页与侧栏入口。
 
 后续只需修改该 JSON，不需要改清理或恢复脚本：
 
 - `core.retained`：展示“核心版剩下什么”的清单；
 - `core.keepModuleIds`：执行 `npm run clean:core` 时保留的演示模块；
 - `core.restoreModuleIds`：执行 `npm run restore:core` 时恢复的模块；
-- `modules`：每个模块要删除/恢复的文件、目录、路由和导航标记。
+- `modules`：每个模块要删除/恢复的文件、目录、路由和导航标记；标记为 `alwaysKeep` 的模块不会被清理。
 
 也可以使用非交互命令，便于在自动化流程中执行：
 
 ```bash
-# 先预览核心版（组件代码与路由保留，但不显示组件中心菜单）
+# 先预览核心版（核心业务和组件页面/入口均保留）
 npm run clean:core:dry
 
 # 查看计划后交互确认清理
@@ -214,27 +212,15 @@ npm run restore:core
 # 键盘选择需要恢复的模块（方向键移动、空格勾选、回车确认）
 npm run restore:demo
 
-# 保留组件中心和模板中心，删除功能示例
-npm run clean:demo -- --keep=components,templates --yes
+# 保留模板中心，删除扩展业务和功能示例
+npm run clean:demo -- --keep=templates --yes
 
 # 预览自定义清理范围，不修改文件
- npm run clean:demo -- --keep=components,templates --dry-run
+ npm run clean:demo -- --keep=templates --dry-run
 npm run build
 ```
 
-若只需清理组件中心，可使用专用命令。脚本会同步移除功能示例中直接引用组件演示页的入口，但不会删除完整的功能示例模块，更不会影响业务通用组件（`src/components/`）。真实执行前会检查 Git 工作区；存在未提交改动时会拒绝执行，除非显式传入 `--allow-dirty`。
-
-```bash
-# 预览组件中心及相关功能示例的清理范围
-npm run clean:components:dry
-
-# 查看计划后交互确认清理
-npm run clean:components
-```
-
-可保留或移除模块的标识为 `components`、`component-navigation`、`extras`、`examples`、`templates`；使用 `--keep=all` 时不会删除任何演示内容。清理会同步移除对应页面目录、地图演示数据、路由导入与侧栏入口。操作不可逆，建议先提交当前代码或创建分支再执行。
-
-> 功能示例会复用组件中心中的部分页面，因此保留 `examples` 时，清理脚本会自动保留 `components`，避免留下无效路由。
+组件中心（`src/components/`、`src/pages/comp/`、组件路由和侧栏入口）为固定保留内容。可选择清理的模块为 `extras`、`examples`、`templates`；使用 `--keep=all` 时不会删除任何演示内容。清理会同步移除所选模块对应的页面目录、地图演示数据、路由导入与导航入口。操作不可逆，建议先提交当前代码或创建分支再执行。
 
 清理脚本会先输出保留项、删除项及受影响的文件；带 `--dry-run` 时不会写入或删除任何文件。执行真实清理后，请运行 `npm run build`，并按保留模块检查侧栏菜单和相关路由。
 

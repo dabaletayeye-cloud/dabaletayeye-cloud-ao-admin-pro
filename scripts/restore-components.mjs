@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadCleanDemoConfig } from './load-clean-demo-config.mjs';
+import { createMarkerBaselineResolver } from './git-marker-baseline.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDir, '..');
@@ -13,7 +14,6 @@ const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const confirmed = args.includes('--yes');
 const interactive = args.includes('--interactive');
-const showMenu = args.includes('--show-menu');
 const execFileAsync = promisify(execFile);
 const { modules } = await loadCleanDemoConfig();
 const componentModule = modules.find((module) => module.id === 'components');
@@ -61,13 +61,14 @@ function printUsage() {
   npm run restore:components:dry            # 预览恢复范围，不修改文件
   npm run restore:components                # 交互确认后恢复组件中心
   npm run restore:components -- --yes       # 跳过确认并恢复
-  npm run restore:components -- --show-menu # 同时恢复侧栏“组件中心”入口
-\n恢复内容：${COMPONENT_DIRECTORY}、组件路由和页签标签；默认保持侧栏入口隐藏。\n`);
+\n恢复内容：${COMPONENT_DIRECTORY}、组件路由、侧栏入口和页签标签。\n`);
 }
 
 async function runGit(args) {
   return execFileAsync('git', args, { cwd: projectRoot });
 }
+
+const getBaseline = createMarkerBaselineResolver(runGit);
 
 function extractBlock(source, block) {
   const startIndex = source.indexOf(block.start);
@@ -140,7 +141,7 @@ async function main() {
   const filesToWrite = new Map();
 
   const blocksByFile = new Map();
-  for (const block of BLOCKS.filter((item) => !item.showMenuOnly || showMenu)) {
+  for (const block of BLOCKS) {
     const blocks = blocksByFile.get(block.file) ?? [];
     blocks.push(block);
     blocksByFile.set(block.file, blocks);
@@ -148,13 +149,11 @@ async function main() {
 
   for (const [relativePath, blocks] of blocksByFile) {
     const absolutePath = path.join(projectRoot, relativePath);
-    const [current, baseline] = await Promise.all([
-      readFile(absolutePath, 'utf8'),
-      runGit(['show', `HEAD:${relativePath}`]).then(({ stdout }) => stdout),
-    ]);
+    const current = await readFile(absolutePath, 'utf8');
     let content = current;
     let changed = false;
     for (const block of blocks) {
+      const baseline = await getBaseline(relativePath, block);
       const restored = restoreBlock(content, baseline, block);
       content = restored.content;
       changed ||= restored.changed;
@@ -169,7 +168,6 @@ async function main() {
   console.log(filesToWrite.size > 0
     ? `  - ${[...new Set(BLOCKS.filter((block) => filesToWrite.has(path.join(projectRoot, block.file))).map((block) => block.file))].join('、')} 中的组件入口标记`
     : '  - 组件入口标记已完整，无需补写');
-  if (!showMenu) console.log('  - 侧栏组件中心入口保持隐藏（传入 --show-menu 才会恢复）');
 
   if (dryRun) {
     console.log('\n预览结束，未修改任何文件。');
@@ -191,7 +189,7 @@ async function main() {
   }
   for (const [filePath, content] of filesToWrite) await writeFile(filePath, content, 'utf8');
 
-  console.log('\n组件中心已恢复。请运行 npm run build 验证。');
+  console.log('\n组件中心及侧栏入口已恢复。请运行 npm run build 验证。');
 }
 
 main().catch((error) => {

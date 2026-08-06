@@ -10,9 +10,9 @@
       { "label": "媒体库", "routes": ["/media"] },
       { "label": "订单管理", "routes": ["/orders"] },
       { "label": "消息中心", "routes": ["/messages"] },
-      { "label": "组件演示页与路由（侧栏入口隐藏）", "moduleId": "components" }
+      { "label": "组件中心、组件演示页与侧栏入口", "moduleId": "components" }
     ],
-    "keepModuleIds": ["components"],
+    "keepModuleIds": ["components", "component-navigation"],
     "restoreModuleIds": ["extras", "examples", "templates"]
   },
   "dependencies": [],
@@ -20,7 +20,8 @@
     {
       "id": "components",
       "label": "组件中心",
-      "description": "表单、表格、词云图、二维码等组件演示页面（不会删除 src/components 下的通用组件）",
+      "description": "表单、表格、词云图、二维码等用户可用组件页面，永久保留",
+      "alwaysKeep": true,
       "targets": ["src/pages/comp"],
       "blocks": [
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: components:imports */", "end": "/* CLEAN_DEMO_END: components:imports */", "restoreAnchors": ["/* CLEAN_DEMO_START: templates:imports */", "import FileManagementPage from './pages/FileManagementPage';"] },
@@ -34,7 +35,8 @@
     {
       "id": "component-navigation",
       "label": "组件中心入口",
-      "description": "仅隐藏侧栏中的组件中心入口，保留 src/components、组件演示页面及其路由，供开发人员继续使用",
+      "description": "组件中心的侧栏入口，永久保留",
+      "alwaysKeep": true,
       "targets": [],
       "blocks": [
         { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: components:navigation */", "end": "/* CLEAN_DEMO_END: components:navigation */", "restoreAnchors": ["/* CLEAN_DEMO_START: examples:navigation */", "{ type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },"] }
