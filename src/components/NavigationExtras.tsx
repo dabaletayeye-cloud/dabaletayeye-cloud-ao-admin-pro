@@ -37,7 +37,8 @@ const ROUTE_LABELS: Record<string, string> = {
   '/analytics/funnel': '转化漏斗',
   '/examples/permissions': '前端权限',
 
-  /* CLEAN_DEMO_START: components:example-route-labels */
+
+/* CLEAN_DEMO_START: components:example-route-labels */
   '/examples/tabs': '标签页',
   '/examples/advanced-table': '高级表格',
   '/examples/forms': '表单',

@@ -106,6 +106,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 
 
+
 /* CLEAN_DEMO_START: extras:platform-content-navigation */
   {
     type: 'group', icon: <WorkflowIcon size={16} />, label: '低代码中心',
@@ -165,6 +166,13 @@ export const NAV_ITEMS: NavItem[] = [
 
 
 
+
+
+
+
+
+
+
 /* CLEAN_DEMO_START: extras:dashboard-navigation */
   {
     type: 'group', icon: <LayoutDashboardIcon size={16} />, label: '仪表盘',
@@ -201,8 +209,6 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   /* CLEAN_DEMO_END: components:navigation */
-
-
 /* CLEAN_DEMO_START: extras:analysis-navigation */
   {
     type: 'group', icon: <BarChart2Icon size={16} />, label: '数据分析',
@@ -246,6 +252,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   /* CLEAN_DEMO_END: templates:navigation */
 { type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },
+
 
 
 

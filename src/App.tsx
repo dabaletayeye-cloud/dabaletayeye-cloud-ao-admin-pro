@@ -13,6 +13,8 @@ import Dashboard from './pages/Dashboard';
 import VisitStatsPage from './pages/VisitStatsPage';
 /* CLEAN_DEMO_END: launcher-analytics:imports */
 
+
+
 /* CLEAN_DEMO_START: extras:content-imports */
 import ArticleListPage from './pages/ArticleListPage';
 import CategoryPage from './pages/CategoryPage';
@@ -23,6 +25,7 @@ import UserPortraitPage from './pages/UserPortraitPage';
 import FunnelPage from './pages/FunnelPage';
 /* CLEAN_DEMO_END: extras:analytics-imports */
 import MediaPage from './pages/MediaPage';
+
 
 
 
@@ -49,6 +52,7 @@ import FileManagementPage from './pages/FileManagementPage';
 
 
 
+
 /* CLEAN_DEMO_START: extras:access-imports */
 import PermissionPage from './pages/PermissionPage';
 import SettingsPage from './pages/SettingsPage';
@@ -57,6 +61,8 @@ import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import AccountSecurityPage from './pages/AccountSecurityPage';
 /* CLEAN_DEMO_END: account:imports */
+
+
 
 /* CLEAN_DEMO_START: extras:platform-imports */
 import ApiOrchestrationPage from './pages/lowcode/ApiOrchestrationPage';
@@ -104,6 +110,8 @@ import ConfettiPage from './pages/comp/ConfettiPage';
 import ChatPage from './pages/tmpl/ChatPage';
 import PricingPage from './pages/tmpl/PricingPage';
 /* CLEAN_DEMO_END: launcher-templates:imports */
+
+
 /* CLEAN_DEMO_START: extras:secondary-imports */
 import ArticleGridPage from './pages/article/ArticleGridPage';
 import ArticlePublishPage from './pages/article/ArticlePublishPage';
@@ -122,6 +130,7 @@ import FailPage from './pages/result/FailPage';
 import Page403 from './pages/error/Page403';
 import Page404 from './pages/error/Page404';
 import Page500 from './pages/error/Page500';
+
 
 
 
@@ -152,6 +161,8 @@ export default function App() {
           <Route path="/analytics/traffic" element={<VisitStatsPage />} />
           {/* CLEAN_DEMO_END: launcher-analytics:routes */}
 
+
+
 {/* CLEAN_DEMO_START: extras:content-routes */}
           <Route path="/content/articles" element={<ArticleListPage />} />
           <Route path="/content/categories" element={<CategoryPage />} />
@@ -162,6 +173,7 @@ export default function App() {
           <Route path="/analytics/funnel" element={<FunnelPage />} />
           {/* CLEAN_DEMO_END: extras:analytics-routes */}
 <Route path="/media" element={<MediaPage />} />
+
 
 
 
@@ -187,6 +199,7 @@ export default function App() {
 
 
 
+
 {/* CLEAN_DEMO_START: extras:access-routes */}
           <Route path="/permissions" element={<PermissionPage />} />
           <Route path="/settings" element={<SettingsPage />} />
@@ -195,6 +208,8 @@ export default function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/account-security" element={<AccountSecurityPage />} />
           {/* CLEAN_DEMO_END: account:routes */}
+
+
 
 {/* CLEAN_DEMO_START: extras:platform-routes */}
           <Route path="/lowcode/api" element={<ApiOrchestrationPage />} />
@@ -249,6 +264,9 @@ export default function App() {
           <Route path="/tmpl/chat" element={<ChatPage />} />
           <Route path="/tmpl/pricing" element={<PricingPage />} />
           {/* CLEAN_DEMO_END: launcher-templates:routes */}
+
+
+
 
 {/* CLEAN_DEMO_START: examples:routes */}
           <Route path="/examples/permissions" element={<FrontendPermissionExamplePage />} />
