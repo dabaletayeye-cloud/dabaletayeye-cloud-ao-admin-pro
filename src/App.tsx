@@ -8,19 +8,22 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 
 
+
+/* CLEAN_DEMO_START: launcher-analytics:imports */
+import VisitStatsPage from './pages/VisitStatsPage';
+/* CLEAN_DEMO_END: launcher-analytics:imports */
+
 /* CLEAN_DEMO_START: extras:content-imports */
 import ArticleListPage from './pages/ArticleListPage';
 import CategoryPage from './pages/CategoryPage';
 import TagPage from './pages/TagPage';
 /* CLEAN_DEMO_END: extras:content-imports */
-/* CLEAN_DEMO_START: launcher-analytics:imports */
-import VisitStatsPage from './pages/VisitStatsPage';
-/* CLEAN_DEMO_END: launcher-analytics:imports */
 /* CLEAN_DEMO_START: extras:analytics-imports */
 import UserPortraitPage from './pages/UserPortraitPage';
 import FunnelPage from './pages/FunnelPage';
 /* CLEAN_DEMO_END: extras:analytics-imports */
 import MediaPage from './pages/MediaPage';
+
 
 
 /* CLEAN_DEMO_START: extras:marketing-imports */
@@ -45,6 +48,7 @@ import FileManagementPage from './pages/FileManagementPage';
 
 
 
+
 /* CLEAN_DEMO_START: extras:access-imports */
 import PermissionPage from './pages/PermissionPage';
 import SettingsPage from './pages/SettingsPage';
@@ -53,6 +57,7 @@ import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import AccountSecurityPage from './pages/AccountSecurityPage';
 /* CLEAN_DEMO_END: account:imports */
+
 /* CLEAN_DEMO_START: extras:platform-imports */
 import ApiOrchestrationPage from './pages/lowcode/ApiOrchestrationPage';
 import PageDesignerPage from './pages/lowcode/PageDesignerPage';
@@ -83,14 +88,22 @@ import DragPage from './pages/comp/DragPage';
 import ContextMenuPage from './pages/comp/ContextMenuPage';
 import WatermarkPage from './pages/comp/WatermarkPage';
 import TextScrollPage from './pages/comp/TextScrollPage';
-import ConfettiPage from './pages/comp/ConfettiPage';
 import ExcelPage from './pages/comp/ExcelPage';
 import WordCloudPage from './pages/comp/WordCloudPage';
 /* CLEAN_DEMO_END: components:imports */
+/* CLEAN_DEMO_START: launcher-confetti:imports */
+import ConfettiPage from './pages/comp/ConfettiPage';
+/* CLEAN_DEMO_END: launcher-confetti:imports */
 
 
 
 
+
+
+/* CLEAN_DEMO_START: launcher-templates:imports */
+import ChatPage from './pages/tmpl/ChatPage';
+import PricingPage from './pages/tmpl/PricingPage';
+/* CLEAN_DEMO_END: launcher-templates:imports */
 /* CLEAN_DEMO_START: extras:secondary-imports */
 import ArticleGridPage from './pages/article/ArticleGridPage';
 import ArticlePublishPage from './pages/article/ArticlePublishPage';
@@ -104,15 +117,12 @@ import ChartPage from './pages/tmpl/ChartPage';
 import CalendarPage from './pages/tmpl/CalendarPage';
 import MapPage from './pages/tmpl/MapPage';
 /* CLEAN_DEMO_END: templates:imports */
-/* CLEAN_DEMO_START: launcher-templates:imports */
-import ChatPage from './pages/tmpl/ChatPage';
-import PricingPage from './pages/tmpl/PricingPage';
-/* CLEAN_DEMO_END: launcher-templates:imports */
 import SuccessPage from './pages/result/SuccessPage';
 import FailPage from './pages/result/FailPage';
 import Page403 from './pages/error/Page403';
 import Page404 from './pages/error/Page404';
 import Page500 from './pages/error/Page500';
+
 
 
 
@@ -137,19 +147,22 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
 
 
+
+{/* CLEAN_DEMO_START: launcher-analytics:routes */}
+          <Route path="/analytics/traffic" element={<VisitStatsPage />} />
+          {/* CLEAN_DEMO_END: launcher-analytics:routes */}
+
 {/* CLEAN_DEMO_START: extras:content-routes */}
           <Route path="/content/articles" element={<ArticleListPage />} />
           <Route path="/content/categories" element={<CategoryPage />} />
           <Route path="/content/tags" element={<TagPage />} />
           {/* CLEAN_DEMO_END: extras:content-routes */}
-{/* CLEAN_DEMO_START: launcher-analytics:routes */}
-          <Route path="/analytics/traffic" element={<VisitStatsPage />} />
-          {/* CLEAN_DEMO_END: launcher-analytics:routes */}
 {/* CLEAN_DEMO_START: extras:analytics-routes */}
           <Route path="/analytics/portrait" element={<UserPortraitPage />} />
           <Route path="/analytics/funnel" element={<FunnelPage />} />
           {/* CLEAN_DEMO_END: extras:analytics-routes */}
 <Route path="/media" element={<MediaPage />} />
+
 
 
 {/* CLEAN_DEMO_START: extras:marketing-routes */}
@@ -173,6 +186,7 @@ export default function App() {
 
 
 
+
 {/* CLEAN_DEMO_START: extras:access-routes */}
           <Route path="/permissions" element={<PermissionPage />} />
           <Route path="/settings" element={<SettingsPage />} />
@@ -181,6 +195,7 @@ export default function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/account-security" element={<AccountSecurityPage />} />
           {/* CLEAN_DEMO_END: account:routes */}
+
 {/* CLEAN_DEMO_START: extras:platform-routes */}
           <Route path="/lowcode/api" element={<ApiOrchestrationPage />} />
           <Route path="/lowcode/page" element={<PageDesignerPage />} />
@@ -216,15 +231,24 @@ export default function App() {
           <Route path="/comp/context-menu" element={<ContextMenuPage />} />
           <Route path="/comp/watermark" element={<WatermarkPage />} />
           <Route path="/comp/text-scroll" element={<TextScrollPage />} />
-          <Route path="/comp/confetti" element={<ConfettiPage />} />
           <Route path="/comp/excel" element={<ExcelPage />} />
           <Route path="/comp/word-cloud" element={<WordCloudPage />} />
           {/* CLEAN_DEMO_END: components:routes */}
+{/* CLEAN_DEMO_START: launcher-confetti:routes */}
+          <Route path="/comp/confetti" element={<ConfettiPage />} />
+          {/* CLEAN_DEMO_END: launcher-confetti:routes */}
 
 
 
 
 
+
+
+
+{/* CLEAN_DEMO_START: launcher-templates:routes */}
+          <Route path="/tmpl/chat" element={<ChatPage />} />
+          <Route path="/tmpl/pricing" element={<PricingPage />} />
+          {/* CLEAN_DEMO_END: launcher-templates:routes */}
 
 {/* CLEAN_DEMO_START: examples:routes */}
           <Route path="/examples/permissions" element={<FrontendPermissionExamplePage />} />
@@ -246,10 +270,6 @@ export default function App() {
           <Route path="/tmpl/calendar" element={<CalendarPage />} />
           <Route path="/tmpl/map" element={<MapPage />} />
           {/* CLEAN_DEMO_END: templates:routes */}
-{/* CLEAN_DEMO_START: launcher-templates:routes */}
-          <Route path="/tmpl/chat" element={<ChatPage />} />
-          <Route path="/tmpl/pricing" element={<PricingPage />} />
-          {/* CLEAN_DEMO_END: launcher-templates:routes */}
 {/* CLEAN_DEMO_START: extras:secondary-routes */}
           <Route path="/article/list" element={<ArticleGridPage />} />
           <Route path="/article/publish" element={<ArticlePublishPage />} />

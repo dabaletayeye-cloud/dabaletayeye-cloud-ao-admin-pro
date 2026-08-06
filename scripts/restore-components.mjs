@@ -17,11 +17,11 @@ const interactive = args.includes('--interactive');
 const execFileAsync = promisify(execFile);
 const { modules } = await loadCleanDemoConfig();
 const componentModule = modules.find((module) => module.id === 'components');
-if (!componentModule || componentModule.targets.length !== 1) {
-  throw new Error('清理配置中缺少组件中心模块，或组件目录配置无效。');
+if (!componentModule || componentModule.targets.length === 0) {
+  throw new Error('清理配置中缺少组件中心模块，或组件页面配置无效。');
 }
 
-const [COMPONENT_DIRECTORY] = componentModule.targets;
+const COMPONENT_TARGETS = componentModule.targets;
 const COMPONENT_RESTORE_OPTIONS = new Map([
   ['/* CLEAN_DEMO_START: components:imports */', {
     anchor: '/* CLEAN_DEMO_START: templates:imports */',
@@ -61,7 +61,7 @@ function printUsage() {
   npm run restore:components:dry            # 预览恢复范围，不修改文件
   npm run restore:components                # 交互确认后恢复组件中心
   npm run restore:components -- --yes       # 跳过确认并恢复
-\n恢复内容：${COMPONENT_DIRECTORY}、组件路由、侧栏入口和页签标签。\n`);
+\n恢复内容：${COMPONENT_TARGETS.length} 个组件页面、组件路由、侧栏入口和页签标签。\n`);
 }
 
 async function runGit(args) {
@@ -79,7 +79,7 @@ function extractBlock(source, block) {
   return source.slice(startIndex, endIndex + block.end.length);
 }
 
-function restoreBlock(current, baseline, block) {
+async function restoreBlock(current, relativePath, block) {
   const currentStart = current.indexOf(block.start);
   const currentEnd = current.indexOf(block.end);
   if (currentStart !== -1 && currentEnd !== -1) return { content: current, changed: false };
@@ -95,6 +95,7 @@ function restoreBlock(current, baseline, block) {
     throw new Error(`找不到安全插入位置，已停止恢复：${block.file}（${block.anchor}）`);
   }
 
+  const baseline = await getBaseline(relativePath, block);
   const componentBlock = extractBlock(baseline, block).trimEnd();
   return {
     content: `${current.slice(0, anchorIndex)}${componentBlock}\n${current.slice(anchorIndex)}`,
@@ -114,8 +115,8 @@ async function askYesNo(question) {
 
 async function getDeletedComponentFiles() {
   const [{ stdout: diff }, { stdout: untracked }] = await Promise.all([
-    runGit(['diff', '--name-status', 'HEAD', '--', COMPONENT_DIRECTORY]),
-    runGit(['ls-files', '--others', '--exclude-standard', '--', COMPONENT_DIRECTORY]),
+    runGit(['diff', '--name-status', 'HEAD', '--', ...COMPONENT_TARGETS]),
+    runGit(['ls-files', '--others', '--exclude-standard', '--', ...COMPONENT_TARGETS]),
   ]);
 
   const changes = diff.trim().split(/\r?\n/).filter(Boolean).map((line) => {
@@ -153,8 +154,7 @@ async function main() {
     let content = current;
     let changed = false;
     for (const block of blocks) {
-      const baseline = await getBaseline(relativePath, block);
-      const restored = restoreBlock(content, baseline, block);
+      const restored = await restoreBlock(content, relativePath, block);
       content = restored.content;
       changed ||= restored.changed;
     }
@@ -163,8 +163,8 @@ async function main() {
 
   console.log('\n将恢复：');
   console.log(deletedFiles.length > 0
-    ? `  - ${COMPONENT_DIRECTORY} 中的 ${deletedFiles.length} 个组件页面（从当前 HEAD 恢复）`
-    : `  - ${COMPONENT_DIRECTORY}（文件已存在）`);
+    ? `  - ${deletedFiles.length} 个组件页面（从当前 HEAD 恢复）`
+    : `  - ${COMPONENT_TARGETS.length} 个组件页面（文件已存在）`);
   console.log(filesToWrite.size > 0
     ? `  - ${[...new Set(BLOCKS.filter((block) => filesToWrite.has(path.join(projectRoot, block.file))).map((block) => block.file))].join('、')} 中的组件入口标记`
     : '  - 组件入口标记已完整，无需补写');
@@ -185,7 +185,7 @@ async function main() {
   }
 
   if (deletedFiles.length > 0) {
-    await runGit(['restore', '--source=HEAD', '--staged', '--worktree', '--', COMPONENT_DIRECTORY]);
+    await runGit(['restore', '--source=HEAD', '--staged', '--worktree', '--', ...COMPONENT_TARGETS]);
   }
   for (const [filePath, content] of filesToWrite) await writeFile(filePath, content, 'utf8');
 

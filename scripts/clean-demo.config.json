@@ -4,7 +4,7 @@
     "retained": [
       { "label": "登录、注册与忘记密码", "routes": ["/login", "/register", "/forgot-password"] },
       { "label": "个人中心与账号安全", "routes": ["/profile", "/account-security"] },
-      { "label": "应用导航核心页", "routes": ["/analytics/traffic", "/comp/confetti", "/tmpl/chat", "/tmpl/pricing"] },
+      { "label": "应用导航核心页", "routes": ["/analytics/traffic", "/tmpl/chat", "/tmpl/pricing"] },
       { "label": "工作台", "routes": ["/"] },
       { "label": "系统管理", "routes": ["/system/users", "/system/roles", "/system/menus", "/system/logs", "/system/dict", "/system/config", "/system/servers", "/system/files"] },
       { "label": "结果页面", "routes": ["/result/success", "/result/success-page", "/result/fail", "/result/fail-page"] },
@@ -12,22 +12,21 @@
       { "label": "媒体库", "routes": ["/media"] },
       { "label": "订单管理", "routes": ["/orders"] },
       { "label": "消息中心", "routes": ["/messages"] },
-      { "label": "组件中心、组件演示页与侧栏入口", "moduleId": "components" }
+      { "label": "礼花效果", "routes": ["/comp/confetti"] }
     ],
-    "keepModuleIds": ["components", "component-navigation", "account", "launcher-analytics", "launcher-templates"],
-    "restoreModuleIds": ["extras", "examples", "templates"]
+    "keepModuleIds": ["account", "launcher-analytics", "launcher-confetti", "launcher-templates"],
+    "restoreModuleIds": ["components", "component-navigation", "extras", "examples", "templates"]
   },
   "dependencies": [],
   "modules": [
     {
       "id": "components",
       "label": "组件中心",
-      "description": "表单、表格、词云图、二维码等用户可用组件页面，永久保留",
-      "alwaysKeep": true,
-      "targets": ["src/pages/comp"],
+      "description": "表单、表格、词云图、二维码等组件示例页面，可按需清理",
+      "targets": ["src/pages/comp/OverviewPage.tsx", "src/pages/comp/ButtonsPage.tsx", "src/pages/comp/FormsPage.tsx", "src/pages/comp/DataTablePage.tsx", "src/pages/comp/FeedbackPage.tsx", "src/pages/comp/DisplayPage.tsx", "src/pages/comp/NavPage.tsx", "src/pages/comp/IconsPage.tsx", "src/pages/comp/NumberRollPage.tsx", "src/pages/comp/RichEditorPage.tsx", "src/pages/comp/ImageCropPage.tsx", "src/pages/comp/QrCodePage.tsx", "src/pages/comp/VideoPlayerPage.tsx", "src/pages/comp/DragPage.tsx", "src/pages/comp/ContextMenuPage.tsx", "src/pages/comp/WatermarkPage.tsx", "src/pages/comp/TextScrollPage.tsx", "src/pages/comp/ExcelPage.tsx", "src/pages/comp/WordCloudPage.tsx"],
       "blocks": [
-        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: components:imports */", "end": "/* CLEAN_DEMO_END: components:imports */", "restoreAnchors": ["/* CLEAN_DEMO_START: templates:imports */", "import FileManagementPage from './pages/FileManagementPage';"] },
-        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: components:routes */}", "end": "{/* CLEAN_DEMO_END: components:routes */}", "restoreAnchors": ["{/* CLEAN_DEMO_START: examples:routes */}", "<Route path=\"/result/success\" element={<ResultPage />} />"] },
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: components:imports */", "end": "/* CLEAN_DEMO_END: components:imports */", "restoreAnchors": ["/* CLEAN_DEMO_START: launcher-confetti:imports */", "import FileManagementPage from './pages/FileManagementPage';"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: components:routes */}", "end": "{/* CLEAN_DEMO_END: components:routes */}", "restoreAnchors": ["{/* CLEAN_DEMO_START: launcher-confetti:routes */}", "<Route path=\"/result/success\" element={<ResultPage />} />"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: components:example-routes */}", "end": "{/* CLEAN_DEMO_END: components:example-routes */}", "restoreAnchors": ["<Route path=\"/examples/basic-table\" element={<BasicTableExamplePage />} />"], "restoreOptional": true, "restoreOrder": 900 },
         { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: components:navigation */", "end": "/* CLEAN_DEMO_END: components:navigation */", "restoreAnchors": ["/* CLEAN_DEMO_START: examples:navigation */", "{ type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },"], "restoreShowMenuOnly": true, "restoreOptional": true },
         { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: components:example-navigation */", "end": "/* CLEAN_DEMO_END: components:example-navigation */", "restoreAnchors": ["{ label: '基础表格', path: '/examples/basic-table', icon: <TableIcon size={13} /> },"], "restoreOptional": true, "restoreOrder": 900 },
@@ -37,11 +36,20 @@
     {
       "id": "component-navigation",
       "label": "组件中心入口",
-      "description": "组件中心的侧栏入口，永久保留",
-      "alwaysKeep": true,
+      "description": "组件中心的侧栏入口，可随组件中心一起清理",
       "targets": [],
       "blocks": [
         { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: components:navigation */", "end": "/* CLEAN_DEMO_END: components:navigation */", "restoreAnchors": ["/* CLEAN_DEMO_START: examples:navigation */", "{ type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },"] }
+      ]
+    },
+    {
+      "id": "launcher-confetti",
+      "label": "应用导航：礼花效果",
+      "description": "应用导航中的礼花效果页面，核心版保留",
+      "targets": ["src/pages/comp/ConfettiPage.tsx"],
+      "blocks": [
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: launcher-confetti:imports */", "end": "/* CLEAN_DEMO_END: launcher-confetti:imports */", "restoreAnchors": ["import SuccessPage from './pages/result/SuccessPage';"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: launcher-confetti:routes */}", "end": "{/* CLEAN_DEMO_END: launcher-confetti:routes */}", "restoreAnchors": ["<Route path=\"/result/success\" element={<ResultPage />} />"] }
       ]
     },
     {

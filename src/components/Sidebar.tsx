@@ -104,15 +104,8 @@ export const NAV_ITEMS: NavItem[] = [
 
 
 
-/* CLEAN_DEMO_START: extras:dashboard-navigation */
-  {
-    type: 'group', icon: <LayoutDashboardIcon size={16} />, label: '仪表盘',
-    children: [
-      { label: '分析页', path: '/dashboard/analytics', icon: <LineChartIcon size={13} /> },
-      { label: '电子商务', path: '/dashboard/ecommerce', icon: <ShoppingCartIcon size={13} /> },
-    ],
-  },
-  /* CLEAN_DEMO_END: extras:dashboard-navigation */
+
+
 /* CLEAN_DEMO_START: extras:platform-content-navigation */
   {
     type: 'group', icon: <WorkflowIcon size={16} />, label: '低代码中心',
@@ -171,16 +164,16 @@ export const NAV_ITEMS: NavItem[] = [
 
 
 
-/* CLEAN_DEMO_START: extras:analysis-navigation */
+
+/* CLEAN_DEMO_START: extras:dashboard-navigation */
   {
-    type: 'group', icon: <BarChart2Icon size={16} />, label: '数据分析',
+    type: 'group', icon: <LayoutDashboardIcon size={16} />, label: '仪表盘',
     children: [
-      { label: '访问统计', path: '/analytics/traffic', icon: <TrendingUpIcon size={13} /> },
-      { label: '用户画像', path: '/analytics/portrait', icon: <UsersIcon size={13} /> },
-      { label: '转化漏斗', path: '/analytics/funnel', icon: <FunnelIcon size={13} /> },
+      { label: '分析页', path: '/dashboard/analytics', icon: <LineChartIcon size={13} /> },
+      { label: '电子商务', path: '/dashboard/ecommerce', icon: <ShoppingCartIcon size={13} /> },
     ],
   },
-  /* CLEAN_DEMO_END: extras:analysis-navigation */
+  /* CLEAN_DEMO_END: extras:dashboard-navigation */
 /* CLEAN_DEMO_START: components:navigation */
   {
     type: 'group', icon: <PuzzleIcon size={16} />, label: '组件中心',
@@ -208,6 +201,18 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   /* CLEAN_DEMO_END: components:navigation */
+
+
+/* CLEAN_DEMO_START: extras:analysis-navigation */
+  {
+    type: 'group', icon: <BarChart2Icon size={16} />, label: '数据分析',
+    children: [
+      { label: '访问统计', path: '/analytics/traffic', icon: <TrendingUpIcon size={13} /> },
+      { label: '用户画像', path: '/analytics/portrait', icon: <UsersIcon size={13} /> },
+      { label: '转化漏斗', path: '/analytics/funnel', icon: <FunnelIcon size={13} /> },
+    ],
+  },
+  /* CLEAN_DEMO_END: extras:analysis-navigation */
 /* CLEAN_DEMO_START: examples:navigation */
   {
     type: 'group', icon: <SparklesIcon size={16} />, label: '功能示例',
@@ -241,6 +246,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   /* CLEAN_DEMO_END: templates:navigation */
 { type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },
+
 
 
 /* CLEAN_DEMO_START: extras:marketing-navigation */
