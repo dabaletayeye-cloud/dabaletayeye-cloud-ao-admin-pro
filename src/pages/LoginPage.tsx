@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '../lib/localizedToast';
@@ -26,8 +26,6 @@ import ThemePanel from '../components/ThemePanel';
 import LocalizedText from '../components/LocalizedText';
 import { getCurrentAccount, saveCurrentAccount } from '../lib/currentAccount';
 import './AuthPage.css';
-
-type AuthMode = 'login' | 'register';
 
 type RegistrationResult = {
   name: string;
@@ -121,8 +119,6 @@ export default function LoginPage() {
   const location = useLocation();
   const { themeState, toggleMode } = useTheme();
   const { locale, setLocale, t } = useLocale();
-  const [mode, setMode] = useState<AuthMode>(location.pathname === '/register' ? 'register' : 'login');
-  const [recovery, setRecovery] = useState(false);
   const [role, setRole] = useState('super-admin');
   const [account, setAccount] = useState(getRememberedAccount);
   const [email, setEmail] = useState('');
@@ -138,7 +134,9 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<RegistrationResult | null>(null);
 
-  const isRegister = mode === 'register';
+  const isRegister = location.pathname === '/register';
+  const recovery = location.pathname === '/forgot-password';
+  const activeRegistrationResult = isRegister ? registrationResult : null;
   const isVerified = verification >= 92;
   const passwordScore = [
     password.length >= 6,
@@ -152,15 +150,7 @@ export default function LoginPage() {
       ? { label: t('auth.medium'), level: 'medium' }
       : { label: t('auth.strong'), level: 'strong' };
 
-  useEffect(() => {
-    setMode(location.pathname === '/register' ? 'register' : 'login');
-    setRecovery(false);
-    setRegistrationResult(null);
-  }, [location.pathname]);
-
-  const switchMode = (nextMode: AuthMode) => {
-    setMode(nextMode);
-    setRecovery(false);
+  const switchMode = (nextMode: 'login' | 'register') => {
     setPassword('');
     setConfirmPassword('');
     setVerification(0);
@@ -181,7 +171,7 @@ export default function LoginPage() {
         return;
       }
       toast.success(t('auth.resetLinkSent'));
-      setRecovery(false);
+      navigate('/login');
       return;
     }
 
@@ -255,8 +245,8 @@ export default function LoginPage() {
     }, 700);
   };
 
-  const pageTitle = registrationResult ? t('auth.accountCreatedTitle') : recovery ? t('auth.passwordRecoveryTitle') : isRegister ? t('auth.createAccountTitle') : t('auth.welcomeBack');
-  const pageDescription = registrationResult
+  const pageTitle = activeRegistrationResult ? t('auth.accountCreatedTitle') : recovery ? t('auth.passwordRecoveryTitle') : isRegister ? t('auth.createAccountTitle') : t('auth.welcomeBack');
+  const pageDescription = activeRegistrationResult
     ? t('auth.accountCreatedDescription')
     : recovery
     ? t('auth.passwordRecoveryDescription')
@@ -336,7 +326,7 @@ export default function LoginPage() {
               <p>{pageDescription}</p>
             </div>
 
-            {!recovery && !registrationResult && (
+            {!recovery && !activeRegistrationResult && (
               <div className="auth-mode-tabs" role="tablist" aria-label={t('auth.authMethod')}>
                 <button
                   type="button"
@@ -359,21 +349,21 @@ export default function LoginPage() {
               </div>
             )}
 
-            {registrationResult ? (
+            {activeRegistrationResult ? (
               <section className="auth-registration-result" aria-live="polite">
                 <div className="auth-result-icon"><CheckCircle2Icon size={25} /></div>
                 <div className="auth-result-copy">
-                  <strong>{registrationResult.name}</strong>
+                  <strong>{activeRegistrationResult.name}</strong>
                   <span>{t('auth.joined')}</span>
                 </div>
                 <dl className="auth-result-details">
                   <div>
                     <dt>{t('auth.account')}</dt>
-                    <dd>{registrationResult.name}</dd>
+                    <dd>{activeRegistrationResult.name}</dd>
                   </div>
                   <div>
                     <dt>{t('auth.email')}</dt>
-                    <dd><MailIcon size={15} />{registrationResult.email}</dd>
+                    <dd><MailIcon size={15} />{activeRegistrationResult.email}</dd>
                   </div>
                 </dl>
                 <button className="auth-submit" type="button" onClick={() => switchMode('login')}>
@@ -537,7 +527,7 @@ export default function LoginPage() {
                     <span><CheckIcon size={12} strokeWidth={3} /></span>
                     <em>{t('auth.rememberPassword')}</em>
                   </label>
-                  <button type="button" onClick={() => setRecovery(true)}>{t('auth.forgotPassword')}</button>
+                  <button type="button" onClick={() => navigate('/forgot-password')}>{t('auth.forgotPassword')}</button>
                 </div>
               )}
 
@@ -559,9 +549,9 @@ export default function LoginPage() {
               </button>
             </form>}
 
-            {!registrationResult && <div className="auth-footer">
+            {!activeRegistrationResult && <div className="auth-footer">
               {recovery ? (
-                <button type="button" onClick={() => setRecovery(false)}>{t('auth.backToLogin')}</button>
+                <button type="button" onClick={() => navigate('/login')}>{t('auth.backToLogin')}</button>
               ) : isRegister ? (
                 <p>{t('auth.haveAccount')}<button type="button" onClick={() => switchMode('login')}>{t('auth.loginNow')}</button></p>
               ) : (

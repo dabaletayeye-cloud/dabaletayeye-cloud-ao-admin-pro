@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
-import { toast } from '../lib/localizedToast';
 import LocalizedText from './LocalizedText';
 import {
   LayoutGridIcon,
@@ -21,13 +20,20 @@ const PINK = '#E91E8C';
 
 // ─── App entries ──────────────────────────────────────────────────────────────
 
-interface AppEntry {
+type AppEntry = {
   label: string;
   desc: string;
-  path: string;
   color: string;
   bg: string;
   icon: React.ReactNode;
+} & (
+  | { path: string; external?: never }
+  | { external: string; path?: never }
+);
+
+interface QuickLink {
+  label: string;
+  path: string;
 }
 
 const APP_ENTRIES: AppEntry[] = [
@@ -50,7 +56,7 @@ const APP_ENTRIES: AppEntry[] = [
   {
     label: '礼花效果',
     desc: '动画特效展示',
-    path: '/marketing/events',
+    path: '/comp/confetti',
     color: '#7c3aed',
     bg: '#ede9fe',
     icon: <SparklesIcon size={20} />,
@@ -58,7 +64,7 @@ const APP_ENTRIES: AppEntry[] = [
   {
     label: '聊天',
     desc: '即时通讯功能',
-    path: '/messages',
+    path: '/tmpl/chat',
     color: '#16a34a',
     bg: '#dcfce7',
     icon: <MessageSquareIcon size={20} />,
@@ -66,7 +72,7 @@ const APP_ENTRIES: AppEntry[] = [
   {
     label: '官方文档',
     desc: '使用指南与开发文档',
-    path: '/system/config',
+    external: 'https://gitcode.com/BieJingChouXiangChongZai/ao-admin-pro',
     color: '#d97706',
     bg: '#fef3c7',
     icon: <BookOpenIcon size={20} />,
@@ -74,7 +80,7 @@ const APP_ENTRIES: AppEntry[] = [
   {
     label: '技术支持',
     desc: '技术支持与问题反馈',
-    path: '/system/logs',
+    external: 'https://gitcode.com/BieJingChouXiangChongZai/ao-admin-pro/issues',
     color: '#0891b2',
     bg: '#cffafe',
     icon: <WrenchIcon size={20} />,
@@ -82,7 +88,7 @@ const APP_ENTRIES: AppEntry[] = [
   {
     label: '更新日志',
     desc: '版本更新与变更记录',
-    path: '/system/config',
+    external: 'https://gitcode.com/BieJingChouXiangChongZai/ao-admin-pro/commits',
     color: '#f59e0b',
     bg: '#fef9c3',
     icon: <ScrollTextIcon size={20} />,
@@ -90,20 +96,20 @@ const APP_ENTRIES: AppEntry[] = [
   {
     label: '哔哩哔哩',
     desc: '技术分享与交流',
-    path: '/marketing/push',
+    external: 'https://search.bilibili.com/all?keyword=ao-admin-pro',
     color: '#e879f9',
     bg: '#fae8ff',
     icon: <TagIcon size={20} />,
   },
 ];
 
-const QUICK_LINKS = [
-  '登录',
-  '注册',
-  '忘记密码',
-  '定价',
-  '个人中心',
-  '留言管理',
+const QUICK_LINKS: QuickLink[] = [
+  { label: '登录', path: '/login' },
+  { label: '注册', path: '/register' },
+  { label: '忘记密码', path: '/forgot-password' },
+  { label: '定价', path: '/tmpl/pricing' },
+  { label: '个人中心', path: '/profile' },
+  { label: '留言管理', path: '/messages' },
 ];
 
 // ─── AppLauncher ─────────────────────────────────────────────────────────────
@@ -145,8 +151,12 @@ export default function AppLauncher() {
     return () => document.removeEventListener('keydown', handler);
   }, []);
 
-  const handleAppClick = (path: string) => {
-    navigate(path);
+  const handleNavigation = (entry: { path?: string; external?: string }) => {
+    if (entry.external) {
+      window.open(entry.external, '_blank', 'noopener,noreferrer');
+    } else if (entry.path) {
+      navigate(entry.path);
+    }
     setOpen(false);
   };
 
@@ -220,7 +230,7 @@ export default function AppLauncher() {
               {APP_ENTRIES.map(app => (
                 <button
                   key={app.label}
-                  onClick={() => handleAppClick(app.path)}
+                  onClick={() => handleNavigation(app)}
                   onMouseEnter={() => setHoveredApp(app.label)}
                   onMouseLeave={() => setHoveredApp(null)}
                   style={{
@@ -272,23 +282,23 @@ export default function AppLauncher() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {QUICK_LINKS.map(link => (
                 <button
-                  key={link}
-                  onClick={() => toast.info(`已选择快捷入口：${link}`)}
-                  onMouseEnter={() => setHoveredLink(link)}
+                  key={link.path}
+                  onClick={() => handleNavigation(link)}
+                  onMouseEnter={() => setHoveredLink(link.label)}
                   onMouseLeave={() => setHoveredLink(null)}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '7px 8px',
                     border: 'none',
                     borderRadius: 7,
-                    background: hoveredLink === link ? 'var(--accent)' : 'transparent',
+                    background: hoveredLink === link.label ? 'var(--accent)' : 'transparent',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'background 0.15s',
                   }}
                 >
-                  <span style={{ fontSize: 13, color: hoveredLink === link ? primary : 'var(--foreground)', transition: 'color 0.15s' }}>
-                    {link}
+                  <span style={{ fontSize: 13, color: hoveredLink === link.label ? primary : 'var(--foreground)', transition: 'color 0.15s' }}>
+                    {link.label}
                   </span>
                   <ChevronRightIcon size={12} style={{ color: 'var(--muted-foreground)', flexShrink: 0 }} />
                 </button>

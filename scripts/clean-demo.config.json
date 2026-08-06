@@ -2,7 +2,9 @@
   "core": {
     "name": "核心版",
     "retained": [
-      { "label": "登录与注册", "routes": ["/login", "/register"] },
+      { "label": "登录、注册与忘记密码", "routes": ["/login", "/register", "/forgot-password"] },
+      { "label": "个人中心与账号安全", "routes": ["/profile", "/account-security"] },
+      { "label": "应用导航核心页", "routes": ["/analytics/traffic", "/comp/confetti", "/tmpl/chat", "/tmpl/pricing"] },
       { "label": "工作台", "routes": ["/"] },
       { "label": "系统管理", "routes": ["/system/users", "/system/roles", "/system/menus", "/system/logs", "/system/dict", "/system/config", "/system/servers", "/system/files"] },
       { "label": "结果页面", "routes": ["/result/success", "/result/success-page", "/result/fail", "/result/fail-page"] },
@@ -12,7 +14,7 @@
       { "label": "消息中心", "routes": ["/messages"] },
       { "label": "组件中心、组件演示页与侧栏入口", "moduleId": "components" }
     ],
-    "keepModuleIds": ["components", "component-navigation"],
+    "keepModuleIds": ["components", "component-navigation", "account", "launcher-analytics", "launcher-templates"],
     "restoreModuleIds": ["extras", "examples", "templates"]
   },
   "dependencies": [],
@@ -43,26 +45,56 @@
       ]
     },
     {
+      "id": "account",
+      "label": "个人中心与账号安全",
+      "description": "个人资料与账号安全页面，核心版保留",
+      "targets": ["src/pages/ProfilePage.tsx", "src/pages/AccountSecurityPage.tsx"],
+      "blocks": [
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:account-imports */", "end": "/* CLEAN_DEMO_END: extras:account-imports */", "restoreAnchors": ["import LoginPage from './pages/LoginPage';"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:account-routes */}", "end": "{/* CLEAN_DEMO_END: extras:account-routes */}", "restoreAnchors": ["<Route path=\"/\" element={<Dashboard />} />"] }
+      ]
+    },
+    {
+      "id": "launcher-analytics",
+      "label": "应用导航：分析页",
+      "description": "应用导航中的数据分析与可视化页面，核心版保留",
+      "targets": ["src/pages/VisitStatsPage.tsx"],
+      "blocks": [
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: launcher-analytics:imports */", "end": "/* CLEAN_DEMO_END: launcher-analytics:imports */", "restoreAnchors": ["import MediaPage from './pages/MediaPage';"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: launcher-analytics:routes */}", "end": "{/* CLEAN_DEMO_END: launcher-analytics:routes */}", "restoreAnchors": ["<Route path=\"/media\" element={<MediaPage />} />"] }
+      ]
+    },
+    {
+      "id": "launcher-templates",
+      "label": "应用导航：聊天与定价",
+      "description": "应用导航中的即时通讯与定价页面，核心版保留",
+      "targets": ["src/pages/tmpl/ChatPage.tsx", "src/pages/tmpl/PricingPage.tsx"],
+      "blocks": [
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: launcher-templates:imports */", "end": "/* CLEAN_DEMO_END: launcher-templates:imports */", "restoreAnchors": ["import SuccessPage from './pages/result/SuccessPage';"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: launcher-templates:routes */}", "end": "{/* CLEAN_DEMO_END: launcher-templates:routes */}", "restoreAnchors": ["<Route path=\"/result/success\" element={<ResultPage />} />"] }
+      ]
+    },
+    {
       "id": "extras",
       "label": "扩展业务模块",
-      "description": "内容、分析、营销、低代码、AI、个人中心等扩展页面",
+      "description": "内容、分析、营销、低代码、AI 等扩展页面",
       "targets": [
         "src/pages/ArticleListPage.tsx", "src/pages/CategoryPage.tsx", "src/pages/TagPage.tsx",
-        "src/pages/VisitStatsPage.tsx", "src/pages/UserPortraitPage.tsx", "src/pages/FunnelPage.tsx",
+        "src/pages/UserPortraitPage.tsx", "src/pages/FunnelPage.tsx",
         "src/pages/CouponPage.tsx", "src/pages/ActivityPage.tsx", "src/pages/PushPage.tsx",
-        "src/pages/PermissionPage.tsx", "src/pages/SettingsPage.tsx", "src/pages/ProfilePage.tsx",
-        "src/pages/AccountSecurityPage.tsx", "src/pages/lowcode", "src/pages/ai",
+        "src/pages/PermissionPage.tsx", "src/pages/SettingsPage.tsx",
+        "src/pages/lowcode", "src/pages/ai",
         "src/pages/article", "src/pages/dashboard"
       ],
       "blocks": [
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:content-imports */", "end": "/* CLEAN_DEMO_END: extras:content-imports */", "restoreAnchors": ["import MediaPage from './pages/MediaPage';"] },
+        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:analytics-imports */", "end": "/* CLEAN_DEMO_END: extras:analytics-imports */", "restoreAnchors": ["import MediaPage from './pages/MediaPage';"] },
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:marketing-imports */", "end": "/* CLEAN_DEMO_END: extras:marketing-imports */", "restoreAnchors": ["import UsersPage from './pages/UsersPage';"] },
-        { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:account-imports */", "end": "/* CLEAN_DEMO_END: extras:account-imports */", "restoreAnchors": ["/* CLEAN_DEMO_START: components:imports */", "import SuccessPage from './pages/result/SuccessPage';"] },
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:platform-imports */", "end": "/* CLEAN_DEMO_END: extras:platform-imports */", "restoreAnchors": ["/* CLEAN_DEMO_START: components:imports */", "import SuccessPage from './pages/result/SuccessPage';"] },
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: extras:secondary-imports */", "end": "/* CLEAN_DEMO_END: extras:secondary-imports */", "restoreAnchors": ["import SuccessPage from './pages/result/SuccessPage';"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:content-routes */}", "end": "{/* CLEAN_DEMO_END: extras:content-routes */}", "restoreAnchors": ["<Route path=\"/media\" element={<MediaPage />} />"] },
+        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:analytics-routes */}", "end": "{/* CLEAN_DEMO_END: extras:analytics-routes */}", "restoreAnchors": ["<Route path=\"/media\" element={<MediaPage />} />"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:marketing-routes */}", "end": "{/* CLEAN_DEMO_END: extras:marketing-routes */}", "restoreAnchors": ["<Route path=\"/users\" element={<UsersPage />} />"] },
-        { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:account-routes */}", "end": "{/* CLEAN_DEMO_END: extras:account-routes */}", "restoreAnchors": ["{/* CLEAN_DEMO_START: components:routes */}", "<Route path=\"/result/success\" element={<ResultPage />} />"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:platform-routes */}", "end": "{/* CLEAN_DEMO_END: extras:platform-routes */}", "restoreAnchors": ["{/* CLEAN_DEMO_START: components:routes */}", "<Route path=\"/result/success\" element={<ResultPage />} />"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: extras:secondary-routes */}", "end": "{/* CLEAN_DEMO_END: extras:secondary-routes */}", "restoreAnchors": ["<Route path=\"/result/success\" element={<ResultPage />} />"], "restoreOrder": 1000 },
         { "file": "src/components/Sidebar.tsx", "start": "/* CLEAN_DEMO_START: extras:dashboard-navigation */", "end": "/* CLEAN_DEMO_END: extras:dashboard-navigation */", "restoreAnchors": ["/* CLEAN_DEMO_START: components:navigation */", "  {\n    type: 'group', icon: <CheckCircle2Icon size={16} />, label: '结果页面',"] },
@@ -89,8 +121,8 @@
     {
       "id": "templates",
       "label": "模板中心",
-      "description": "卡片、横幅、图表、日历、聊天、地图等模板页面",
-      "targets": ["src/pages/tmpl", "src/data/geo", "src/data/mapData.ts"],
+      "description": "卡片、横幅、图表、日历、地图等模板页面",
+      "targets": ["src/pages/tmpl/CardPage.tsx", "src/pages/tmpl/BannerPage.tsx", "src/pages/tmpl/ChartPage.tsx", "src/pages/tmpl/CalendarPage.tsx", "src/pages/tmpl/MapPage.tsx", "src/data/geo", "src/data/mapData.ts"],
       "blocks": [
         { "file": "src/App.tsx", "start": "/* CLEAN_DEMO_START: templates:imports */", "end": "/* CLEAN_DEMO_END: templates:imports */", "restoreAnchors": ["import SuccessPage from './pages/result/SuccessPage';"] },
         { "file": "src/App.tsx", "start": "{/* CLEAN_DEMO_START: templates:routes */}", "end": "{/* CLEAN_DEMO_END: templates:routes */}", "restoreAnchors": ["<Route path=\"/result/success\" element={<ResultPage />} />"] },

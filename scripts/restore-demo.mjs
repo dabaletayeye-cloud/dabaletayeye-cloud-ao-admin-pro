@@ -80,7 +80,7 @@ function runKeypressSession(render, handleKeypress) {
 
 async function selectRestoreMode() {
   const choices = [
-    { id: 'core', label: `恢复${core.name}清理内容`, description: core.restoreModuleIds.map((id) => modules.find((module) => module.id === id).label).join('、') },
+    { id: 'core', label: `恢复${core.name}实际清理内容`, description: core.restoreModuleIds.map((id) => modules.find((module) => module.id === id).label).join('、') },
     { id: 'custom', label: '自定义恢复模块', description: '进入模块多选列表' },
     { id: 'all', label: '恢复全部模块', description: '恢复所有已清理的模块' },
     { id: 'cancel', label: '取消', description: '退出且不修改文件' },
@@ -212,7 +212,7 @@ function extractBlock(source, block) {
   return source.slice(startIndex, endIndex + block.end.length);
 }
 
-function restoreBlock(current, baseline, block) {
+async function restoreBlock(current, relativePath, block) {
   const startIndex = current.indexOf(block.start);
   const endIndex = current.indexOf(block.end);
   if (startIndex !== -1 && endIndex !== -1) return { content: current, changed: false };
@@ -226,6 +226,7 @@ function restoreBlock(current, baseline, block) {
     throw new Error(`找不到安全插入位置，已停止恢复：${block.file}（${block.start}）`);
   }
   const anchorIndex = current.indexOf(anchor);
+  const baseline = await getBaseline(relativePath, block);
   const restored = extractBlock(baseline, block).trimEnd();
   return {
     content: `${current.slice(0, anchorIndex)}${restored}\n${current.slice(anchorIndex)}`,
@@ -295,8 +296,7 @@ async function main() {
     let content = current;
     let changed = false;
     for (const block of fileBlocks) {
-      const baseline = await getBaseline(relativePath, block);
-      const result = restoreBlock(content, baseline, block);
+      const result = await restoreBlock(content, relativePath, block);
       content = result.content;
       changed ||= result.changed;
     }

@@ -12,10 +12,14 @@ import Dashboard from './pages/Dashboard';
 import ArticleListPage from './pages/ArticleListPage';
 import CategoryPage from './pages/CategoryPage';
 import TagPage from './pages/TagPage';
+/* CLEAN_DEMO_END: extras:content-imports */
+/* CLEAN_DEMO_START: launcher-analytics:imports */
 import VisitStatsPage from './pages/VisitStatsPage';
+/* CLEAN_DEMO_END: launcher-analytics:imports */
+/* CLEAN_DEMO_START: extras:analytics-imports */
 import UserPortraitPage from './pages/UserPortraitPage';
 import FunnelPage from './pages/FunnelPage';
-/* CLEAN_DEMO_END: extras:content-imports */
+/* CLEAN_DEMO_END: extras:analytics-imports */
 import MediaPage from './pages/MediaPage';
 
 
@@ -96,10 +100,12 @@ import CardPage from './pages/tmpl/CardPage';
 import BannerPage from './pages/tmpl/BannerPage';
 import ChartPage from './pages/tmpl/ChartPage';
 import CalendarPage from './pages/tmpl/CalendarPage';
-import ChatPage from './pages/tmpl/ChatPage';
-import PricingPage from './pages/tmpl/PricingPage';
 import MapPage from './pages/tmpl/MapPage';
 /* CLEAN_DEMO_END: templates:imports */
+/* CLEAN_DEMO_START: launcher-templates:imports */
+import ChatPage from './pages/tmpl/ChatPage';
+import PricingPage from './pages/tmpl/PricingPage';
+/* CLEAN_DEMO_END: launcher-templates:imports */
 import SuccessPage from './pages/result/SuccessPage';
 import FailPage from './pages/result/FailPage';
 import Page403 from './pages/error/Page403';
@@ -125,6 +131,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<LoginPage />} />
           <Route path="/" element={<Dashboard />} />
 
 
@@ -132,10 +139,14 @@ export default function App() {
           <Route path="/content/articles" element={<ArticleListPage />} />
           <Route path="/content/categories" element={<CategoryPage />} />
           <Route path="/content/tags" element={<TagPage />} />
+          {/* CLEAN_DEMO_END: extras:content-routes */}
+{/* CLEAN_DEMO_START: launcher-analytics:routes */}
           <Route path="/analytics/traffic" element={<VisitStatsPage />} />
+          {/* CLEAN_DEMO_END: launcher-analytics:routes */}
+{/* CLEAN_DEMO_START: extras:analytics-routes */}
           <Route path="/analytics/portrait" element={<UserPortraitPage />} />
           <Route path="/analytics/funnel" element={<FunnelPage />} />
-          {/* CLEAN_DEMO_END: extras:content-routes */}
+          {/* CLEAN_DEMO_END: extras:analytics-routes */}
 <Route path="/media" element={<MediaPage />} />
 
 
@@ -229,10 +240,12 @@ export default function App() {
           <Route path="/tmpl/banners" element={<BannerPage />} />
           <Route path="/tmpl/charts" element={<ChartPage />} />
           <Route path="/tmpl/calendar" element={<CalendarPage />} />
-          <Route path="/tmpl/chat" element={<ChatPage />} />
-          <Route path="/tmpl/pricing" element={<PricingPage />} />
           <Route path="/tmpl/map" element={<MapPage />} />
           {/* CLEAN_DEMO_END: templates:routes */}
+{/* CLEAN_DEMO_START: launcher-templates:routes */}
+          <Route path="/tmpl/chat" element={<ChatPage />} />
+          <Route path="/tmpl/pricing" element={<PricingPage />} />
+          {/* CLEAN_DEMO_END: launcher-templates:routes */}
 {/* CLEAN_DEMO_START: extras:secondary-routes */}
           <Route path="/article/list" element={<ArticleGridPage />} />
           <Route path="/article/publish" element={<ArticlePublishPage />} />

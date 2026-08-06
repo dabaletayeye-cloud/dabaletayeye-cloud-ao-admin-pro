@@ -69,10 +69,13 @@ npm run dev
 | `npm run restore:components:dry` | 预览组件恢复范围，不修改文件 |
 | `npm run restore:demo` | 打开键盘交互式恢复向导，可选择恢复哪些模块 |
 | `npm run restore:demo:dry` | 预览核心版默认恢复范围，不修改文件 |
-| `npm run restore:core` | 恢复由核心版清理删除的扩展业务、功能示例、模板中心及其入口 |
+| `npm run restore:core` | 恢复由核心版实际清理的扩展业务、功能示例、模板页面及其入口 |
 | `npm run restore:core:dry` | 预览核心版内容恢复范围，不修改文件 |
 | `npm run clean:core` | 交互确认后仅保留核心业务页面及全部组件页面/入口 |
 | `npm run clean:core:dry` | 预览核心版清理范围，不修改文件 |
+| `npm run clean:core:no-git` | 忽略 Git 未提交改动，交互确认后执行核心版清理 |
+| `npm run clean:core:no-git:dry` | 预览免 Git 提交的核心版清理范围，不修改文件 |
+| `npm run clean:core:no-git:yes` | 忽略 Git 未提交改动并直接执行核心版清理 |
 | `npm run clean:basic` | 与 `clean:core` 相同，但跳过交互确认 |
 | `npm run clean:basic:dry` | 预览核心版清理范围，不修改文件 |
 
@@ -213,7 +216,7 @@ npm run clean:core:dry
 npm run clean:core
 
 # 压缩包/已有本地改动项目：明确跳过 Git 脏检查，但仍保留交互确认
-npm run clean:archive
+npm run clean:core:no-git
 
 # 恢复本次核心版清理删除的内容（先预览）
 npm run restore:core:dry
@@ -232,7 +235,7 @@ npm run clean:demo -- --keep=templates --yes
 npm run build
 ```
 
-组件中心（`src/components/`、`src/pages/comp/`、组件路由和侧栏入口）为固定保留内容。可选择清理的模块为 `extras`、`examples`、`templates`；使用 `--keep=all` 时不会删除任何演示内容。清理会同步移除所选模块对应的页面目录、地图演示数据、路由导入与导航入口。操作不可逆，建议先提交当前代码或创建分支再执行。
+组件中心（`src/components/`、`src/pages/comp/`、组件路由和侧栏入口）为固定保留内容。核心版还保留账户页，以及应用导航中的分析页、聊天和定价页。可选择清理的模块包括 `account`、`launcher-analytics`、`launcher-templates`、`extras`、`examples` 与 `templates`；使用 `--keep=all` 时不会删除任何演示内容。`restore:core` 仅恢复核心版实际删除的模块，因此不会覆盖核心页。清理会同步移除所选模块对应的页面目录、地图演示数据、路由导入与导航入口。操作不可逆，建议先提交当前代码或创建分支再执行。
 
 清理脚本会先输出保留项、删除项及受影响的文件；带 `--dry-run` 时不会写入或删除任何文件。执行真实清理后，请运行 `npm run build`，并按保留模块检查侧栏菜单和相关路由。项目根目录本身是 Git 仓库时，脚本会阻止清理未提交改动；压缩包项目或被放在其他仓库目录中的项目会跳过该检查，仍须通过预览和交互确认后才会删除文件。
 

@@ -32,6 +32,8 @@ function printUsage() {
   npm run clean:demo                         # 打开交互式精简向导
   npm run clean:core                         # 交互确认后仅保留核心页面和固定组件
   npm run clean:core:dry                     # 预览核心版清理范围
+  npm run clean:core:no-git                  # 忽略 Git 未提交改动，仍保留交互确认
+  npm run clean:core:no-git:yes              # 忽略 Git 未提交改动并跳过确认
   npm run clean:basic                        # 与 clean:core 相同，但跳过交互确认
   npm run clean:basic:dry                    # 预览核心版清理范围
   npm run clean:demo -- --keep=templates --yes
