@@ -1,6 +1,7 @@
 import { access, readFile, rm, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { createInterface } from 'node:readline/promises';
+import { emitKeypressEvents } from 'node:readline';
 import { stdin as input, stdout as output } from 'node:process';
 import { promisify } from 'node:util';
 import path from 'node:path';
@@ -39,7 +40,7 @@ function printUsage() {
                                               # 保留指定模块并立即清理其他模块
   npm run clean:demo -- --remove=components --yes
                                               # 仅清理组件中心
-  npm run clean:demo                         # 交互选择：基础 / 编号多选 / 全部 / 取消
+  npm run clean:demo                         # 方向键移动，空格勾选保留模块，回车确认
   npm run clean:demo -- --preset=basic --dry-run
                                               # 非交互预览核心版模式
 
@@ -160,35 +161,127 @@ async function askYesNo(question, defaultValue = true) {
   }
 }
 
-async function promptForKeepModules() {
-  const readline = createInterface({ input, output });
-  try {
-    console.log('\n请选择清理方式：');
-    console.log('  1. 只保留最基础内容（移除所有演示模块）');
-    console.log('  2. 按编号选择要保留的模块（支持逗号或空格多选）');
-    console.log('  3. 保留全部演示模块（不执行清理）');
-    console.log('  4. 取消');
-    const mode = (await readline.question('请输入 1、2、3 或 4：')).trim();
+function clearInteractiveScreen() {
+  output.write('\x1B[2J\x1B[H');
+}
 
-    if (mode === '1') return [];
-    if (mode === '3') return DEMO_MODULES.map((module) => module.id);
-    if (mode === '4' || !mode) return null;
-    if (mode !== '2') throw new Error('请输入 1、2、3 或 4。');
+function renderSelection(title, lines, footer) {
+  clearInteractiveScreen();
+  output.write(`演示内容精简 · ${title}\n\n`);
+  output.write(`${lines.join('\n')}\n\n`);
+  output.write(`${footer}\n`);
+}
 
-    console.log('\n可保留模块：');
-    DEMO_MODULES.forEach((module, index) => console.log(`  ${index + 1}. ${module.label}：${module.description}`));
-    const answer = (await readline.question('请输入要保留的编号（例如 1,3；输入 all 保留全部；输入 none 只保留基础内容）：')).trim().toLowerCase();
-    if (answer === 'all') return DEMO_MODULES.map((module) => module.id);
-    if (answer === 'none' || answer === '') return [];
+function runKeypressSession(render, handleKeypress) {
+  return new Promise((resolve) => {
+    let finished = false;
+    const finish = (value) => {
+      if (finished) return;
+      finished = true;
+      input.off('keypress', onKeypress);
+      input.setRawMode(false);
+      output.write('\x1B[?25h\n');
+      resolve(value);
+    };
+    const onKeypress = (character, key) => handleKeypress({ character, key, finish, render });
 
-    const values = [...new Set(answer.split(/[\s,，、]+/).filter(Boolean))];
-    const indexes = values.map((value) => Number(value));
-    if (indexes.some((index) => !Number.isInteger(index) || index < 1 || index > DEMO_MODULES.length)) {
-      throw new Error(`模块编号无效，请输入 1-${DEMO_MODULES.length} 范围内的编号。`);
+    emitKeypressEvents(input);
+    input.setRawMode(true);
+    input.resume();
+    output.write('\x1B[?25l');
+    input.on('keypress', onKeypress);
+    render();
+  });
+}
+
+async function selectCleanupMode() {
+  const choices = [
+    { id: 'core', label: `仅保留${CORE_CONFIG.name}`, description: CORE_CONFIG.retained.map((item) => item.label).join('、') },
+    { id: 'custom', label: '自定义保留模块', description: '进入模块多选列表' },
+    { id: 'all', label: '保留全部模块', description: '不删除任何演示内容' },
+    { id: 'cancel', label: '取消', description: '退出且不修改文件' },
+  ];
+  let cursor = 0;
+
+  const render = () => renderSelection(
+    '选择清理方式',
+    choices.map((choice, index) => `${index === cursor ? '❯' : ' '} ${choice.label}\n    ${choice.description}`),
+    '↑/↓ 移动   空格 / Enter 选择   Esc 取消',
+  );
+
+  return runKeypressSession(render, ({ key, finish, render: redraw }) => {
+    if (key?.name === 'up') cursor = (cursor - 1 + choices.length) % choices.length;
+    else if (key?.name === 'down') cursor = (cursor + 1) % choices.length;
+    else if (key?.name === 'escape' || (key?.ctrl && key.name === 'c')) {
+      finish('cancel');
+      return;
+    } else if (key?.name === 'space' || key?.name === 'return') {
+      finish(choices[cursor].id);
+      return;
     }
-    return indexes.map((index) => DEMO_MODULES[index - 1].id);
-  } finally {
-    readline.close();
+    else return;
+    redraw();
+  });
+}
+
+async function selectKeepModules() {
+  const selected = new Set(CORE_CONFIG.keepModuleIds);
+  const actions = ['确认保留选择', '全选模块', '取消全选', '返回上一步'];
+  const itemCount = DEMO_MODULES.length + actions.length;
+  let cursor = 0;
+
+  const render = () => {
+    const lines = DEMO_MODULES.map((module, index) => {
+      const checked = selected.has(module.id) ? '●' : '○';
+      return `${index === cursor ? '❯' : ' '} [${checked}] ${module.label}\n    ${module.description}`;
+    });
+    lines.push('');
+    actions.forEach((action, index) => {
+      const actionIndex = DEMO_MODULES.length + index;
+      lines.push(`${actionIndex === cursor ? '❯' : ' '} ${action}`);
+    });
+    renderSelection('选择要保留的模块', lines, '↑/↓ 移动   空格 勾选/操作   Enter 确认   Esc 取消');
+  };
+
+  return runKeypressSession(render, ({ key, finish, render: redraw }) => {
+    if (key?.name === 'up') {
+      cursor = (cursor - 1 + itemCount) % itemCount;
+    } else if (key?.name === 'down') {
+      cursor = (cursor + 1) % itemCount;
+    } else if (key?.name === 'escape' || (key?.ctrl && key.name === 'c')) {
+      finish(null);
+      return;
+    } else if (cursor < DEMO_MODULES.length && key?.name === 'space') {
+      const module = DEMO_MODULES[cursor];
+      if (selected.has(module.id)) selected.delete(module.id);
+      else selected.add(module.id);
+    } else if (cursor === DEMO_MODULES.length && (key?.name === 'space' || key?.name === 'return')) {
+      finish([...selected]);
+      return;
+    } else if (cursor === DEMO_MODULES.length + 1 && key?.name === 'space') {
+      DEMO_MODULES.forEach((module) => selected.add(module.id));
+    } else if (cursor === DEMO_MODULES.length + 2 && key?.name === 'space') {
+      selected.clear();
+    } else if (cursor === DEMO_MODULES.length + 3 && (key?.name === 'space' || key?.name === 'return')) {
+      finish('back');
+      return;
+    } else {
+      return;
+    }
+    redraw();
+  });
+}
+
+async function promptForKeepModules() {
+  while (true) {
+    const mode = await selectCleanupMode();
+    if (mode === 'core') return CORE_CONFIG.keepModuleIds;
+    if (mode === 'all') return DEMO_MODULES.map((module) => module.id);
+    if (mode === 'cancel') return null;
+
+    const selected = await selectKeepModules();
+    if (selected === 'back') continue;
+    return selected;
   }
 }
 
@@ -214,6 +307,9 @@ async function chooseKeepModules() {
     };
   }
   if (interactive || input.isTTY) {
+    if (!input.isTTY || !output.isTTY) {
+      throw new Error('当前终端不支持键盘选择，请使用 --preset=basic 或 --keep=<模块列表> 指定清理范围。');
+    }
     const ids = await promptForKeepModules();
     return ids === null ? null : { ids, autoRemoved: [] };
   }

@@ -61,7 +61,7 @@ npm run dev
 | `npm run build:dev` | 使用 `development` 模式构建 |
 | `npm run preview` | 在 `5174` 端口预览生产构建 |
 | `npm run lint` | 执行 ESLint 检查 |
-| `npm run clean` / `npm run clean:demo` | 打开交互式精简向导，可选择保留哪些演示模块 |
+| `npm run clean` / `npm run clean:demo` | 打开键盘交互式精简向导，可选择保留哪些演示模块 |
 | `npm run clean:dist` | 删除构建产物 `dist/` |
 | `npm run clean:dist:dry` | 预览构建产物清理，不修改文件 |
 | `npm run clean:demo:dry` | 预览核心版清理范围 |
@@ -175,6 +175,8 @@ src/i18n/
 ```bash
  npm run clean:demo
 ```
+
+向导支持键盘选择：方向键移动，空格键勾选要保留的模块，回车确认，`Esc` 取消。首项“仅保留核心版”可直接使用 JSON 中的核心保留范围；选择“自定义保留模块”后可逐项勾选组件中心、扩展业务、功能示例和模板中心。
 
 向导支持两种模式：
 
