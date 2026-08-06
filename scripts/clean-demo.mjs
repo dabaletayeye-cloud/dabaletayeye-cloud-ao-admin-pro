@@ -32,6 +32,39 @@ const DEMO_MODULES = [
     ],
   },
   {
+    id: 'extras',
+    label: '扩展业务模块',
+    description: '内容、分析、营销、低代码、AI、个人中心等扩展页面（保留工作台、系统管理、结果、异常、媒体、订单、消息与组件页面）',
+    targets: [
+      'src/pages/ArticleListPage.tsx', 'src/pages/CategoryPage.tsx', 'src/pages/TagPage.tsx',
+      'src/pages/VisitStatsPage.tsx', 'src/pages/UserPortraitPage.tsx', 'src/pages/FunnelPage.tsx',
+      'src/pages/CouponPage.tsx', 'src/pages/ActivityPage.tsx', 'src/pages/PushPage.tsx',
+      'src/pages/PermissionPage.tsx', 'src/pages/SettingsPage.tsx', 'src/pages/ProfilePage.tsx',
+      'src/pages/AccountSecurityPage.tsx',
+      'src/pages/lowcode', 'src/pages/ai', 'src/pages/article', 'src/pages/dashboard',
+    ],
+    blocks: [
+      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:content-imports */', end: '/* CLEAN_DEMO_END: extras:content-imports */' },
+      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:marketing-imports */', end: '/* CLEAN_DEMO_END: extras:marketing-imports */' },
+      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:account-imports */', end: '/* CLEAN_DEMO_END: extras:account-imports */' },
+      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:platform-imports */', end: '/* CLEAN_DEMO_END: extras:platform-imports */' },
+      { file: 'src/App.tsx', start: '/* CLEAN_DEMO_START: extras:secondary-imports */', end: '/* CLEAN_DEMO_END: extras:secondary-imports */' },
+      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:content-routes */}', end: '{/* CLEAN_DEMO_END: extras:content-routes */}' },
+      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:marketing-routes */}', end: '{/* CLEAN_DEMO_END: extras:marketing-routes */}' },
+      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:account-routes */}', end: '{/* CLEAN_DEMO_END: extras:account-routes */}' },
+      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:platform-routes */}', end: '{/* CLEAN_DEMO_END: extras:platform-routes */}' },
+      { file: 'src/App.tsx', start: '{/* CLEAN_DEMO_START: extras:secondary-routes */}', end: '{/* CLEAN_DEMO_END: extras:secondary-routes */}' },
+      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: extras:dashboard-navigation */', end: '/* CLEAN_DEMO_END: extras:dashboard-navigation */' },
+      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: extras:platform-content-navigation */', end: '/* CLEAN_DEMO_END: extras:platform-content-navigation */' },
+      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: extras:analysis-navigation */', end: '/* CLEAN_DEMO_END: extras:analysis-navigation */' },
+      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: extras:marketing-navigation */', end: '/* CLEAN_DEMO_END: extras:marketing-navigation */' },
+      { file: 'src/components/HorizontalNav.tsx', start: '/* CLEAN_DEMO_START: extras:content-analytics-navigation */', end: '/* CLEAN_DEMO_END: extras:content-analytics-navigation */' },
+      { file: 'src/components/HorizontalNav.tsx', start: '/* CLEAN_DEMO_START: extras:marketing-users-navigation */', end: '/* CLEAN_DEMO_END: extras:marketing-users-navigation */' },
+      { file: 'src/components/HorizontalNav.tsx', start: '/* CLEAN_DEMO_START: extras:permissions-navigation */', end: '/* CLEAN_DEMO_END: extras:permissions-navigation */' },
+      { file: 'src/components/HorizontalNav.tsx', start: '/* CLEAN_DEMO_START: extras:settings-navigation */', end: '/* CLEAN_DEMO_END: extras:settings-navigation */' },
+    ],
+  },
+  {
     id: 'examples',
     label: '功能示例',
     description: '前端权限、表格、表单、Socket 等功能示例页面',
@@ -71,15 +104,17 @@ function printUsage() {
   npm run clean:demo                         # 打开交互式精简向导
   npm run clean:components                   # 交互确认后仅清理组件中心
   npm run clean:components:dry               # 预览组件中心清理范围
-  npm run clean:basic                        # 仅保留基础业务页面
-  npm run clean:basic:dry                    # 预览“仅保留基础业务”的清理范围
+  npm run clean:core                         # 交互确认后保留核心页面与组件页面
+  npm run clean:core:dry                     # 预览核心版清理范围
+  npm run clean:basic                        # 与 clean:core 相同，但跳过交互确认
+  npm run clean:basic:dry                    # 预览核心版清理范围
   npm run clean:demo -- --keep=components,templates --yes
                                               # 保留指定模块并立即清理其他模块
   npm run clean:demo -- --remove=components --yes
                                               # 仅清理组件中心
   npm run clean:demo                         # 交互选择：基础 / 编号多选 / 全部 / 取消
   npm run clean:demo -- --preset=basic --dry-run
-                                              # 非交互预览基础业务模式
+                                              # 非交互预览核心版模式
 
 可保留模块：${DEMO_MODULES.map((module) => module.id).join('、')}
 参数：--keep=<模块列表>  --remove=<模块列表>  --preset=basic  --dry-run  --yes  --interactive  --allow-dirty  --help\n`);
@@ -240,7 +275,7 @@ async function chooseKeepModules() {
   }
   if (preset !== undefined) {
     if (preset !== 'basic') throw new Error('当前只支持 --preset=basic。');
-    return { ids: [], autoRemoved: [] };
+    return { ids: ['components'], autoRemoved: [] };
   }
   if (keepValue !== undefined) return { ids: parseModuleList(keepValue), autoRemoved: [] };
   if (removeValue !== undefined) {
@@ -280,6 +315,8 @@ async function buildSourceChanges(removeModules) {
 
 function printPlan(removeModules, existingTargets, sourceChanges) {
   const keepModules = DEMO_MODULES.filter((module) => !removeModules.includes(module));
+  console.log('\n基础保留：');
+  console.log('  - 登录、工作台、系统管理、结果页面、异常页面、媒体库、订单管理、消息中心');
   console.log('\n将保留：');
   console.log(keepModules.length > 0 ? `  - ${keepModules.map((module) => module.label).join('、')}` : '  - 仅保留基础业务页面');
   console.log('\n将移除：');

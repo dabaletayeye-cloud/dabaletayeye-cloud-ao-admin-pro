@@ -97,6 +97,7 @@ interface SidebarProps {
 
 export const NAV_ITEMS: NavItem[] = [
   { type: 'link', icon: <LayoutGridIcon size={16} />, label: '工作台', path: '/' },
+  /* CLEAN_DEMO_START: extras:dashboard-navigation */
   {
     type: 'group', icon: <LayoutDashboardIcon size={16} />, label: '仪表盘',
     children: [
@@ -104,6 +105,8 @@ export const NAV_ITEMS: NavItem[] = [
       { label: '电子商务', path: '/dashboard/ecommerce', icon: <ShoppingCartIcon size={13} /> },
     ],
   },
+  /* CLEAN_DEMO_END: extras:dashboard-navigation */
+
   /* CLEAN_DEMO_START: components:navigation */
   {
     type: 'group', icon: <PuzzleIcon size={16} />, label: '组件中心',
@@ -131,17 +134,18 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   /* CLEAN_DEMO_END: components:navigation */
-  /* CLEAN_DEMO_START: examples:navigation */
+/* CLEAN_DEMO_START: examples:navigation */
   {
     type: 'group', icon: <SparklesIcon size={16} />, label: '功能示例',
     children: [
       { label: '前端权限', path: '/examples/permissions', icon: <ShieldCheckIcon size={13} /> },
+
       /* CLEAN_DEMO_START: components:example-navigation */
       { label: '标签页', path: '/examples/tabs', icon: <NavigationIcon size={13} /> },
       { label: '高级表格', path: '/examples/advanced-table', icon: <TableIcon size={13} /> },
       { label: '表单', path: '/examples/forms', icon: <FormInputIcon size={13} /> },
       /* CLEAN_DEMO_END: components:example-navigation */
-      { label: '基础表格', path: '/examples/basic-table', icon: <TableIcon size={13} /> },
+{ label: '基础表格', path: '/examples/basic-table', icon: <TableIcon size={13} /> },
       { label: '搜索表单', path: '/examples/search-form', icon: <SearchIcon size={13} /> },
       { label: '左右布局表格', path: '/examples/split-table', icon: <PanelTopIcon size={13} /> },
       { label: 'Socket 连接', path: '/examples/socket', icon: <ServerIcon size={13} /> },
@@ -162,6 +166,7 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   /* CLEAN_DEMO_END: templates:navigation */
+  /* CLEAN_DEMO_START: extras:platform-content-navigation */
   {
     type: 'group', icon: <WorkflowIcon size={16} />, label: '低代码中心',
     children: [
@@ -197,6 +202,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: '标签管理', path: '/content/tags', icon: <TagIcon size={13} /> },
     ],
   },
+  /* CLEAN_DEMO_END: extras:platform-content-navigation */
   {
     type: 'group', icon: <CheckCircle2Icon size={16} />, label: '结果页面',
     children: [
@@ -212,6 +218,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: '500 服务异常', path: '/error/500-page', icon: <ServerCrashIcon size={13} /> },
     ],
   },
+  /* CLEAN_DEMO_START: extras:analysis-navigation */
   {
     type: 'group', icon: <BarChart2Icon size={16} />, label: '数据分析',
     children: [
@@ -220,7 +227,9 @@ export const NAV_ITEMS: NavItem[] = [
       { label: '转化漏斗', path: '/analytics/funnel', icon: <FunnelIcon size={13} /> },
     ],
   },
+  /* CLEAN_DEMO_END: extras:analysis-navigation */
   { type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },
+  /* CLEAN_DEMO_START: extras:marketing-navigation */
   {
     type: 'group', icon: <SparklesIcon size={16} />, label: '营销工具',
     children: [
@@ -229,6 +238,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: '推送通知', path: '/marketing/push', icon: <BellIcon size={13} /> },
     ],
   },
+  /* CLEAN_DEMO_END: extras:marketing-navigation */
   { type: 'link', icon: <ShoppingCartIcon size={16} />, label: '订单管理', path: '/orders' },
   { type: 'link', icon: <MessageSquareIcon size={16} />, label: '消息中心', path: '/messages' },
   {

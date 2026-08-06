@@ -6,16 +6,20 @@ import LegacyTextLocalizer from './components/LegacyTextLocalizer';
 
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
+/* CLEAN_DEMO_START: extras:content-imports */
 import ArticleListPage from './pages/ArticleListPage';
 import CategoryPage from './pages/CategoryPage';
 import TagPage from './pages/TagPage';
 import VisitStatsPage from './pages/VisitStatsPage';
 import UserPortraitPage from './pages/UserPortraitPage';
 import FunnelPage from './pages/FunnelPage';
+/* CLEAN_DEMO_END: extras:content-imports */
 import MediaPage from './pages/MediaPage';
+/* CLEAN_DEMO_START: extras:marketing-imports */
 import CouponPage from './pages/CouponPage';
 import ActivityPage from './pages/ActivityPage';
 import PushPage from './pages/PushPage';
+/* CLEAN_DEMO_END: extras:marketing-imports */
 import UsersPage from './pages/UsersPage';
 import OrderPage from './pages/OrderPage';
 import MessagePage from './pages/MessagePage';
@@ -28,10 +32,13 @@ import ResultPage from './pages/ResultPage';
 import ErrorPage from './pages/ErrorPage';
 import ServerPage from './pages/ServerPage';
 import FileManagementPage from './pages/FileManagementPage';
+/* CLEAN_DEMO_START: extras:account-imports */
 import PermissionPage from './pages/PermissionPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import AccountSecurityPage from './pages/AccountSecurityPage';
+/* CLEAN_DEMO_END: extras:account-imports */
+/* CLEAN_DEMO_START: extras:platform-imports */
 import ApiOrchestrationPage from './pages/lowcode/ApiOrchestrationPage';
 import PageDesignerPage from './pages/lowcode/PageDesignerPage';
 import DataSourcePage from './pages/lowcode/DataSourcePage';
@@ -42,6 +49,8 @@ import { PrintTemplatePage, CodeGeneratorPage } from './pages/lowcode/LowcodeToo
 import AiChatPage from './pages/ai/AiChatPage';
 import AiAgentPage from './pages/ai/AiAgentPage';
 import { AiCustomerServicePage, AiKnowledgePage, AiPromptPage, AiModelPage, AiWorkflowPage } from './pages/ai/AiOtherPages';
+/* CLEAN_DEMO_END: extras:platform-imports */
+
 /* CLEAN_DEMO_START: components:imports */
 import OverviewPage from './pages/comp/OverviewPage';
 import ButtonsPage from './pages/comp/ButtonsPage';
@@ -73,10 +82,12 @@ import ChatPage from './pages/tmpl/ChatPage';
 import PricingPage from './pages/tmpl/PricingPage';
 import MapPage from './pages/tmpl/MapPage';
 /* CLEAN_DEMO_END: templates:imports */
+/* CLEAN_DEMO_START: extras:secondary-imports */
 import ArticleGridPage from './pages/article/ArticleGridPage';
 import ArticlePublishPage from './pages/article/ArticlePublishPage';
 import DashboardAnalyticsPage from './pages/dashboard/DashboardAnalyticsPage';
 import EcommercePage from './pages/dashboard/EcommercePage';
+/* CLEAN_DEMO_END: extras:secondary-imports */
 import SuccessPage from './pages/result/SuccessPage';
 import FailPage from './pages/result/FailPage';
 import Page403 from './pages/error/Page403';
@@ -101,16 +112,20 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<LoginPage />} />
           <Route path="/" element={<Dashboard />} />
+          {/* CLEAN_DEMO_START: extras:content-routes */}
           <Route path="/content/articles" element={<ArticleListPage />} />
           <Route path="/content/categories" element={<CategoryPage />} />
           <Route path="/content/tags" element={<TagPage />} />
           <Route path="/analytics/traffic" element={<VisitStatsPage />} />
           <Route path="/analytics/portrait" element={<UserPortraitPage />} />
           <Route path="/analytics/funnel" element={<FunnelPage />} />
+          {/* CLEAN_DEMO_END: extras:content-routes */}
           <Route path="/media" element={<MediaPage />} />
+          {/* CLEAN_DEMO_START: extras:marketing-routes */}
           <Route path="/marketing/coupons" element={<CouponPage />} />
           <Route path="/marketing/events" element={<ActivityPage />} />
           <Route path="/marketing/push" element={<PushPage />} />
+          {/* CLEAN_DEMO_END: extras:marketing-routes */}
           <Route path="/users" element={<UsersPage />} />
           <Route path="/system/users" element={<UsersPage />} />
           <Route path="/orders" element={<OrderPage />} />
@@ -122,10 +137,13 @@ export default function App() {
           <Route path="/system/config" element={<SystemConfigPage />} />
           <Route path="/system/servers" element={<ServerPage />} />
           <Route path="/system/files" element={<FileManagementPage />} />
+          {/* CLEAN_DEMO_START: extras:account-routes */}
           <Route path="/permissions" element={<PermissionPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/account-security" element={<AccountSecurityPage />} />
+          {/* CLEAN_DEMO_END: extras:account-routes */}
+          {/* CLEAN_DEMO_START: extras:platform-routes */}
           <Route path="/lowcode/api" element={<ApiOrchestrationPage />} />
           <Route path="/lowcode/page" element={<PageDesignerPage />} />
           <Route path="/lowcode/form" element={<FormEnginePage />} />
@@ -141,6 +159,8 @@ export default function App() {
           <Route path="/ai/prompt" element={<AiPromptPage />} />
           <Route path="/ai/model" element={<AiModelPage />} />
           <Route path="/ai/workflow" element={<AiWorkflowPage />} />
+          {/* CLEAN_DEMO_END: extras:platform-routes */}
+
           {/* CLEAN_DEMO_START: components:routes */}
           <Route path="/comp/overview" element={<OverviewPage />} />
           <Route path="/comp/buttons" element={<ButtonsPage />} />
@@ -163,14 +183,15 @@ export default function App() {
           <Route path="/comp/excel" element={<ExcelPage />} />
           <Route path="/comp/word-cloud" element={<WordCloudPage />} />
           {/* CLEAN_DEMO_END: components:routes */}
-          {/* CLEAN_DEMO_START: examples:routes */}
+{/* CLEAN_DEMO_START: examples:routes */}
           <Route path="/examples/permissions" element={<FrontendPermissionExamplePage />} />
+
           {/* CLEAN_DEMO_START: components:example-routes */}
           <Route path="/examples/tabs" element={<NavPage />} />
           <Route path="/examples/advanced-table" element={<DataTablePage />} />
           <Route path="/examples/forms" element={<FormsPage />} />
           {/* CLEAN_DEMO_END: components:example-routes */}
-          <Route path="/examples/basic-table" element={<BasicTableExamplePage />} />
+<Route path="/examples/basic-table" element={<BasicTableExamplePage />} />
           <Route path="/examples/search-form" element={<SearchFormExamplePage />} />
           <Route path="/examples/split-table" element={<SplitTableExamplePage />} />
           <Route path="/examples/socket" element={<SocketExamplePage />} />
@@ -184,10 +205,12 @@ export default function App() {
           <Route path="/tmpl/pricing" element={<PricingPage />} />
           <Route path="/tmpl/map" element={<MapPage />} />
           {/* CLEAN_DEMO_END: templates:routes */}
+          {/* CLEAN_DEMO_START: extras:secondary-routes */}
           <Route path="/article/list" element={<ArticleGridPage />} />
           <Route path="/article/publish" element={<ArticlePublishPage />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalyticsPage />} />
           <Route path="/dashboard/ecommerce" element={<EcommercePage />} />
+          {/* CLEAN_DEMO_END: extras:secondary-routes */}
           <Route path="/result/success" element={<ResultPage />} />
           <Route path="/result/success-page" element={<SuccessPage />} />
           <Route path="/result/fail-page" element={<FailPage />} />

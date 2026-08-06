@@ -12,7 +12,7 @@ ao-admin-pro 基于 React、TypeScript 和 Vite 构建，提供中文界面、�
 | --- | --- |
 | 数据看板 | 工作台、分析看板、电商看板、访问统计、用户画像、转化漏斗 |
 | 内容与营销 | 文章、分类、标签、媒体库、优惠券、活动、推送、订单、消息中心 |
-| 系统管理 | 用户、角色、菜单、日志、字典、系统配置、服务器监控 |
+| 系统管理 | 用户、角色、菜单、日志、字典、系统配置、服务器监控、文件管理 |
 | 权限管理 | 用户多角色、角色菜单授权、目录 → 菜单 → 按钮三级权限树、前端权限示例 |
 | 个人与安全 | 登录/注册、个人中心、头像与资料维护、标签管理、账号安全、设备与登录记录 |
 | 组件中心 | 表单、表格、反馈、导航、图标、富文本、二维码、图片裁剪、Excel、词云图等 |
@@ -64,11 +64,15 @@ npm run dev
 | `npm run clean` / `npm run clean:demo` | 打开交互式精简向导，可选择保留哪些演示模块 |
 | `npm run clean:dist` | 删除构建产物 `dist/` |
 | `npm run clean:dist:dry` | 预览构建产物清理，不修改文件 |
-| `npm run clean:demo:dry` | 预览“仅保留基础业务页面”的清理范围 |
+| `npm run clean:demo:dry` | 预览核心版清理范围 |
 | `npm run clean:components` | 交互确认后仅移除组件中心，不删除 `src/components` 通用组件 |
 | `npm run clean:components:dry` | 预览组件中心清理范围，不修改文件 |
-| `npm run clean:basic` | 仅保留基础业务页面，移除全部演示模块 |
-| `npm run clean:basic:dry` | 预览基础业务模式，不修改文件 |
+| `npm run restore:components` | 从当前 Git 提交恢复被未提交清理掉的组件页面与入口 |
+| `npm run restore:components:dry` | 预览组件恢复范围，不修改文件 |
+| `npm run clean:core` | 交互确认后仅保留工作台、系统管理、结果、异常、媒体、订单、消息与组件页面 |
+| `npm run clean:core:dry` | 预览核心版清理范围，不修改文件 |
+| `npm run clean:basic` | 与 `clean:core` 相同，但跳过交互确认 |
+| `npm run clean:basic:dry` | 预览核心版清理范围，不修改文件 |
 
 > Windows PowerShell 如因执行策略无法运行 `npm`，可使用 `npm.cmd run build` 等等效命令。
 
@@ -169,17 +173,17 @@ src/i18n/
 
 向导支持两种模式：
 
-- **仅保留基础业务页面**：移除组件中心、功能示例和模板中心。
-- **自定义保留模块**：逐项决定是否保留“组件中心”“功能示例”“模板中心”。模板中心包含中国地图、世界地图及其数据文件。
+- **核心版**：保留工作台、系统管理、结果页面、异常页面、媒体库、订单管理、消息中心和组件页面，移除扩展业务模块、功能示例和模板中心。
+- **自定义保留模块**：逐项决定是否保留“组件中心”“扩展业务模块”“功能示例”“模板中心”。模板中心包含中国地图、世界地图及其数据文件。
 
 也可以使用非交互命令，便于在自动化流程中执行：
 
 ```bash
-# 先预览基础业务模式
-npm run clean:basic:dry
+# 先预览核心版（工作台、系统管理、结果、异常、媒体、订单、消息和组件页面）
+npm run clean:core:dry
 
-# 确认后仅保留基础业务页面
-npm run clean:basic
+# 查看计划后交互确认清理
+npm run clean:core
 
 # 保留组件中心和模板中心，删除功能示例
 npm run clean:demo -- --keep=components,templates --yes
@@ -199,7 +203,7 @@ npm run clean:components:dry
 npm run clean:components
 ```
 
-可保留或移除模块的标识为 `components`、`examples`、`templates`；使用 `--keep=all` 时不会删除任何演示内容。清理会同步移除对应页面目录、地图演示数据、路由导入与侧栏入口。操作不可逆，建议先提交当前代码或创建分支再执行。
+可保留或移除模块的标识为 `components`、`extras`、`examples`、`templates`；使用 `--keep=all` 时不会删除任何演示内容。清理会同步移除对应页面目录、地图演示数据、路由导入与侧栏入口。操作不可逆，建议先提交当前代码或创建分支再执行。
 
 > 功能示例会复用组件中心中的部分页面，因此保留 `examples` 时，清理脚本会自动保留 `components`，避免留下无效路由。
 
