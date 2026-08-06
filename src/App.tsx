@@ -7,6 +7,7 @@ import LegacyTextLocalizer from './components/LegacyTextLocalizer';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 
+
 /* CLEAN_DEMO_START: extras:content-imports */
 import ArticleListPage from './pages/ArticleListPage';
 import CategoryPage from './pages/CategoryPage';
@@ -16,6 +17,7 @@ import UserPortraitPage from './pages/UserPortraitPage';
 import FunnelPage from './pages/FunnelPage';
 /* CLEAN_DEMO_END: extras:content-imports */
 import MediaPage from './pages/MediaPage';
+
 
 /* CLEAN_DEMO_START: extras:marketing-imports */
 import CouponPage from './pages/CouponPage';
@@ -34,6 +36,8 @@ import ResultPage from './pages/ResultPage';
 import ErrorPage from './pages/ErrorPage';
 import ServerPage from './pages/ServerPage';
 import FileManagementPage from './pages/FileManagementPage';
+
+
 
 
 
@@ -79,6 +83,8 @@ import WordCloudPage from './pages/comp/WordCloudPage';
 /* CLEAN_DEMO_END: components:imports */
 
 
+
+
 /* CLEAN_DEMO_START: extras:secondary-imports */
 import ArticleGridPage from './pages/article/ArticleGridPage';
 import ArticlePublishPage from './pages/article/ArticlePublishPage';
@@ -101,6 +107,7 @@ import Page404 from './pages/error/Page404';
 import Page500 from './pages/error/Page500';
 
 
+
 /* CLEAN_DEMO_START: examples:imports */
 import BasicTableExamplePage from './pages/examples/BasicTableExamplePage';
 import FrontendPermissionExamplePage from './pages/examples/FrontendPermissionExamplePage';
@@ -120,7 +127,8 @@ export default function App() {
           <Route path="/register" element={<LoginPage />} />
           <Route path="/" element={<Dashboard />} />
 
-          {/* CLEAN_DEMO_START: extras:content-routes */}
+
+{/* CLEAN_DEMO_START: extras:content-routes */}
           <Route path="/content/articles" element={<ArticleListPage />} />
           <Route path="/content/categories" element={<CategoryPage />} />
           <Route path="/content/tags" element={<TagPage />} />
@@ -130,7 +138,8 @@ export default function App() {
           {/* CLEAN_DEMO_END: extras:content-routes */}
 <Route path="/media" element={<MediaPage />} />
 
-          {/* CLEAN_DEMO_START: extras:marketing-routes */}
+
+{/* CLEAN_DEMO_START: extras:marketing-routes */}
           <Route path="/marketing/coupons" element={<CouponPage />} />
           <Route path="/marketing/events" element={<ActivityPage />} />
           <Route path="/marketing/push" element={<PushPage />} />
@@ -149,7 +158,9 @@ export default function App() {
 
 
 
-          {/* CLEAN_DEMO_START: extras:account-routes */}
+
+
+{/* CLEAN_DEMO_START: extras:account-routes */}
           <Route path="/permissions" element={<PermissionPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
@@ -197,7 +208,10 @@ export default function App() {
 
 
 
-          {/* CLEAN_DEMO_START: examples:routes */}
+
+
+
+{/* CLEAN_DEMO_START: examples:routes */}
           <Route path="/examples/permissions" element={<FrontendPermissionExamplePage />} />
 
           {/* CLEAN_DEMO_START: components:example-routes */}

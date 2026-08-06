@@ -37,7 +37,8 @@ type NavItem = NavGroup | NavLinkItem;
 const NAV_ITEMS: NavItem[] = [
   { type: 'link', id: 'dashboard', icon: <LayoutDashboardIcon size={14} />, label: '工作台', path: '/' },
 
-  /* CLEAN_DEMO_START: extras:content-analytics-navigation */
+
+/* CLEAN_DEMO_START: extras:content-analytics-navigation */
   {
     type: 'group', id: 'content', icon: <FileTextIcon size={14} />, label: '内容管理',
     children: [
@@ -57,7 +58,8 @@ const NAV_ITEMS: NavItem[] = [
   /* CLEAN_DEMO_END: extras:content-analytics-navigation */
 { type: 'link', id: 'media', icon: <ImageIcon size={14} />, label: '媒体库', path: '/media' },
 
-  /* CLEAN_DEMO_START: extras:marketing-users-navigation */
+
+/* CLEAN_DEMO_START: extras:marketing-users-navigation */
   {
     type: 'group', id: 'marketing', icon: <SparklesIcon size={14} />, label: '营销工具',
     children: [
@@ -70,12 +72,14 @@ const NAV_ITEMS: NavItem[] = [
   /* CLEAN_DEMO_END: extras:marketing-users-navigation */
 { type: 'link', id: 'orders', icon: <ShoppingCartIcon size={14} />, label: '订单管理', path: '/orders' },
 
-  /* CLEAN_DEMO_START: extras:permissions-navigation */
+
+/* CLEAN_DEMO_START: extras:permissions-navigation */
   { type: 'link', id: 'permissions', icon: <ShieldIcon size={14} />, label: '权限管理', path: '/permissions' },
   /* CLEAN_DEMO_END: extras:permissions-navigation */
 { type: 'link', id: 'messages', icon: <MessageSquareIcon size={14} />, label: '消息中心', path: '/messages' },
 
-  /* CLEAN_DEMO_START: extras:settings-navigation */
+
+/* CLEAN_DEMO_START: extras:settings-navigation */
   { type: 'link', id: 'settings', icon: <SettingsIcon size={14} />, label: '系统设置', path: '/settings' },
   /* CLEAN_DEMO_END: extras:settings-navigation */
 {

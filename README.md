@@ -69,6 +69,8 @@ npm run dev
 | `npm run clean:components:dry` | 预览组件中心清理范围，不修改文件 |
 | `npm run restore:components` | 从当前 Git 提交恢复被未提交清理掉的组件页面与路由，保持组件菜单隐藏 |
 | `npm run restore:components:dry` | 预览组件恢复范围，不修改文件 |
+| `npm run restore:demo` | 打开键盘交互式恢复向导，可选择恢复哪些模块 |
+| `npm run restore:demo:dry` | 预览核心版默认恢复范围，不修改文件 |
 | `npm run restore:core` | 恢复由核心版清理删除的扩展业务、功能示例、模板中心及其入口 |
 | `npm run restore:core:dry` | 预览核心版内容恢复范围，不修改文件 |
 | `npm run clean:core` | 交互确认后仅保留核心业务入口；组件代码与路由保留，但隐藏组件中心菜单 |
@@ -208,6 +210,9 @@ npm run restore:core:dry
 
 # 确认后恢复；也可使用 npm run restore:core -- --yes 跳过确认
 npm run restore:core
+
+# 键盘选择需要恢复的模块（方向键移动、空格勾选、回车确认）
+npm run restore:demo
 
 # 保留组件中心和模板中心，删除功能示例
 npm run clean:demo -- --keep=components,templates --yes

@@ -52,6 +52,12 @@ export async function loadCleanDemoConfig() {
       requireString(block.start, `modules.${module.id}.blocks[].start`);
       requireString(block.end, `modules.${module.id}.blocks[].end`);
       if (block.restoreAnchors !== undefined) requireStringArray(block.restoreAnchors, `modules.${module.id}.blocks[].restoreAnchors`);
+      if (block.restoreOptional !== undefined && typeof block.restoreOptional !== 'boolean') {
+        throw new Error(`配置项无效：modules.${module.id}.blocks[].restoreOptional 必须是布尔值。`);
+      }
+      if (block.restoreShowMenuOnly !== undefined && typeof block.restoreShowMenuOnly !== 'boolean') {
+        throw new Error(`配置项无效：modules.${module.id}.blocks[].restoreShowMenuOnly 必须是布尔值。`);
+      }
       if (block.restoreOrder !== undefined && !Number.isFinite(block.restoreOrder)) {
         throw new Error(`配置项无效：modules.${module.id}.blocks[].restoreOrder 必须是数字。`);
       }
