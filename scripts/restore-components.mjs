@@ -12,6 +12,7 @@ const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const confirmed = args.includes('--yes');
 const interactive = args.includes('--interactive');
+const showMenu = args.includes('--show-menu');
 const execFileAsync = promisify(execFile);
 
 const COMPONENT_DIRECTORY = 'src/pages/comp';
@@ -21,36 +22,45 @@ const BLOCKS = [
     start: '/* CLEAN_DEMO_START: components:imports */',
     end: '/* CLEAN_DEMO_END: components:imports */',
     anchor: '/* CLEAN_DEMO_START: templates:imports */',
+    fallbackAnchors: ["import FileManagementPage from './pages/FileManagementPage';"],
   },
   {
     file: 'src/App.tsx',
     start: '{/* CLEAN_DEMO_START: components:routes */}',
     end: '{/* CLEAN_DEMO_END: components:routes */}',
     anchor: '{/* CLEAN_DEMO_START: examples:routes */}',
+    fallbackAnchors: ['<Route path="/result/success" element={<ResultPage />} />'],
   },
   {
     file: 'src/App.tsx',
     start: '{/* CLEAN_DEMO_START: components:example-routes */}',
     end: '{/* CLEAN_DEMO_END: components:example-routes */}',
     anchor: '<Route path="/examples/basic-table" element={<BasicTableExamplePage />} />',
+    optional: true,
   },
   {
     file: 'src/components/Sidebar.tsx',
     start: '/* CLEAN_DEMO_START: components:navigation */',
     end: '/* CLEAN_DEMO_END: components:navigation */',
     anchor: '/* CLEAN_DEMO_START: examples:navigation */',
+    fallbackAnchors: ["{ type: 'link', icon: <ImageIcon size={16} />, label: '媒体库', path: '/media' },"],
+    showMenuOnly: true,
+    optional: true,
   },
   {
     file: 'src/components/Sidebar.tsx',
     start: '/* CLEAN_DEMO_START: components:example-navigation */',
     end: '/* CLEAN_DEMO_END: components:example-navigation */',
     anchor: "{ label: '基础表格', path: '/examples/basic-table', icon: <TableIcon size={13} /> },",
+    showMenuOnly: true,
+    optional: true,
   },
   {
     file: 'src/components/NavigationExtras.tsx',
     start: '/* CLEAN_DEMO_START: components:example-route-labels */',
     end: '/* CLEAN_DEMO_END: components:example-route-labels */',
     anchor: "'/examples/basic-table': '基础表格',",
+    optional: true,
   },
 ];
 
@@ -59,7 +69,8 @@ function printUsage() {
   npm run restore:components:dry            # 预览恢复范围，不修改文件
   npm run restore:components                # 交互确认后恢复组件中心
   npm run restore:components -- --yes       # 跳过确认并恢复
-\n恢复内容：${COMPONENT_DIRECTORY}、组件路由、侧栏入口和页签标签。\n`);
+  npm run restore:components -- --show-menu # 同时恢复侧栏“组件中心”入口
+\n恢复内容：${COMPONENT_DIRECTORY}、组件路由和页签标签；默认保持侧栏入口隐藏。\n`);
 }
 
 async function runGit(args) {
@@ -83,8 +94,11 @@ function restoreBlock(current, baseline, block) {
     throw new Error(`组件标记不完整，已停止恢复：${block.file}（${block.start}）`);
   }
 
-  const anchorIndex = current.indexOf(block.anchor);
+  const anchor = [block.anchor, ...(block.fallbackAnchors ?? [])]
+    .find((candidate) => current.includes(candidate));
+  const anchorIndex = anchor ? current.indexOf(anchor) : -1;
   if (anchorIndex === -1) {
+    if (block.optional) return { content: current, changed: false };
     throw new Error(`找不到安全插入位置，已停止恢复：${block.file}（${block.anchor}）`);
   }
 
@@ -134,7 +148,7 @@ async function main() {
   const filesToWrite = new Map();
 
   const blocksByFile = new Map();
-  for (const block of BLOCKS) {
+  for (const block of BLOCKS.filter((item) => !item.showMenuOnly || showMenu)) {
     const blocks = blocksByFile.get(block.file) ?? [];
     blocks.push(block);
     blocksByFile.set(block.file, blocks);
@@ -163,6 +177,7 @@ async function main() {
   console.log(filesToWrite.size > 0
     ? `  - ${[...new Set(BLOCKS.filter((block) => filesToWrite.has(path.join(projectRoot, block.file))).map((block) => block.file))].join('、')} 中的组件入口标记`
     : '  - 组件入口标记已完整，无需补写');
+  if (!showMenu) console.log('  - 侧栏组件中心入口保持隐藏（传入 --show-menu 才会恢复）');
 
   if (dryRun) {
     console.log('\n预览结束，未修改任何文件。');

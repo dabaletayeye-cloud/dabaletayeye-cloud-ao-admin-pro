@@ -32,6 +32,15 @@ const DEMO_MODULES = [
     ],
   },
   {
+    id: 'component-navigation',
+    label: '组件中心入口',
+    description: '仅隐藏侧栏中的组件中心入口，保留 src/components、组件演示页面及其路由，供开发人员继续使用',
+    targets: [],
+    blocks: [
+      { file: 'src/components/Sidebar.tsx', start: '/* CLEAN_DEMO_START: components:navigation */', end: '/* CLEAN_DEMO_END: components:navigation */' },
+    ],
+  },
+  {
     id: 'extras',
     label: '扩展业务模块',
     description: '内容、分析、营销、低代码、AI、个人中心等扩展页面（保留工作台、系统管理、结果、异常、媒体、订单、消息与组件页面）',

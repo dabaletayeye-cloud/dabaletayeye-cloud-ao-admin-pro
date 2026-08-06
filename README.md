@@ -67,9 +67,11 @@ npm run dev
 | `npm run clean:demo:dry` | 预览核心版清理范围 |
 | `npm run clean:components` | 交互确认后仅移除组件中心，不删除 `src/components` 通用组件 |
 | `npm run clean:components:dry` | 预览组件中心清理范围，不修改文件 |
-| `npm run restore:components` | 从当前 Git 提交恢复被未提交清理掉的组件页面与入口 |
+| `npm run restore:components` | 从当前 Git 提交恢复被未提交清理掉的组件页面与路由，保持组件菜单隐藏 |
 | `npm run restore:components:dry` | 预览组件恢复范围，不修改文件 |
-| `npm run clean:core` | 交互确认后仅保留工作台、系统管理、结果、异常、媒体、订单、消息与组件页面 |
+| `npm run restore:core` | 恢复由核心版清理删除的扩展业务、功能示例、模板中心及其入口 |
+| `npm run restore:core:dry` | 预览核心版内容恢复范围，不修改文件 |
+| `npm run clean:core` | 交互确认后仅保留核心业务入口；组件代码与路由保留，但隐藏组件中心菜单 |
 | `npm run clean:core:dry` | 预览核心版清理范围，不修改文件 |
 | `npm run clean:basic` | 与 `clean:core` 相同，但跳过交互确认 |
 | `npm run clean:basic:dry` | 预览核心版清理范围，不修改文件 |
@@ -173,17 +175,23 @@ src/i18n/
 
 向导支持两种模式：
 
-- **核心版**：保留工作台、系统管理、结果页面、异常页面、媒体库、订单管理、消息中心和组件页面，移除扩展业务模块、功能示例和模板中心。
+- **核心版**：保留工作台、系统管理、结果页面、异常页面、媒体库、订单管理和消息中心；保留组件代码、演示页面和路由，但隐藏组件中心菜单；移除扩展业务模块、功能示例和模板中心。
 - **自定义保留模块**：逐项决定是否保留“组件中心”“扩展业务模块”“功能示例”“模板中心”。模板中心包含中国地图、世界地图及其数据文件。
 
 也可以使用非交互命令，便于在自动化流程中执行：
 
 ```bash
-# 先预览核心版（工作台、系统管理、结果、异常、媒体、订单、消息和组件页面）
+# 先预览核心版（组件代码与路由保留，但不显示组件中心菜单）
 npm run clean:core:dry
 
 # 查看计划后交互确认清理
 npm run clean:core
+
+# 恢复本次核心版清理删除的内容（先预览）
+npm run restore:core:dry
+
+# 确认后恢复；也可使用 npm run restore:core -- --yes 跳过确认
+npm run restore:core
 
 # 保留组件中心和模板中心，删除功能示例
 npm run clean:demo -- --keep=components,templates --yes
@@ -203,7 +211,7 @@ npm run clean:components:dry
 npm run clean:components
 ```
 
-可保留或移除模块的标识为 `components`、`extras`、`examples`、`templates`；使用 `--keep=all` 时不会删除任何演示内容。清理会同步移除对应页面目录、地图演示数据、路由导入与侧栏入口。操作不可逆，建议先提交当前代码或创建分支再执行。
+可保留或移除模块的标识为 `components`、`component-navigation`、`extras`、`examples`、`templates`；使用 `--keep=all` 时不会删除任何演示内容。清理会同步移除对应页面目录、地图演示数据、路由导入与侧栏入口。操作不可逆，建议先提交当前代码或创建分支再执行。
 
 > 功能示例会复用组件中心中的部分页面，因此保留 `examples` 时，清理脚本会自动保留 `components`，避免留下无效路由。
 

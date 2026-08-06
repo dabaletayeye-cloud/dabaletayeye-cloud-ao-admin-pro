@@ -15,6 +15,8 @@
     "clean:components:dry": "node scripts/clean-demo.mjs --remove=components --dry-run",
     "restore:components": "node scripts/restore-components.mjs --interactive",
     "restore:components:dry": "node scripts/restore-components.mjs --dry-run",
+    "restore:core": "node scripts/restore-core.mjs --interactive",
+    "restore:core:dry": "node scripts/restore-core.mjs --dry-run",
     "clean:core": "node scripts/clean-demo.mjs --preset=basic --interactive",
     "clean:core:dry": "node scripts/clean-demo.mjs --preset=basic --dry-run",
     "clean:basic": "node scripts/clean-demo.mjs --preset=basic --yes",
