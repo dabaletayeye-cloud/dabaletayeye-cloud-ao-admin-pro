@@ -65,6 +65,7 @@ const ROUTE_LABELS: Record<string, string> = {
   '/marketing/push': '推送通知',
   '/system/dict': '字典管理',
   '/system/servers': '服务器管理',
+  '/system/files': '文件管理',
   '/result/success': '成功页',
   '/result/success-page': '成功页',
   '/result/fail': '失败页',

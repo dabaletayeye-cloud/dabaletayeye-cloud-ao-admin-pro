@@ -475,9 +475,12 @@ export default function RolePage() {
             style={{
               background: 'var(--card)',
               borderRadius: '16px',
-              padding: '28px',
-              width: '480px',
-              maxWidth: '90vw',
+              padding: '32px',
+              width: '560px',
+              maxWidth: 'calc(100vw - 48px)',
+              height: '100vh',
+              maxHeight: '100vh',
+              overflowY: 'auto',
               border: '1px solid var(--border)',
               transform: showModal ? 'scale(1)' : 'scale(0.95)',
               transition: 'transform 0.2s ease',
@@ -486,7 +489,7 @@ export default function RolePage() {
             <h2 className="text-lg font-bold mb-5" style={{ color: 'var(--foreground)' }}>
               {editRole?.id ? '编辑角色' : '新增角色'}
             </h2>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>角色名称 *</label>
                 <input
@@ -534,7 +537,7 @@ export default function RolePage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 mt-6">
+            <div className="flex items-center justify-end gap-3 mt-8">
               <button
                 onClick={() => { setShowModal(false); setEditRole(null); }}
                 className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
