@@ -475,13 +475,15 @@ export default function RolePage() {
             style={{
               background: 'var(--card)',
               borderRadius: '16px',
-              padding: '32px',
-              width: '560px',
-              maxWidth: 'calc(100vw - 48px)',
-              height: '100vh',
-              maxHeight: '100vh',
+              padding: '28px',
+              width: '520px',
+              maxWidth: '90vw',
+              height: '100%',
+              maxHeight: '100%',
               overflowY: 'auto',
               border: '1px solid var(--border)',
+              display: 'flex',
+              flexDirection: 'column',
               transform: showModal ? 'scale(1)' : 'scale(0.95)',
               transition: 'transform 0.2s ease',
             }}
@@ -537,7 +539,7 @@ export default function RolePage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 mt-8">
+            <div className="flex items-center justify-end gap-3 mt-auto">
               <button
                 onClick={() => { setShowModal(false); setEditRole(null); }}
                 className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
