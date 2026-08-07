@@ -26,6 +26,7 @@ import NotificationPanel from './NotificationPanel';
 import AppLauncher from './AppLauncher';
 import ChatAssistantPanel from './ChatAssistantPanel';
 import { getCurrentAccount } from '../lib/currentAccount';
+import appConfig from '../config/app.json';
 
 interface TopbarProps {
   onOpenThemePanel?: () => void;
@@ -179,9 +180,9 @@ export default function Topbar({
         {showHorizontalNav && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginRight: 8 }}>
             <div style={{ width: 30, height: 30, borderRadius: 9, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--primary-foreground)', fontWeight: 800 }}>
-              AO
+              {appConfig.brand.shortName}
             </div>
-            <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--foreground)', whiteSpace: 'nowrap' }}>ao-admin-pro</span>
+            <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--foreground)', whiteSpace: 'nowrap' }}>{appConfig.brand.name}</span>
           </div>
         )}
 
@@ -224,7 +225,7 @@ export default function Topbar({
                 })}
               </div>
             ) : (
-              <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>ao-admin-pro {t('systemSettings')}</span>
+              <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>{appConfig.brand.name} {t('systemSettings')}</span>
             )}
           </div>
         )}

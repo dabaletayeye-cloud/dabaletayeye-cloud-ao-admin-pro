@@ -15,6 +15,7 @@ import {
   TagIcon,
   ChevronRightIcon,
 } from 'lucide-react';
+import appConfig from '../config/app.json';
 
 const PINK = '#E91E8C';
 
@@ -313,7 +314,7 @@ export default function AppLauncher() {
           padding: '10px 18px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>ao-admin-pro · 一站式管理平台</span>
+          <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>{appConfig.brand.name} · {appConfig.brand.tagline}</span>
           <button
             onClick={() => setOpen(false)}
             style={{

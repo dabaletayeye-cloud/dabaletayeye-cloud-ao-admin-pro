@@ -1,0 +1,15 @@
+{
+  "brand": {
+    "name": "ao-admin-pro",
+    "shortName": "AO",
+    "tagline": "一站式管理平台"
+  },
+  "meta": {
+    "title": "ao-admin-pro",
+    "description": "现代化企业管理后台",
+    "keywords": "后台,管理系统,ao-admin-pro",
+    "author": "ao-admin-pro"
+  },
+  "copyright": "© 2026 ao-admin-pro",
+  "watermark": "ao-admin-pro"
+}

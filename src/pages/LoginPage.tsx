@@ -25,6 +25,7 @@ import { LANGUAGE_OPTIONS, useLocale } from '../hooks/useLocale';
 import ThemePanel from '../components/ThemePanel';
 import LocalizedText from '../components/LocalizedText';
 import { getCurrentAccount, saveCurrentAccount } from '../lib/currentAccount';
+import appConfig from '../config/app.json';
 import './AuthPage.css';
 
 type RegistrationResult = {
@@ -56,7 +57,7 @@ function AuthVisual() {
           <span />
           <span />
         </span>
-        <span>ao-admin-pro</span>
+        <span>{appConfig.brand.name}</span>
       </Link>
 
       <div className="auth-display" aria-hidden="true">
@@ -560,7 +561,7 @@ export default function LoginPage() {
             </div>}
           </div>
 
-          <footer className="auth-copyright">© 2026 ao-admin-pro</footer>
+          <footer className="auth-copyright">{appConfig.copyright}</footer>
         </section>
       </div></LocalizedText>
       <ThemePanel open={themePanelOpen} onClose={() => setThemePanelOpen(false)} />

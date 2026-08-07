@@ -7,6 +7,7 @@ import ThemePanel from './ThemePanel';
 import { BreadcrumbTrail, PageTabs } from './NavigationExtras';
 import LocalizedText from './LocalizedText';
 import { useLocale } from '../hooks/useLocale';
+import appConfig from '../config/app.json';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -145,7 +146,7 @@ export default function AdminLayout({ children = null }: AdminLayoutProps) {
           aria-hidden="true"
           style={{ position: 'fixed', inset: 0, zIndex: 80, pointerEvents: 'none', overflow: 'hidden', opacity: 0.11, backgroundImage: 'repeating-linear-gradient(-28deg, transparent 0 130px, transparent 130px 210px)' }}
         >
-          {Array.from({ length: 24 }, (_, index) => <span key={index} style={{ position: 'absolute', top: `${(index % 6) * 19 + 8}%`, left: `${Math.floor(index / 6) * 27 - 5}%`, color: 'var(--primary)', fontSize: 15, fontWeight: 700, transform: 'rotate(-28deg)', whiteSpace: 'nowrap' }}>ao-admin-pro · {t('internalMaterial')}</span>)}
+          {Array.from({ length: 24 }, (_, index) => <span key={index} style={{ position: 'absolute', top: `${(index % 6) * 19 + 8}%`, left: `${Math.floor(index / 6) * 27 - 5}%`, color: 'var(--primary)', fontSize: 15, fontWeight: 700, transform: 'rotate(-28deg)', whiteSpace: 'nowrap' }}>{appConfig.watermark} · {t('internalMaterial')}</span>)}
         </div>
       )}
 

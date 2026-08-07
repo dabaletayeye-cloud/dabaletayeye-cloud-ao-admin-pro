@@ -80,6 +80,7 @@ import {
 } from 'lucide-react';
 import type { CollapseButtonPosition } from '../types';
 import { localizeNavLabel, useLocale } from '../hooks/useLocale';
+import appConfig from '../config/app.json';
 
 interface NavChild { label: string; path: string; icon: React.ReactNode; }
 interface NavGroup { type: 'group'; icon: React.ReactNode; label: string; children: NavChild[]; }
@@ -511,7 +512,7 @@ function LogoRowWithCollapseTop({
               boxShadow: '0 2px 8px color-mix(in srgb, var(--sidebar-primary) 40%, transparent)',
             }}
           >
-            AO
+            {appConfig.brand.shortName}
           </div>
 
           <span
@@ -524,7 +525,7 @@ function LogoRowWithCollapseTop({
               textOverflow: 'ellipsis',
             }}
           >
-            ao-admin-pro
+            {appConfig.brand.name}
           </span>
         </>
       )}
@@ -752,10 +753,10 @@ export default function Sidebar({
         ) : (
           <div style={{ height: '64px', display: 'flex', alignItems: 'center', padding: '0 18px', borderBottom: '1px solid var(--sidebar-border)', flexShrink: 0, gap: '10px', overflow: 'hidden' }}>
             <div style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--sidebar-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 16, color: 'var(--sidebar-primary-foreground)', fontWeight: 800, boxShadow: '0 2px 8px color-mix(in srgb, var(--sidebar-primary) 40%, transparent)' }}>
-              AO
+              {appConfig.brand.shortName}
             </div>
             <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--sidebar-foreground)', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-              ao-admin-pro
+              {appConfig.brand.name}
             </span>
           </div>
         )}
