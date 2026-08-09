@@ -132,6 +132,7 @@ export default function SystemConfigPage() {
     setTimeout(() => setSavedTab(null), 2200);
   };
 
+
   const cardStyle = {
     background: 'var(--card)',
     border: '1px solid var(--border)',
@@ -205,7 +206,6 @@ export default function SystemConfigPage() {
     { key: 'notification', label: '通知设置', icon: <BellIcon size={15} /> },
     { key: 'theme', label: '主题外观', icon: <PaletteIcon size={15} /> },
   ];
-
   return (
     <AdminLayout>
       <div data-cmp="SystemConfigPage" style={{ padding: '24px', minHeight: '100%', background: 'var(--background)' }}>

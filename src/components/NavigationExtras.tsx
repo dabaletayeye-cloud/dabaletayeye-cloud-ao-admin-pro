@@ -25,6 +25,7 @@ const ROUTE_LABELS: Record<string, string> = {
   '/system/menus': '菜单管理',
   '/system/logs': '日志管理',
   '/system/config': '系统配置',
+  '/generation-quotas': '生成配额',
   '/permissions': '权限管理',
   '/settings': '系统设置',
   '/profile': '个人中心',

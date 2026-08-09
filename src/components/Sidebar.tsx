@@ -98,6 +98,15 @@ interface SidebarProps {
 
 export const NAV_ITEMS: NavItem[] = [
   { type: 'link', icon: <LayoutGridIcon size={16} />, label: '工作台', path: '/' },
+  /* CLEAN_DEMO_START: extras:dashboard-navigation */
+  {
+    type: 'group', icon: <LayoutDashboardIcon size={16} />, label: '仪表盘',
+    children: [
+      { label: '分析页', path: '/dashboard/analytics', icon: <LineChartIcon size={13} /> },
+      { label: '电子商务', path: '/dashboard/ecommerce', icon: <ShoppingCartIcon size={13} /> },
+    ],
+  },
+  /* CLEAN_DEMO_END: extras:dashboard-navigation */
 
 
 
@@ -174,15 +183,6 @@ export const NAV_ITEMS: NavItem[] = [
 
 
 
-/* CLEAN_DEMO_START: extras:dashboard-navigation */
-  {
-    type: 'group', icon: <LayoutDashboardIcon size={16} />, label: '仪表盘',
-    children: [
-      { label: '分析页', path: '/dashboard/analytics', icon: <LineChartIcon size={13} /> },
-      { label: '电子商务', path: '/dashboard/ecommerce', icon: <ShoppingCartIcon size={13} /> },
-    ],
-  },
-  /* CLEAN_DEMO_END: extras:dashboard-navigation */
 /* CLEAN_DEMO_START: components:navigation */
   {
     type: 'group', icon: <PuzzleIcon size={16} />, label: '组件中心',
@@ -269,6 +269,8 @@ export const NAV_ITEMS: NavItem[] = [
   /* CLEAN_DEMO_END: extras:marketing-navigation */
 { type: 'link', icon: <ShoppingCartIcon size={16} />, label: '订单管理', path: '/orders' },
   { type: 'link', icon: <MessageSquareIcon size={16} />, label: '消息中心', path: '/messages' },
+  { type: 'link', icon: <SparklesIcon size={16} />, label: '生成配额', path: '/generation-quotas' },
+  { type: 'link', icon: <SparklesIcon size={16} />, label: '生成配额', path: '/generation-quotas' },
   {
     type: 'group', icon: <SlidersIcon size={16} />, label: '系统管理',
     children: [

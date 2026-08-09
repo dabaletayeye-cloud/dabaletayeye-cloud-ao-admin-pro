@@ -42,6 +42,7 @@ import MenuPage from './pages/MenuPage';
 import LogPage from './pages/LogPage';
 import DictPage from './pages/DictPage';
 import SystemConfigPage from './pages/SystemConfigPage';
+import GenerationQuotaPage from './pages/GenerationQuotaPage';
 import ResultPage from './pages/ResultPage';
 import ErrorPage from './pages/ErrorPage';
 import ServerPage from './pages/ServerPage';
@@ -191,6 +192,8 @@ export default function App() {
           <Route path="/system/logs" element={<LogPage />} />
           <Route path="/system/dict" element={<DictPage />} />
           <Route path="/system/config" element={<SystemConfigPage />} />
+          <Route path="/generation-quotas" element={<GenerationQuotaPage />} />
+          <Route path="/generation-quotas" element={<GenerationQuotaPage />} />
           <Route path="/system/servers" element={<ServerPage />} />
           <Route path="/system/files" element={<FileManagementPage />} />
 

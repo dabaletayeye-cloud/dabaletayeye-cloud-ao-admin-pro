@@ -83,6 +83,8 @@ const NAV_ITEMS: NavItem[] = [
   { type: 'link', id: 'permissions', icon: <ShieldIcon size={14} />, label: '权限管理', path: '/permissions' },
   /* CLEAN_DEMO_END: extras:permissions-navigation */
 { type: 'link', id: 'messages', icon: <MessageSquareIcon size={14} />, label: '消息中心', path: '/messages' },
+{ type: 'link', id: 'generation-quotas', icon: <SparklesIcon size={14} />, label: '生成配额', path: '/generation-quotas' },
+{ type: 'link', id: 'generation-quotas', icon: <SparklesIcon size={14} />, label: '生成配额', path: '/generation-quotas' },
 
 
 
