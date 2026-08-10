@@ -270,7 +270,6 @@ export const NAV_ITEMS: NavItem[] = [
 { type: 'link', icon: <ShoppingCartIcon size={16} />, label: '订单管理', path: '/orders' },
   { type: 'link', icon: <MessageSquareIcon size={16} />, label: '消息中心', path: '/messages' },
   { type: 'link', icon: <SparklesIcon size={16} />, label: '生成配额', path: '/generation-quotas' },
-  { type: 'link', icon: <SparklesIcon size={16} />, label: '生成配额', path: '/generation-quotas' },
   {
     type: 'group', icon: <SlidersIcon size={16} />, label: '系统管理',
     children: [

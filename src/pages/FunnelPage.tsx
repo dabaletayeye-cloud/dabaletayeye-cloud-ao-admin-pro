@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
+import { BarChartSvg, FunnelChartSvg, LineChartSvg } from '../components/AnalyticsSvgCharts';
 import { useTheme } from '../hooks/useTheme';
-import {
-  FunnelChart, Funnel, LabelList, Tooltip, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, LineChart, Line,
-} from 'recharts';
 import {
   ArrowDownIcon, ArrowUpIcon, TrendingUpIcon, UsersIcon,
   ShoppingCartIcon, CreditCardIcon, CheckCircle2Icon, MousePointerClickIcon,
@@ -154,17 +151,7 @@ export default function FunnelPage() {
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>
               转化漏斗图 · {view === 'pc' ? '桌面端' : '移动端'}
             </div>
-            <ResponsiveContainer width="100%" height={340}>
-              <FunnelChart>
-                <Tooltip
-                  formatter={(value: number, name: string) => [value.toLocaleString(), name]}
-                  contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }}
-                />
-                <Funnel dataKey="value" data={activeFunnel} isAnimationActive>
-                  <LabelList position="right" fill="var(--foreground)" stroke="none" dataKey="name" style={{ fontSize: 12 }} />
-                </Funnel>
-              </FunnelChart>
-            </ResponsiveContainer>
+            <FunnelChartSvg height={340} data={activeFunnel.map((item) => ({ name: item.name, value: item.value, color: item.fill }))} />
           </div>
 
           {/* Custom visual funnel */}
@@ -217,18 +204,7 @@ export default function FunnelPage() {
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ ...card, flex: '2 1 380px', minWidth: 300 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>转化率趋势（近12周）</div>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={WEEKLY_TREND} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="week" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} />
-                <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} unit="%" domain={[0, 5]} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} unit="%" domain={[50, 90]} />
-                <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-                <Line yAxisId="left" type="monotone" dataKey="convRate" name="付费转化率" stroke={primaryHex} strokeWidth={2} dot={{ r: 3 }} />
-                <Line yAxisId="right" type="monotone" dataKey="visitConv" name="访问→内容率" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            <LineChartSvg height={220} data={WEEKLY_TREND} xKey="week" series={[{ key: 'convRate', name: '付费转化率', color: primaryHex }, { key: 'visitConv', name: '访问→内容率', color: '#f59e0b' }]} />
           </div>
 
           <div style={{ ...card, flex: '1 1 240px', minWidth: 220 }}>
@@ -259,18 +235,7 @@ export default function FunnelPage() {
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>各渠道漏斗对比</div>
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             <div style={{ flex: '2 1 400px', minWidth: 300 }}>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={CHANNEL_FUNNEL} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="channel" tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="visit" name="访问" fill={primaryHex} radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="register" name="注册" fill="#f59e0b" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="pay" name="付费" fill="#22c55e" radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <BarChartSvg height={220} data={CHANNEL_FUNNEL} xKey="channel" series={[{ key: 'visit', name: '访问', color: primaryHex }, { key: 'register', name: '注册', color: '#f59e0b' }, { key: 'pay', name: '付费', color: '#22c55e' }]} />
             </div>
             <div style={{ flex: '1 1 220px', minWidth: 200 }}>
               <div style={{ overflowX: 'auto' }}>

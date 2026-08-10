@@ -193,7 +193,6 @@ export default function App() {
           <Route path="/system/dict" element={<DictPage />} />
           <Route path="/system/config" element={<SystemConfigPage />} />
           <Route path="/generation-quotas" element={<GenerationQuotaPage />} />
-          <Route path="/generation-quotas" element={<GenerationQuotaPage />} />
           <Route path="/system/servers" element={<ServerPage />} />
           <Route path="/system/files" element={<FileManagementPage />} />
 

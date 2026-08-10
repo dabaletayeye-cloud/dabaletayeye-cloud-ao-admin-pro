@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
+import { BarChartSvg, DonutChartSvg, RadarChartSvg } from '../components/AnalyticsSvgCharts';
 import { useTheme } from '../hooks/useTheme';
-import {
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer,
-} from 'recharts';
 import {
   UsersIcon, UserCheckIcon, UserXIcon, TrendingUpIcon,
   ArrowUpIcon, ArrowDownIcon,
@@ -144,14 +140,7 @@ export default function UserPortraitPage() {
           {/* Gender */}
           <div style={{ ...card, flex: '1 1 220px', minWidth: 200 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>性别分布</div>
-            <ResponsiveContainer width="100%" height={180}>
-              <PieChart>
-                <Pie data={GENDER_DATA} cx="50%" cy="50%" innerRadius={50} outerRadius={76} dataKey="value" paddingAngle={4}>
-                  {GENDER_DATA.map((g, i) => <Cell key={i} fill={g.color} />)}
-                </Pie>
-                <Tooltip formatter={(v: number) => [`${v}%`, '占比']} contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
+            <DonutChartSvg height={180} data={GENDER_DATA} />
             <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 4 }}>
               {GENDER_DATA.map((g, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
@@ -166,17 +155,7 @@ export default function UserPortraitPage() {
           {/* Age */}
           <div style={{ ...card, flex: '2 1 380px', minWidth: 300 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>年龄分布（男 / 女）</div>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={AGE_DATA} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="group" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} unit="%" />
-                <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="male" name="男性" fill="#6366f1" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="female" name="女性" fill="#ec4899" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <BarChartSvg height={220} data={AGE_DATA} xKey="group" series={[{ key: 'male', name: '男性', color: '#6366f1' }, { key: 'female', name: '女性', color: '#ec4899' }]} />
           </div>
         </div>
 
@@ -185,29 +164,13 @@ export default function UserPortraitPage() {
           {/* Interest Radar */}
           <div style={{ ...card, flex: '1 1 280px', minWidth: 260 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>兴趣偏好雷达</div>
-            <ResponsiveContainer width="100%" height={260}>
-              <RadarChart cx="50%" cy="50%" outerRadius={90} data={INTEREST_DATA}>
-                <PolarGrid stroke="var(--border)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} />
-                <Radar name="兴趣指数" dataKey="A" stroke={primaryHex} fill={primaryHex} fillOpacity={0.22} />
-                <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-              </RadarChart>
-            </ResponsiveContainer>
+            <RadarChartSvg height={260} color={primaryHex} data={INTEREST_DATA.map((item) => ({ label: item.subject, value: item.A }))} />
           </div>
 
           {/* Active Hours */}
           <div style={{ ...card, flex: '2 1 360px', minWidth: 300 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>活跃时间分布</div>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={ACTIVE_HOUR} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="hour" tick={{ fill: 'var(--muted-foreground)', fontSize: 9 }} tickLine={false} axisLine={false} interval={3} />
-                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="active" name="活跃度" fill={primaryHex} radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <BarChartSvg height={260} data={ACTIVE_HOUR} xKey="hour" series={[{ key: 'active', name: '活跃度', color: primaryHex }]} />
           </div>
         </div>
 
@@ -237,30 +200,13 @@ export default function UserPortraitPage() {
           {/* Device Pref */}
           <div style={{ ...card, flex: '1 1 220px', minWidth: 200 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>设备偏好</div>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={DEVICE_PREF} cx="50%" cy="50%" outerRadius={76} dataKey="value" paddingAngle={3} label={({ name, value }: { name: string; value: number }) => `${name} ${value}%`} labelLine={false}>
-                  {DEVICE_PREF.map((_, i) => <Cell key={i} fill={['#6366f1', '#f59e0b', '#22c55e', '#9ca3af'][i]} />)}
-                </Pie>
-                <Tooltip formatter={(v: number) => [`${v}%`, '占比']} contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
+            <DonutChartSvg height={200} data={DEVICE_PREF.map((item, index) => ({ ...item, color: ['#6366f1', '#f59e0b', '#22c55e', '#9ca3af'][index] }))} />
           </div>
 
           {/* Channel */}
           <div style={{ ...card, flex: '2 1 340px', minWidth: 280 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>获客渠道对比</div>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={CHANNEL_DATA} layout="vertical" margin={{ top: 4, right: 16, bottom: 0, left: 24 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                <YAxis type="category" dataKey="channel" tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} tickLine={false} axisLine={false} width={60} />
-                <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="new" name="新用户" fill={primaryHex} radius={[0, 3, 3, 0]} stackId="a" />
-                <Bar dataKey="returning" name="回访用户" fill="#22c55e" radius={[0, 3, 3, 0]} stackId="a" />
-              </BarChart>
-            </ResponsiveContainer>
+            <BarChartSvg height={220} data={CHANNEL_DATA} xKey="channel" series={[{ key: 'new', name: '新用户', color: primaryHex }, { key: 'returning', name: '回访用户', color: '#22c55e' }]} />
           </div>
         </div>
 

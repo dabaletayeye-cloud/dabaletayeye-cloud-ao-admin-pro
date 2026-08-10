@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
+import { BarChartSvg, DonutChartSvg, LineChartSvg } from '../components/AnalyticsSvgCharts';
 import { useTheme } from '../hooks/useTheme';
-import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  AreaChart, Area,
-} from 'recharts';
 import {
   UsersIcon, EyeIcon, MousePointerClickIcon, TrendingUpIcon,
   ArrowUpIcon, ArrowDownIcon, MonitorIcon, SmartphoneIcon, TabletIcon,
@@ -154,59 +150,20 @@ export default function VisitStatsPage() {
         {/* PV/UV Trend */}
         <div style={{ ...card }}>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 20 }}>PV / UV 趋势</div>
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={chartData} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
-              <defs>
-                <linearGradient id="pvGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={primaryHex} stopOpacity={0.25} />
-                  <stop offset="95%" stopColor={primaryHex} stopOpacity={0.02} />
-                </linearGradient>
-                <linearGradient id="uvGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="date" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`} />
-              <Tooltip
-                contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }}
-                labelStyle={{ color: 'var(--foreground)', fontWeight: 600 }}
-              />
-              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="pv" name="PV" stroke={primaryHex} fill="url(#pvGrad)" strokeWidth={2} dot={false} />
-              <Area type="monotone" dataKey="uv" name="UV" stroke="#22c55e" fill="url(#uvGrad)" strokeWidth={2} dot={false} />
-            </AreaChart>
-          </ResponsiveContainer>
+          <LineChartSvg height={280} data={chartData} xKey="date" series={[{ key: 'pv', name: 'PV', color: primaryHex }, { key: 'uv', name: 'UV', color: '#22c55e' }]} />
         </div>
 
         {/* Hourly + Source */}
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ ...card, flex: '2 1 400px', minWidth: 300 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 20 }}>今日小时分布</div>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={HOURLY} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="hour" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} tickLine={false} axisLine={false} interval={3} />
-                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="pv" name="PV" fill={primaryHex} radius={[3, 3, 0, 0]} />
-                <Bar dataKey="uv" name="UV" fill="#22c55e" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <BarChartSvg height={220} data={HOURLY} xKey="hour" series={[{ key: 'pv', name: 'PV', color: primaryHex }, { key: 'uv', name: 'UV', color: '#22c55e' }]} />
           </div>
 
           <div style={{ ...card, flex: '1 1 260px', minWidth: 240 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>流量来源</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
-                  <Pie data={SOURCE_DATA} cx="50%" cy="50%" innerRadius={48} outerRadius={72} dataKey="value" paddingAngle={3}>
-                    {SOURCE_DATA.map((s, i) => <Cell key={i} fill={s.color} />)}
-                  </Pie>
-                  <Tooltip formatter={(v: number) => [`${v}%`, '占比']} contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                </PieChart>
-              </ResponsiveContainer>
+              <DonutChartSvg height={160} data={SOURCE_DATA} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
                 {SOURCE_DATA.map((s, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
