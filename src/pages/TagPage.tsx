@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
-import { MOCK_TAGS } from '../data/contentData';
-import type { Tag } from '../data/contentData';
+import { listTags } from '../api';
+import type { Tag } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import {
   PlusIcon,
   SearchIcon,
@@ -40,13 +41,16 @@ export default function TagPage() {
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? PINK : 'var(--primary)';
 
-  const [tags, setTags] = useState<Tag[]>(MOCK_TAGS);
+  const tagsResource = useApiResource(listTags);
+  const [tags, setTags] = useState<Tag[]>([]);
+  useEffect(() => { if (tagsResource.data) setTags(tagsResource.data); }, [tagsResource.data]);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formName, setFormName] = useState('');
   const [formStatus, setFormStatus] = useState<'active' | 'inactive'>('active');
   const [saved, setSaved] = useState(false);
+  if (tagsResource.loading || tagsResource.error) return <AdminLayout><ApiState loading={tagsResource.loading} error={tagsResource.error} /></AdminLayout>;
 
   const filtered = tags.filter(t =>
     search === '' || t.name.includes(search)
@@ -284,7 +288,7 @@ export default function TagPage() {
             </thead>
             <tbody>
               {filtered.map((tag, idx) => {
-                const colorIdx = MOCK_TAGS.findIndex(t => t.id === tag.id) % CLOUD_COLORS.length;
+                const colorIdx = tags.findIndex(t => t.id === tag.id) % CLOUD_COLORS.length;
                 const color = CLOUD_COLORS[colorIdx < 0 ? 0 : colorIdx];
                 return (
                   <tr

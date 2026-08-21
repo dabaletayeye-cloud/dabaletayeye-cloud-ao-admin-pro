@@ -22,7 +22,7 @@ import {
   INIT_CONVERSATIONS,
   fmtTime,
   fmtMsgTime,
-} from '../../data/chatData';
+} from '../../api/chat';
 
 /* ──────────────────────────────────────────────────────────────
    Helpers

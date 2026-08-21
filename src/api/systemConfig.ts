@@ -1,5 +1,6 @@
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 const apiBaseUrl = (configuredApiBaseUrl || "http://localhost:8080").replace(/\/+$/, "");
+const apiMode = (import.meta.env.VITE_API_MODE || "mock").toLowerCase();
 
 interface ApiEnvelope<T> {
   code: number;
@@ -12,6 +13,12 @@ export interface GenerationQuotas {
   proRewriteLimit: number;
   proAdaptCardsLimit: number;
 }
+
+let mockQuotas: GenerationQuotas = {
+  proScriptGenerateLimit: 100,
+  proRewriteLimit: 200,
+  proAdaptCardsLimit: 100,
+};
 
 function getAccessToken(): string | null {
   for (const storage of [window.localStorage, window.sessionStorage]) {
@@ -53,10 +60,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function getGenerationQuotas(): Promise<GenerationQuotas> {
+  if (apiMode !== "http") {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return { ...mockQuotas };
+  }
   return request<GenerationQuotas>("/api/v1/admin/generation-quotas");
 }
 
 export async function updateGenerationQuotas(quotas: GenerationQuotas): Promise<GenerationQuotas> {
+  if (apiMode !== "http") {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    mockQuotas = { ...quotas };
+    return { ...mockQuotas };
+  }
   return request<GenerationQuotas>("/api/v1/admin/generation-quotas", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
+import { listRoles } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import { toast } from '../lib/localizedToast';
 import {
   PlusIcon,
@@ -122,7 +124,9 @@ export default function RolePage() {
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? MANGA_PINK : 'var(--primary)';
 
-  const [roles, setRoles] = useState<Role[]>(MOCK_ROLES);
+  const rolesResource = useApiResource(() => listRoles({ pageSize: 100 }));
+  const [roles, setRoles] = useState<Role[]>([]);
+  useEffect(() => { if (rolesResource.data) setRoles(rolesResource.data.list as Role[]); }, [rolesResource.data]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState('__all__');
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
@@ -135,6 +139,7 @@ export default function RolePage() {
     () => new Set(MENU_PERMISSION_GROUPS.map(group => group.label)),
   );
   const [expandedPermissionMenus, setExpandedPermissionMenus] = useState<Set<string>>(() => new Set());
+  if (rolesResource.loading || rolesResource.error) return <AdminLayout><ApiState loading={rolesResource.loading} error={rolesResource.error} /></AdminLayout>;
 
   const filtered = roles.filter(r => {
     const matchText = r.name.includes(searchText) || r.code.includes(searchText);

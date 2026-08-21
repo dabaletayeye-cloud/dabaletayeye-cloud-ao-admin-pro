@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from '../lib/localizedToast';
 import { useTheme } from '../hooks/useTheme';
-import { MOCK_USERS, type User } from '../data/mockData';
+import { listUsers } from '../api';
+import type { User } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import {
   SearchIcon,
   FilterIcon,
@@ -206,13 +208,16 @@ export default function UserOverview() {
   const { themeState } = useTheme();
   const isManga = themeState.themeId === 'manga';
 
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const usersResource = useApiResource(() => listUsers({ pageSize: 100 }));
+  const [users, setUsers] = useState<User[]>([]);
+  useEffect(() => { if (usersResource.data) setUsers(usersResource.data.list); }, [usersResource.data]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('__all__');
   const [page, setPage] = useState(1);
   const [viewUser, setViewUser] = useState<User | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  if (usersResource.loading || usersResource.error) return <ApiState loading={usersResource.loading} error={usersResource.error} />;
 
   const filtered = users.filter(u => {
     const matchSearch = !search || u.name.includes(search) || u.email.includes(search);

@@ -18,7 +18,7 @@ import {
   getEventsForDate,
   getEventsForMonth,
   getEventsForWeek,
-} from '../../data/calendarData';
+} from '../../api/calendar';
 
 /* ── helpers ────────────────────────────────────────────────── */
 function fmtYM(year: number, month: number, language: string) {

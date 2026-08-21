@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
+import { listMenus } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import {
   PlusIcon,
   ChevronRightIcon,
@@ -114,10 +116,13 @@ export default function MenuPage() {
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? MANGA_PINK : 'var(--primary)';
 
-  const [menus, setMenus] = useState<MenuItem[]>(MOCK_MENUS);
+  const menusResource = useApiResource(listMenus);
+  const [menus, setMenus] = useState<MenuItem[]>([]);
+  useEffect(() => { if (menusResource.data) setMenus(menusResource.data); }, [menusResource.data]);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set([2, 3, 4, 5]));
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<Partial<MenuItem & { parentId?: number }> | null>(null);
+  if (menusResource.loading || menusResource.error) return <AdminLayout><ApiState loading={menusResource.loading} error={menusResource.error} /></AdminLayout>;
 
   const toggleExpand = (id: number) => {
     setExpandedIds(prev => {

@@ -1,14 +1,18 @@
-import { MOCK_NEW_USERS } from '../data/mockData';
+import { getDashboardNewUsers } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import { useTranslation } from 'react-i18next';
 
 export default function NewUserList() {
   const { t } = useTranslation();
+  const resource = useApiResource(getDashboardNewUsers);
+  const users = resource.data ?? [];
+  if (resource.loading || resource.error) return <ApiState loading={resource.loading} error={resource.error} />;
   return (
     <div data-cmp="NewUserList" className="flex flex-col gap-0">
-      {MOCK_NEW_USERS.map((user, idx) => (
+      {users.map((user, idx) => (
         <div
           key={idx}
-          className={`flex items-center gap-3 py-3 ${idx < MOCK_NEW_USERS.length - 1 ? 'border-b' : ''}`}
+          className={`flex items-center gap-3 py-3 ${idx < users.length - 1 ? 'border-b' : ''}`}
           style={{ borderColor: 'var(--border)' }}
         >
           {/* Avatar */}

@@ -10,7 +10,8 @@ import {
   Area,
 } from 'recharts';
 import { useTheme } from '../hooks/useTheme';
-import { MONTHLY_DATA, YEARLY_TREND } from '../data/mockData';
+import { getDashboardCharts } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import { THEMES } from '../types';
 import { useTranslation } from 'react-i18next';
 
@@ -70,7 +71,9 @@ export function BarChartComponent() {
   const { t } = useTranslation();
   const primary = getThemePrimary(themeState.themeId, themeState.mode);
   const accent = getThemeAccent(themeState.themeId, themeState.mode);
-  const chartData = MONTHLY_DATA.map((item, index) => ({ ...item, month: t(`dashboard.month${index + 1}`) }));
+  const resource = useApiResource(getDashboardCharts);
+  const chartData = (resource.data?.monthly ?? []).map((item, index) => ({ ...item, month: t(`dashboard.month${index + 1}`) }));
+  if (resource.loading || resource.error) return <ApiState loading={resource.loading} error={resource.error} />;
 
   return (
     <div data-cmp="BarChartComponent" className="h-full">
@@ -107,7 +110,9 @@ export function AreaChartComponent() {
   const { themeState } = useTheme();
   const { t } = useTranslation();
   const primary = getThemePrimary(themeState.themeId, themeState.mode);
-  const chartData = YEARLY_TREND.map((item, index) => ({ ...item, month: t(`dashboard.month${index + 1}`) }));
+  const resource = useApiResource(getDashboardCharts);
+  const chartData = (resource.data?.yearly ?? []).map((item, index) => ({ ...item, month: t(`dashboard.month${index + 1}`) }));
+  if (resource.loading || resource.error) return <ApiState loading={resource.loading} error={resource.error} />;
 
   return (
     <div data-cmp="AreaChartComponent" className="h-full">

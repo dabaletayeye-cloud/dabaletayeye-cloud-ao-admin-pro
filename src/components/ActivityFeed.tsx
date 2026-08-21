@@ -1,4 +1,5 @@
-import { MOCK_ACTIVITIES } from '../data/mockData';
+import { getDashboardActivities } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import { CheckCircleIcon, InfoIcon, AlertTriangleIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -10,14 +11,17 @@ const TYPE_CONFIG = {
 
 export default function ActivityFeed() {
   const { t } = useTranslation();
+  const resource = useApiResource(getDashboardActivities);
+  const activities = resource.data ?? [];
+  if (resource.loading || resource.error) return <ApiState loading={resource.loading} error={resource.error} />;
   return (
     <div data-cmp="ActivityFeed" className="flex flex-col gap-0">
-      {MOCK_ACTIVITIES.map((activity, idx) => {
+      {activities.map((activity, idx) => {
         const cfg = TYPE_CONFIG[activity.type];
         return (
           <div
             key={activity.id}
-            className={`flex items-start gap-3 py-3 ${idx < MOCK_ACTIVITIES.length - 1 ? 'border-b' : ''}`}
+            className={`flex items-start gap-3 py-3 ${idx < activities.length - 1 ? 'border-b' : ''}`}
             style={{ borderColor: 'var(--border)' }}
           >
             {/* Timeline dot + line */}
@@ -28,7 +32,7 @@ export default function ActivityFeed() {
               >
                 {cfg.icon}
               </div>
-              {idx < MOCK_ACTIVITIES.length - 1 && (
+              {idx < activities.length - 1 && (
                 <div className="w-px flex-1 mt-1" style={{ background: 'var(--border)', minHeight: 8 }} />
               )}
             </div>

@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { MOCK_TODOS, type TodoItem } from '../data/mockData';
+import { useEffect, useState } from 'react';
+import { getDashboardTodos } from '../api';
+import type { TodoItem } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import { PlusIcon, TrashIcon } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -15,8 +17,13 @@ export default function TodoList() {
   const { t } = useTranslation();
   const isManga = themeState.themeId === 'manga';
 
-  const [todos, setTodos] = useState<TodoItem[]>(MOCK_TODOS);
+  const resource = useApiResource(getDashboardTodos);
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+  const loadedTodos = resource.data;
+  useEffect(() => { if (loadedTodos) setTodos(loadedTodos); }, [loadedTodos]);
   const [newText, setNewText] = useState('');
+
+  if (resource.loading || resource.error) return <ApiState loading={resource.loading} error={resource.error} />;
 
   const toggle = (id: number) => {
     setTodos(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));

@@ -1,9 +1,12 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
+import { getMapData } from '../../api';
+import type { RegionData } from '../../api';
+import { ApiState, useApiResource } from '../../hooks/useApiResource';
 import { localizeText } from '../../i18n/localizeText';
 import {
   CircleDotIcon,
@@ -17,14 +20,11 @@ import {
 import chinaGeoJson from '../../data/geo/china.json';
 import worldGeoJson from '../../data/geo/world.json';
 import {
-  CHINA_DATA,
   MAP_DARK_COLORS,
   MAP_LIGHT_COLORS,
   MAP_MANGA_COLORS,
   MAP_MANGA_DARK_COLORS,
-  WORLD_DATA,
-  type RegionData,
-} from '../../data/mapData';
+} from '../../api/analytics';
 
 type MapScope = 'china' | 'world';
 type MapMode = 'heat' | 'bubble';
@@ -226,10 +226,13 @@ export default function MapPage() {
     : (isDark ? MAP_DARK_COLORS : MAP_LIGHT_COLORS);
   const [scope, setScope] = useState<MapScope>('china');
   const [mode, setMode] = useState<MapMode>('heat');
-  const [selected, setSelected] = useState<RegionData>(CHINA_DATA[0]);
+  const mapResource = useApiResource(() => getMapData(scope));
+  const [selected, setSelected] = useState<RegionData | null>(null);
   const [hovered, setHovered] = useState<RegionData | null>(null);
 
-  const data = scope === 'china' ? CHINA_DATA : WORLD_DATA;
+  const data = mapResource.data ?? [];
+  useEffect(() => { if (data.length) setSelected(data[0]); }, [data]);
+  if (mapResource.loading || mapResource.error || !selected) return <AdminLayout><ApiState loading={mapResource.loading} error={mapResource.error} /></AdminLayout>;
   const sortedData = useMemo(() => [...data].sort((a, b) => b.value - a.value), [data]);
   const total = data.reduce((sum, item) => sum + item.value, 0);
   const average = Math.round(total / data.length);
@@ -238,9 +241,8 @@ export default function MapPage() {
   const activeColor = getColor(activeRegion.value, data, colors);
 
   const changeScope = (nextScope: MapScope) => {
-    const nextData = nextScope === 'china' ? CHINA_DATA : WORLD_DATA;
     setScope(nextScope);
-    setSelected(nextData[0]);
+    setSelected(null);
     setHovered(null);
   };
 

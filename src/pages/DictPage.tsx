@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
+import { listDict } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import {
   PlusIcon,
   SearchIcon,
@@ -84,14 +86,17 @@ export default function DictPage() {
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? MANGA_PINK : 'var(--primary)';
 
-  const [dictTypes, setDictTypes] = useState<DictType[]>(MOCK_DICT_TYPES);
-  const [dictItems, setDictItems] = useState<DictItem[]>(MOCK_DICT_ITEMS);
+  const dictResource = useApiResource(listDict);
+  const [dictTypes, setDictTypes] = useState<DictType[]>([]);
+  const [dictItems, setDictItems] = useState<DictItem[]>([]);
+  useEffect(() => { if (dictResource.data) { setDictTypes(dictResource.data.types); setDictItems(dictResource.data.items); } }, [dictResource.data]);
   const [selectedTypeId, setSelectedTypeId] = useState<number>(1);
   const [typeSearch, setTypeSearch] = useState('');
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showItemModal, setShowItemModal] = useState(false);
   const [editType, setEditType] = useState<Partial<DictType> | null>(null);
   const [editItem, setEditItem] = useState<Partial<DictItem> | null>(null);
+  if (dictResource.loading || dictResource.error) return <AdminLayout><ApiState loading={dictResource.loading} error={dictResource.error} /></AdminLayout>;
 
   const selectedType = dictTypes.find(t => t.id === selectedTypeId);
   const currentItems = dictItems.filter(i => i.typeId === selectedTypeId);

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { toast } from '../lib/localizedToast';
 import AdminLayout from '../components/AdminLayout';
 import {
@@ -18,7 +18,9 @@ import {
 } from '../components/ui/dropdown-menu';
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { MOCK_USERS, type User } from '../data/mockData';
+import { listUsers } from '../api';
+import type { User } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import {
   EyeIcon,
   MoreHorizontalIcon,
@@ -86,14 +88,18 @@ export default function UsersPage() {
     return gender === '男' ? '男性' : '女性';
   };
 
-  const [users, setUsers] = useState<User[]>(() => MOCK_USERS.map((user) => (
+  const usersResource = useApiResource(() => listUsers({ pageSize: 100 }));
+  const [users, setUsers] = useState<User[]>([]);
+  useEffect(() => { if (usersResource.data) setUsers(usersResource.data.list); }, [usersResource.data]);
+  /*
     user.id === 1 ? { ...user, roles: [user.role, '运营'] } : user
-  )));
+  ))); */
   const [searchText, setSearchText] = useState('');
   const [activeStatus, setActiveStatus] = useState<User['status'] | '__all__'>('__all__');
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [form, setForm] = useState<UserForm>(EMPTY_FORM);
+  if (usersResource.loading || usersResource.error) return <AdminLayout><ApiState loading={usersResource.loading} error={usersResource.error} /></AdminLayout>;
 
   const filtered = users.filter((user) => {
     const matchSearch =

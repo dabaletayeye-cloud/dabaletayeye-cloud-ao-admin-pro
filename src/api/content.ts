@@ -1,0 +1,14 @@
+import { apiAdapter } from './adapter';
+import type { ApiListQuery, Article, Category, PageResult, Tag } from './types';
+export const listArticles = (query?: ApiListQuery & { category?: string }): Promise<PageResult<Article>> => apiAdapter.listArticles(query);
+export const createArticle = (input: Partial<Article>): Promise<Article> => apiAdapter.createArticle(input);
+export const updateArticle = (id: number, input: Partial<Article>): Promise<Article> => apiAdapter.updateArticle(id, input);
+export const deleteArticle = (id: number): Promise<void> => apiAdapter.deleteArticle(id);
+export const listCategories = (): Promise<Category[]> => apiAdapter.listCategories();
+export const createCategory = (input: Partial<Category>): Promise<Category> => apiAdapter.createCategory(input);
+export const updateCategory = (id: number, input: Partial<Category>): Promise<Category> => apiAdapter.updateCategory(id, input);
+export const deleteCategory = (id: number): Promise<void> => apiAdapter.deleteCategory(id);
+export const listTags = (): Promise<Tag[]> => apiAdapter.listTags();
+export const createTag = (input: Partial<Tag>): Promise<Tag> => apiAdapter.createTag(input);
+export const updateTag = (id: number, input: Partial<Tag>): Promise<Tag> => apiAdapter.updateTag(id, input);
+export const deleteTag = (id: number): Promise<void> => apiAdapter.deleteTag(id);

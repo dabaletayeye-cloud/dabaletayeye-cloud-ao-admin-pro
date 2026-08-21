@@ -239,10 +239,29 @@ npm run build
 
 清理脚本会先输出保留项、删除项及受影响的文件；带 `--dry-run` 时不会写入或删除任何文件。执行真实清理后，请运行 `npm run build`，并按保留模块检查侧栏菜单和相关路由。项目根目录本身是 Git 仓库时，脚本会阻止清理未提交改动；压缩包项目或被放在其他仓库目录中的项目会跳过该检查，仍须通过预览和交互确认后才会删除文件。
 
+## 前后端数据层
+
+项目已提供 mock/http 双模式的数据层抽象，页面通过 `src/api/` 调用业务函数，不直接感知数据来源。
+
+```env
+# 默认使用 mock；接入后端时改为 http
+VITE_API_MODE=mock
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+- `VITE_API_MODE=mock`：使用本地适配器，接口 Promise 化并模拟约 300ms 延迟。
+- `VITE_API_MODE=http`：使用 `fetch` 请求 `${VITE_API_BASE_URL}/api/...`。
+- HTTP 响应推荐统一使用 `{ code: 0, message: "ok", data: ... }`。
+- 页面应通过 `useApiResource` 处理 loading、error 和 data 状态。
+
+接口路径、请求参数、响应 DTO、鉴权和联调步骤详见：[前后端数据层对接说明](docs/前后端数据层对接说明.md)。
+
+常用 API 模块：`auth`、`user`、`role`、`menu`、`dashboard`、`content`、`analytics`、`calendar`、`chat`、`logs`、`dictionary`。
+
 ## 二次开发建议
 
 1. 在 `src/App.tsx` 注册新路由，并在 `src/components/Sidebar.tsx` 增加相应导航项。
-2. 将 `src/data` 内的模拟数据替换为接口层；建议集中封装请求、错误处理与数据类型。
+2. 新增业务数据时优先扩展 `src/api/types.ts`、`src/api/adapters/types.ts`、`mock.ts` 和 `http.ts`，不要在页面内直接维护请求或接口地址。
 3. 接入实际登录态、路由守卫和后端权限校验。前端按钮权限仅作为界面展示与交互控制，不能替代服务端鉴权。
 4. 按业务需求将个人资料、主题偏好等 `localStorage` 状态迁移至服务端。
 5. 每次改动后运行 `npm run lint` 和 `npm run build`，确保代码质量与生产构建正常。

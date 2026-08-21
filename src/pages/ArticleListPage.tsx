@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from '../lib/localizedToast';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
-import { MOCK_ARTICLES } from '../data/contentData';
-import type { ArticleStatus } from '../data/contentData';
+import { listArticles } from '../api';
+import type { ArticleStatus, Article } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import {
   SearchIcon,
   PlusIcon,
@@ -44,6 +45,9 @@ export default function ArticleListPage() {
   const { themeState } = useTheme();
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? PINK : 'var(--primary)';
+  const articlesResource = useApiResource(() => listArticles({ pageSize: 1000 }));
+  const [articles, setArticles] = useState<Article[]>([]);
+  useEffect(() => { if (articlesResource.data) setArticles(articlesResource.data.list); }, [articlesResource.data]);
 
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('__all__');
@@ -54,14 +58,16 @@ export default function ArticleListPage() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const PAGE_SIZE = 8;
-  const TOTAL = 128;
+  const TOTAL = articlesResource.data?.total ?? 0;
 
-  const filtered = MOCK_ARTICLES.filter(a => {
+  const filtered = articles.filter(a => {
     const matchSearch   = search === '' || a.title.includes(search) || a.author.includes(search);
     const matchCategory = category === '__all__' || a.category === category;
     const matchStatus   = status === '__all__' || a.status === status;
     return matchSearch && matchCategory && matchStatus;
   });
+
+  if (articlesResource.loading || articlesResource.error) return <AdminLayout><ApiState loading={articlesResource.loading} error={articlesResource.error} /></AdminLayout>;
 
   const totalPages = Math.ceil(TOTAL / PAGE_SIZE);
 

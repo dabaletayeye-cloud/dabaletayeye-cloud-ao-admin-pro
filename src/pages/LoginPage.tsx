@@ -23,6 +23,7 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { LANGUAGE_OPTIONS, useLocale } from '../hooks/useLocale';
 import ThemePanel from '../components/ThemePanel';
+import { login } from '../api';
 import LocalizedText from '../components/LocalizedText';
 import { getCurrentAccount, saveCurrentAccount } from '../lib/currentAccount';
 import appConfig from '../config/app.json';
@@ -163,7 +164,7 @@ export default function LoginPage() {
     setVerification(value >= 92 ? 100 : value);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (recovery) {
@@ -226,6 +227,13 @@ export default function LoginPage() {
     }
 
     setSubmitting(true);
+    try {
+      await login({ username: account.trim(), password });
+    } catch (error) {
+      setSubmitting(false);
+      toast.error(error instanceof Error ? error.message : '登录失败');
+      return;
+    }
     window.setTimeout(() => {
       const selectedRole = ROLE_OPTIONS.find((option) => option.value === role)?.sourceLabel ?? '普通用户';
       const savedAccount = getCurrentAccount();

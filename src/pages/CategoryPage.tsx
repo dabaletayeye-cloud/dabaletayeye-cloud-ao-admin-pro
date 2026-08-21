@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from '../lib/localizedToast';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
-import { MOCK_CATEGORIES_FLAT } from '../data/contentData';
-import type { Category } from '../data/contentData';
+import { listCategories } from '../api';
+import type { Category } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import {
   PlusIcon,
   ChevronRightIcon,
@@ -35,9 +36,6 @@ function buildTree(flat: Category[]): Category[] {
   });
   return roots;
 }
-
-const TREE_DATA = buildTree(MOCK_CATEGORIES_FLAT);
-const PARENT_OPTIONS = MOCK_CATEGORIES_FLAT.filter(c => c.parentId === null);
 
 interface TreeNodeProps {
   node: Category;
@@ -114,6 +112,11 @@ export default function CategoryPage() {
   const { themeState } = useTheme();
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? PINK : 'var(--primary)';
+  const categoriesResource = useApiResource(listCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
+  useEffect(() => { if (categoriesResource.data) setCategories(categoriesResource.data); }, [categoriesResource.data]);
+  const treeData = buildTree(categories);
+  const parentOptions = categories.filter(c => c.parentId === null);
 
   const [selectedId, setSelectedId] = useState<number | null>(2);
   const [formData, setFormData] = useState({
@@ -126,11 +129,11 @@ export default function CategoryPage() {
   });
   const [saved, setSaved] = useState(false);
 
-  const selectedCat = MOCK_CATEGORIES_FLAT.find(c => c.id === selectedId);
+  const selectedCat = categories.find(c => c.id === selectedId);
 
   const handleSelect = (id: number) => {
     setSelectedId(id);
-    const cat = MOCK_CATEGORIES_FLAT.find(c => c.id === id);
+    const cat = categories.find(c => c.id === id);
     if (cat) {
       setFormData({
         name: cat.name,
@@ -156,6 +159,8 @@ export default function CategoryPage() {
   };
 
   const handleCategoryAction = (action: string) => toast.success(`${action}操作已提交`);
+
+  if (categoriesResource.loading || categoriesResource.error) return <AdminLayout><ApiState loading={categoriesResource.loading} error={categoriesResource.error} /></AdminLayout>;
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
@@ -217,10 +222,10 @@ export default function CategoryPage() {
               style={{ borderColor: 'var(--border)' }}
             >
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--foreground)' }}>分类树</span>
-              <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>共 {MOCK_CATEGORIES_FLAT.length} 个</span>
+              <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>共 {categories.length} 个</span>
             </div>
             <div style={{ padding: '10px 8px' }}>
-              {TREE_DATA.map(node => (
+              {treeData.map(node => (
                 <TreeNode
                   key={node.id}
                   node={node}
@@ -313,7 +318,7 @@ export default function CategoryPage() {
                     onChange={e => setFormData(d => ({ ...d, parentId: e.target.value }))}
                   >
                     <option value="__none__">— 无（顶级分类）</option>
-                    {PARENT_OPTIONS.map(p => (
+                    {parentOptions.map(p => (
                       <option key={p.id} value={String(p.id)}>{p.name}</option>
                     ))}
                   </select>
@@ -377,7 +382,7 @@ export default function CategoryPage() {
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>子分类</div>
                     <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--foreground)' }}>
-                      {(MOCK_CATEGORIES_FLAT.filter(c => c.parentId === selectedCat.id)).length}
+                      {(categories.filter(c => c.parentId === selectedCat.id)).length}
                     </div>
                   </div>
                   <div>

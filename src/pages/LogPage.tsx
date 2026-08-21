@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from '../lib/localizedToast';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
+import { listLogs } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 import {
   SearchIcon,
   DownloadIcon,
@@ -83,6 +85,10 @@ export default function LogPage() {
   const { themeState } = useTheme();
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? MANGA_PINK : 'var(--primary)';
+  const logsResource = useApiResource(listLogs);
+  const [logs, setLogs] = useState<Awaited<ReturnType<typeof listLogs>> | null>(null);
+  useEffect(() => { if (logsResource.data) setLogs(logsResource.data); }, [logsResource.data]);
+  if (logsResource.loading || logsResource.error || !logs) return <AdminLayout><ApiState loading={logsResource.loading} error={logsResource.error} /></AdminLayout>;
 
   const [activeTab, setActiveTab] = useState<LogTab>('login');
   const [searchText, setSearchText] = useState('');
@@ -113,19 +119,19 @@ export default function LogPage() {
     { key: 'exception', label: '异常日志', icon: <AlertTriangleIcon size={14} />, count: MOCK_EXCEPTION_LOGS.length },
   ];
 
-  const filteredLoginLogs = MOCK_LOGIN_LOGS.filter(l => {
+  const filteredLoginLogs = logs.login.filter(l => {
     const matchText = l.username.includes(searchText) || l.ip.includes(searchText) || l.location.includes(searchText);
     const matchStatus = statusFilter === '__all__' || l.status === statusFilter;
     return matchText && matchStatus;
   });
 
-  const filteredOpLogs = MOCK_OPERATION_LOGS.filter(l => {
+  const filteredOpLogs = logs.operation.filter(l => {
     const matchText = l.username.includes(searchText) || l.module.includes(searchText) || l.requestUri.includes(searchText);
     const matchStatus = statusFilter === '__all__' || l.status === statusFilter;
     return matchText && matchStatus;
   });
 
-  const filteredExLogs = MOCK_EXCEPTION_LOGS.filter(l => {
+  const filteredExLogs = logs.exception.filter(l => {
     return l.username.includes(searchText) || l.errorMsg.includes(searchText) || l.requestUri.includes(searchText);
   });
 

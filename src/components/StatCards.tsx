@@ -1,7 +1,8 @@
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { TrendingUpIcon, TrendingDownIcon, UsersIcon, ActivityIcon, DollarSignIcon, FileTextIcon } from 'lucide-react';
-import { STAT_CARDS } from '../data/mockData';
+import { getDashboardStats } from '../api';
+import { ApiState, useApiResource } from '../hooks/useApiResource';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   Users: <UsersIcon size={20} />,
@@ -13,6 +14,9 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 export default function StatCards() {
   const { themeState } = useTheme();
   const { t } = useTranslation();
+  const resource = useApiResource(getDashboardStats);
+  const cards = resource.data ?? [];
+  if (resource.loading || resource.error) return <ApiState loading={resource.loading} error={resource.error} />;
   const isManga = themeState.themeId === 'manga';
   const titleKeys: Record<string, string> = {
     '总用户数': 'dashboard.totalUsers',
@@ -23,7 +27,7 @@ export default function StatCards() {
 
   return (
     <div data-cmp="StatCards" className="flex gap-4 flex-wrap">
-      {STAT_CARDS.map((card, idx) => (
+      {cards.map((card, idx) => (
         <div
           key={card.title}
           className={`admin-card flex-1 min-w-[200px] p-4 border ${isManga ? 'manga-card-float' : ''}`}
