@@ -246,7 +246,7 @@ npm run build
 ```env
 # 默认使用 mock；接入后端时改为 http
 VITE_API_MODE=mock
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8989
 ```
 
 - `VITE_API_MODE=mock`：使用本地适配器，接口 Promise 化并模拟约 300ms 延迟。

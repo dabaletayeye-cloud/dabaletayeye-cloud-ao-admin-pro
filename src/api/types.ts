@@ -132,3 +132,87 @@ export interface UserPortraitData {
 export interface FunnelData {
   steps: Array<{ name: string; value: number; rate?: number }>;
 }
+
+export type ManagedFileKind = 'document' | 'spreadsheet' | 'image' | 'archive';
+export type ManagedFileFolder = 'uploads' | 'documents' | 'images' | 'archives';
+
+export interface ManagedFile {
+  id: number;
+  name: string;
+  kind: ManagedFileKind;
+  size: number;
+  folder: ManagedFileFolder;
+  path: string;
+  provider: 'local' | 'cos';
+  uploader: string;
+  updatedAt: string;
+}
+
+export interface FileStorageInfo {
+  provider: 'local' | 'cos';
+  maxFileSize: number;
+}
+
+export interface SiteConfig {
+  siteName: string;
+  siteSubtitle: string;
+  siteUrl: string;
+  icp: string;
+  copyright: string;
+  keywords: string;
+  description: string;
+}
+
+export interface MailConfig {
+  smtpHost: string;
+  smtpPort: string;
+  smtpUser: string;
+  fromName: string;
+  fromEmail: string;
+  enableSsl: boolean;
+}
+
+export interface SecurityConfig {
+  loginCaptcha: boolean;
+  loginMaxAttempts: string;
+  lockMinutes: string;
+  tokenExpireHours: string;
+  passwordMinLength: string;
+  passwordComplexity: boolean;
+  allowedIps: string;
+}
+
+export interface NotificationConfig {
+  enableEmail: boolean;
+  enableSms: boolean;
+  enableWebPush: boolean;
+  adminEmail: string;
+  alertOnLogin: boolean;
+  alertOnException: boolean;
+}
+
+export interface ThemeConfig {
+  defaultTheme: 'classic' | 'mono' | 'purple' | 'manga';
+  defaultMode: 'light' | 'dark';
+  sidebarWidth: string;
+  cornerRadius: string;
+}
+
+export interface SystemStorageConfig {
+  provider: 'local' | 'cos';
+  maxFileSizeMb: number;
+  localDirectory: string;
+  region: string;
+  bucket: string;
+  prefix: string;
+  cosConfigured: boolean;
+}
+
+export interface SystemConfig {
+  site: SiteConfig;
+  mail: MailConfig;
+  security: SecurityConfig;
+  notification: NotificationConfig;
+  theme: ThemeConfig;
+  storage: SystemStorageConfig;
+}

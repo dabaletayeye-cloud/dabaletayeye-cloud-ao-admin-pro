@@ -3,7 +3,7 @@ import { MOCK_ARTICLES, MOCK_CATEGORIES_FLAT, MOCK_TAGS } from '../../data/conte
 import { MOCK_EVENTS } from '../../data/calendarData';
 import { CHINA_DATA, WORLD_DATA } from '../../data/mapData';
 import type { ApiAdapter } from './types';
-import type { Article, Category, DictItem, DictType, ExceptionLog, LoginLog, MenuItem, OperationLog, Role, Tag } from '../types';
+import type { Article, Category, DictItem, DictType, ExceptionLog, FileStorageInfo, LoginLog, ManagedFile, MenuItem, OperationLog, Role, SystemConfig, Tag } from '../types';
 
 const wait = (ms = 300) => new Promise<void>(resolve => setTimeout(resolve, ms));
 const clone = <T>(value: T): T => (typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value)) as T);
@@ -12,6 +12,19 @@ let users = clone(MOCK_USERS);
 let articles = clone(MOCK_ARTICLES);
 let categories = clone(MOCK_CATEGORIES_FLAT);
 let tags = clone(MOCK_TAGS);
+let managedFiles: ManagedFile[] = [];
+let systemConfig: SystemConfig = {
+  site: {
+    siteName: 'ao-admin-pro', siteSubtitle: '现代化企业管理后台', siteUrl: '', icp: '',
+    copyright: '© 2026 ao-admin-pro. All rights reserved.', keywords: '后台管理,管理系统,ao-admin-pro',
+    description: '高效、美观、可扩展的现代化管理后台系统',
+  },
+  mail: { smtpHost: '', smtpPort: '465', smtpUser: '', fromName: 'ao-admin-pro', fromEmail: '', enableSsl: true },
+  security: { loginCaptcha: true, loginMaxAttempts: '5', lockMinutes: '30', tokenExpireHours: '24', passwordMinLength: '8', passwordComplexity: true, allowedIps: '' },
+  notification: { enableEmail: true, enableSms: false, enableWebPush: true, adminEmail: '', alertOnLogin: true, alertOnException: true },
+  theme: { defaultTheme: 'classic', defaultMode: 'light', sidebarWidth: '220', cornerRadius: '0.75' },
+  storage: { provider: 'local', maxFileSizeMb: 50, localDirectory: './data/uploads', region: '', bucket: '', prefix: 'ao-admin-pro', cosConfigured: false },
+};
 
 const roleActions = (scope: string, actions: Array<[string, string]>) => actions.map(([key, label]) => ({ key: `${scope}:${key}`, label }));
 const permissionKeys = ['dashboard:view', 'user:list', 'role:list', 'menu:list', 'log:list', 'dict:list', 'config:view', 'article:list', 'category:list', 'tag:list', 'analytics:traffic', 'analytics:portrait', 'analytics:funnel', 'coupon:list', 'event:list', 'push:send', 'media:list', 'order:list', 'message:list', 'perm:list'];
@@ -61,7 +74,7 @@ const page = <T,>(items: T[], query: { page?: number; pageSize?: number; keyword
 };
 
 export const mockAdapter: ApiAdapter = {
-  async login() { await wait(); return { token: 'mock-token', user: clone(users[0]) }; },
+  async login() { await wait(); return { token: 'mock-token', accessToken: 'mock-token', refreshToken: 'mock-refresh-token', user: clone(users[0]) }; },
   async logout() { await wait(); },
   async getCurrentUser() { await wait(); return clone(users[0] ?? null); },
   async listUsers(query = {}) { await wait(); const filtered = users.filter(item => (!query.keyword || `${item.name}${item.email}${item.region}`.includes(query.keyword)) && (!query.status || item.status === query.status)); return page(filtered, query); },
@@ -98,4 +111,42 @@ export const mockAdapter: ApiAdapter = {
   async getMapData(scope = 'china') { await wait(); return clone(scope === 'china' ? CHINA_DATA : WORLD_DATA); },
   async listLogs() { await wait(); return clone({ login: loginLogs, operation: operationLogs, exception: exceptionLogs }); },
   async listDict() { await wait(); return clone({ types: dictTypes, items: dictItems }); },
+  async listFiles() { await wait(); return clone(managedFiles); },
+  async uploadFiles(files, folder = 'uploads') {
+    await wait();
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const uploaded = files.map((file, index) => {
+      const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+      const kind: ManagedFile['kind'] = file.type.startsWith('image/') ? 'image'
+        : ['xlsx', 'xls', 'csv'].includes(extension) ? 'spreadsheet'
+          : ['zip', 'rar', '7z', 'tar', 'gz'].includes(extension) ? 'archive' : 'document';
+      return {
+        id: Date.now() + index,
+        name: file.name,
+        kind,
+        size: file.size,
+        folder,
+        path: `/uploads/${folder}/${file.name}`,
+        provider: 'local' as const,
+        uploader: '超级管理员',
+        updatedAt: now,
+      };
+    });
+    managedFiles = [...uploaded, ...managedFiles];
+    return clone(uploaded);
+  },
+  async downloadFile(id) {
+    await wait();
+    const file = managedFiles.find(item => item.id === id);
+    if (!file) throw new Error('File not found');
+    return new Blob([`Mock file: ${file.name}`], { type: 'text/plain' });
+  },
+  async deleteFile(id) { await wait(); managedFiles = managedFiles.filter(item => item.id !== id); },
+  async getFileStorageInfo() { await wait(); return { provider: 'local', maxFileSize: 50 * 1024 * 1024 } satisfies FileStorageInfo; },
+  async getSystemConfig() { await wait(); return clone(systemConfig); },
+  async updateSystemConfig(input) {
+    await wait();
+    systemConfig = { ...systemConfig, ...clone(input), storage: systemConfig.storage };
+    return clone(systemConfig);
+  },
 };

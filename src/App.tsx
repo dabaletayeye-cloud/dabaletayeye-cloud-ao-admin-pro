@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from './hooks/useTheme';
 import { LocaleProvider } from './hooks/useLocale';
 import { Toaster } from 'sonner';
@@ -143,11 +144,25 @@ import SearchFormExamplePage from './pages/examples/SearchFormExamplePage';
 import SplitTableExamplePage from './pages/examples/SplitTableExamplePage';
 import SocketExamplePage from './pages/examples/SocketExamplePage';
 /* CLEAN_DEMO_END: examples:imports */
+
+function AuthenticationExpiryRedirect() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const redirectToLogin = () => navigate('/login', { replace: true });
+    window.addEventListener('ao-auth-required', redirectToLogin);
+    return () => window.removeEventListener('ao-auth-required', redirectToLogin);
+  }, [navigate]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <LocaleProvider>
       <ThemeProvider>
         <BrowserRouter>
+        <AuthenticationExpiryRedirect />
         <Toaster position="top-right" richColors />
         <LegacyTextLocalizer />
         <Routes>

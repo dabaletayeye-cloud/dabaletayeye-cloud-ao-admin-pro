@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { toast } from '../lib/localizedToast';
 import { useLocale } from '../hooks/useLocale';
+import { deleteFile, downloadFile, getFileStorageInfo, listFiles, uploadFiles } from '../api';
 import {
   ArchiveIcon,
   CheckIcon,
@@ -67,11 +68,29 @@ function FileTypeIcon({ kind, size = 17 }: { kind: FileKind; size?: number }) {
 export default function FileManagementPage() {
   const { t } = useLocale();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [files, setFiles] = useState<ManagedFile[]>(INITIAL_FILES);
+  const [files, setFiles] = useState<ManagedFile[]>([]);
   const [activeFolder, setActiveFolder] = useState<FolderId>('all');
   const [activeKind, setActiveKind] = useState<FileKind | 'all'>('all');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [storageProvider, setStorageProvider] = useState<'local' | 'cos'>('local');
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([listFiles(), getFileStorageInfo()])
+      .then(([items, storage]) => {
+        if (!active) return;
+        setFiles(items.map(item => ({ ...item, id: String(item.id) })));
+        setStorageProvider(storage.provider);
+      })
+      .catch((error: unknown) => {
+        if (active) toast.error(error instanceof Error ? error.message : '文件列表加载失败');
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   const folders: { id: FolderId; label: string }[] = [
     { id: 'all', label: t('systemPages.fileManager.allFiles') },
@@ -111,47 +130,53 @@ export default function FileManagementPage() {
     });
   };
 
-  const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploads = Array.from(event.target.files ?? []);
     if (!uploads.length) return;
 
-    const timestamp = new Date().toLocaleString('sv-SE').slice(0, 16);
-    const newFiles = uploads.map((file, index): ManagedFile => ({
-      id: `upload-${Date.now()}-${index}`,
-      name: file.name,
-      kind: detectKind(file),
-      size: file.size,
-      folder: 'uploads',
-      path: `/uploads/${file.name}`,
-      uploader: 'admin',
-      updatedAt: timestamp,
-      source: file,
-    }));
-    setFiles((current) => [...newFiles, ...current]);
-    event.target.value = '';
-    toast.success(uploads.length === 1
-      ? t('systemPages.fileManager.fileAdded', { name: uploads[0].name })
-      : t('systemPages.fileManager.filesAdded', { count: uploads.length }));
+    setUploading(true);
+    try {
+      const folder = activeFolder === 'all' ? undefined : activeFolder;
+      const newFiles = await uploadFiles(uploads, folder);
+      setFiles((current) => [...newFiles.map(file => ({ ...file, id: String(file.id) })), ...current]);
+      toast.success(uploads.length === 1
+        ? t('systemPages.fileManager.fileAdded', { name: uploads[0].name })
+        : t('systemPages.fileManager.filesAdded', { count: uploads.length }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '文件上传失败');
+    } finally {
+      event.target.value = '';
+      setUploading(false);
+    }
   };
 
-  const handleDownload = (file: ManagedFile) => {
-    const source = file.source ?? new Blob([`Demo file: ${file.name}`], { type: 'text/plain' });
-    const url = URL.createObjectURL(source);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = file.name;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
-    toast.success(t('systemPages.fileManager.downloadStarted', { name: file.name }));
+  const handleDownload = async (file: ManagedFile) => {
+    try {
+      const source = await downloadFile(Number(file.id));
+      const url = URL.createObjectURL(source);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.name;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+      toast.success(t('systemPages.fileManager.downloadStarted', { name: file.name }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '文件下载失败');
+    }
   };
 
-  const deleteFiles = (ids: Set<string>) => {
+  const deleteFiles = async (ids: Set<string>) => {
     if (!ids.size) return;
-    setFiles((current) => current.filter((file) => !ids.has(file.id)));
-    setSelected(new Set());
-    toast.success(ids.size === 1
-      ? t('systemPages.fileManager.fileDeleted')
-      : t('systemPages.fileManager.filesDeleted', { count: ids.size }));
+    try {
+      await Promise.all([...ids].map(id => deleteFile(Number(id))));
+      setFiles((current) => current.filter((file) => !ids.has(file.id)));
+      setSelected(new Set());
+      toast.success(ids.size === 1
+        ? t('systemPages.fileManager.fileDeleted')
+        : t('systemPages.fileManager.filesDeleted', { count: ids.size }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '文件删除失败');
+    }
   };
 
   const cardStyle: React.CSSProperties = {
@@ -186,10 +211,11 @@ export default function FileManagementPage() {
           <div>
             <h1 style={{ margin: 0, color: 'var(--foreground)', fontSize: 20, fontWeight: 700 }}>{t('systemPages.fileManager.title')}</h1>
             <p style={{ margin: '5px 0 0', color: 'var(--muted-foreground)', fontSize: 13 }}>{t('systemPages.fileManager.description')}</p>
+            <p style={{ margin: '4px 0 0', color: 'var(--muted-foreground)', fontSize: 12 }}>当前存储：{storageProvider === 'cos' ? '腾讯云 COS' : '本地文件系统'}</p>
           </div>
-          <button onClick={() => inputRef.current?.click()} style={{ height: 34, padding: '0 14px', border: 'none', borderRadius: 6, background: 'var(--primary)', color: 'var(--primary-foreground)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600 }}>
+          <button disabled={uploading} onClick={() => inputRef.current?.click()} style={{ height: 34, padding: '0 14px', border: 'none', borderRadius: 6, background: 'var(--primary)', color: 'var(--primary-foreground)', cursor: uploading ? 'wait' : 'pointer', opacity: uploading ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600 }}>
             <UploadIcon size={15} />
-            {t('systemPages.fileManager.upload')}
+            {uploading ? '上传中…' : t('systemPages.fileManager.upload')}
           </button>
           <input ref={inputRef} type="file" multiple hidden onChange={handleUpload} />
         </div>
@@ -234,6 +260,7 @@ export default function FileManagementPage() {
             )}
 
             <div style={{ ...cardStyle, overflow: 'hidden' }}>
+              {loading && <div style={{ padding: '16px 20px', color: 'var(--muted-foreground)', fontSize: 13 }}>正在加载文件…</div>}
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', minWidth: 760, borderCollapse: 'collapse' }}>
                   <thead>

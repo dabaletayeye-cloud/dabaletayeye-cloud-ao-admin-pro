@@ -87,14 +87,13 @@ export default function LogPage() {
   const primary = isManga ? MANGA_PINK : 'var(--primary)';
   const logsResource = useApiResource(listLogs);
   const [logs, setLogs] = useState<Awaited<ReturnType<typeof listLogs>> | null>(null);
-  useEffect(() => { if (logsResource.data) setLogs(logsResource.data); }, [logsResource.data]);
-  if (logsResource.loading || logsResource.error || !logs) return <AdminLayout><ApiState loading={logsResource.loading} error={logsResource.error} /></AdminLayout>;
-
   const [activeTab, setActiveTab] = useState<LogTab>('login');
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState('__all__');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  useEffect(() => { if (logsResource.data) setLogs(logsResource.data); }, [logsResource.data]);
+  if (logsResource.loading || logsResource.error || !logs) return <AdminLayout><ApiState loading={logsResource.loading} error={logsResource.error} /></AdminLayout>;
 
   const cardStyle = {
     background: 'var(--card)',

@@ -43,8 +43,9 @@ const ROLE_OPTIONS = [
 const REMEMBERED_ACCOUNT_KEY = 'ao-admin-pro.remembered-account';
 
 function getRememberedAccount() {
-  if (typeof window === 'undefined') return 'Super';
-  return window.localStorage.getItem(REMEMBERED_ACCOUNT_KEY) || 'Super';
+  const configuredAccount = import.meta.env.VITE_DEFAULT_LOGIN_ACCOUNT?.trim() || '';
+  if (typeof window === 'undefined') return configuredAccount;
+  return window.localStorage.getItem(REMEMBERED_ACCOUNT_KEY) || configuredAccount;
 }
 
 function AuthVisual() {
@@ -228,7 +229,11 @@ export default function LoginPage() {
 
     setSubmitting(true);
     try {
-      await login({ username: account.trim(), password });
+      const { token, accessToken = token, refreshToken } = await login({ username: account.trim(), password });
+      const tokenStorage = remember ? window.localStorage : window.sessionStorage;
+      const otherStorage = remember ? window.sessionStorage : window.localStorage;
+      tokenStorage.setItem('manga_workshop_tokens', JSON.stringify({ accessToken, refreshToken }));
+      otherStorage.removeItem('manga_workshop_tokens');
     } catch (error) {
       setSubmitting(false);
       toast.error(error instanceof Error ? error.message : '登录失败');
@@ -240,7 +245,7 @@ export default function LoginPage() {
       saveCurrentAccount({
         ...savedAccount,
         account: account.trim(),
-        name: account.trim() === 'Super' ? savedAccount.name : account.trim(),
+        name: savedAccount.account === account.trim() ? savedAccount.name : account.trim(),
         role: selectedRole,
       });
       if (remember) {

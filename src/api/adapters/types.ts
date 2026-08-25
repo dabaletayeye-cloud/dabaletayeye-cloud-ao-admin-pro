@@ -2,10 +2,19 @@ import type {
   ApiListQuery, Article, Category, DashboardData, DictItem, DictType, ExceptionLog,
   FunnelData, LoginLog, MenuItem, OperationLog, PageResult, Role, Tag, User,
   UserPortraitData, VisitStatsData,
+  FileStorageInfo, ManagedFile, ManagedFileFolder,
+  SystemConfig,
 } from '../types';
 
 export interface ApiAdapter {
-  login(input: { username: string; password: string }): Promise<{ token: string; user: User }>;
+  login(input: { username: string; password: string }): Promise<{
+    token: string;
+    accessToken?: string;
+    refreshToken?: string;
+    expiresIn?: number;
+    refreshExpiresIn?: number;
+    user: User;
+  }>;
   logout(): Promise<void>;
   getCurrentUser(): Promise<User | null>;
   listUsers(query?: ApiListQuery): Promise<PageResult<User>>;
@@ -42,4 +51,11 @@ export interface ApiAdapter {
   getMapData(scope?: 'china' | 'world'): Promise<import('../types').RegionData[]>;
   listLogs(): Promise<{ login: LoginLog[]; operation: OperationLog[]; exception: ExceptionLog[] }>;
   listDict(): Promise<{ types: DictType[]; items: DictItem[] }>;
+  listFiles(query?: { keyword?: string; folder?: ManagedFileFolder; kind?: import('../types').ManagedFileKind }): Promise<ManagedFile[]>;
+  uploadFiles(files: File[], folder?: ManagedFileFolder): Promise<ManagedFile[]>;
+  downloadFile(id: number): Promise<Blob>;
+  deleteFile(id: number): Promise<void>;
+  getFileStorageInfo(): Promise<FileStorageInfo>;
+  getSystemConfig(): Promise<SystemConfig>;
+  updateSystemConfig(input: Omit<SystemConfig, 'storage'>): Promise<SystemConfig>;
 }

@@ -9,4 +9,6 @@ export * from './calendar';
 export * from './chat';
 export * from './logs';
 export * from './dictionary';
+export * from './files';
+export * from './systemConfig';
 export type * from './types';
