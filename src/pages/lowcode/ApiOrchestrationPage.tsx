@@ -6,6 +6,7 @@ import {
   Undo2Icon, WorkflowIcon, XIcon, KeyboardIcon, ShieldCheckIcon, HardDriveIcon, MailIcon, FolderUpIcon, BugIcon, Clock3Icon,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { createLowcodeResource, listLowcodeResources, publishLowcodeResource, testLowcodeResource, updateLowcodeResource } from '../../api/lowcode';
 import { LowcodeButton, Modal, PageShell, formatTime } from './LowcodeShared';
 
 type NodeKind = 'start' | 'script' | 'database' | 'branch' | 'loop' | 'request' | 'auth' | 'cache' | 'message' | 'file' | 'aggregate' | 'exception' | 'schedule' | 'end';
@@ -68,6 +69,11 @@ export default function ApiOrchestrationPage() {
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({ 'folder-order': true, 'folder-user': true });
   const [zoom, setZoom] = useState(0.82);
   const [lastSaved, setLastSaved] = useState('2026-08-05 10:24:36');
+  const [resourceId, setResourceId] = useState<string | null>(null);
+  const [resourceKey, setResourceKey] = useState('order-create');
+  const [resourceName, setResourceName] = useState('创建订单');
+  const [activeTreeId, setActiveTreeId] = useState('order-create');
+  const [testTrace, setTestTrace] = useState<string[]>([]);
   const [undoStack, setUndoStack] = useState<HistoryItem[]>([]);
   const [redoStack, setRedoStack] = useState<HistoryItem[]>([]);
   const [testOpen, setTestOpen] = useState(false);
@@ -81,6 +87,90 @@ export default function ApiOrchestrationPage() {
   const dragRef = useRef<{ id: string; x: number; y: number } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const selected = nodes.find(node => node.id === selectedId) ?? null;
+
+  const flowInput = () => ({
+    resourceType: 'api' as const,
+    resourceKey,
+    name: resourceName,
+    definition: { nodes, edges },
+  });
+  const applyResource = (resource: { id: string; resourceKey?: string; name?: string; definition: Record<string, unknown>; updatedAt: string }) => {
+    const definition = resource.definition as { nodes?: FlowNode[]; edges?: FlowEdge[] };
+    if (Array.isArray(definition.nodes) && Array.isArray(definition.edges)) {
+      setNodes(definition.nodes);
+      setEdges(definition.edges);
+      setSelectedId(definition.nodes.some(node => node.id === 'script') ? 'script' : definition.nodes[0]?.id ?? '');
+    }
+    setResourceId(resource.id);
+    if (resource.resourceKey) setResourceKey(resource.resourceKey);
+    if (resource.name) setResourceName(resource.name);
+    setLastSaved(resource.updatedAt?.replace('T', ' ') ?? formatTime());
+  };
+  const openApi = async (item: TreeItem) => {
+    if (item.folder) return;
+    setActiveTreeId(item.id);
+    try {
+      const resources = await listLowcodeResources('api');
+      const resource = resources.find(candidate => candidate.resourceKey === item.id);
+      if (resource) {
+        applyResource(resource);
+        toast.success(`已打开接口：${item.name}`);
+        return;
+      }
+      // 目录中的接口可能还没有保存过本地草稿，先切换到一个可编辑的新草稿。
+      const nextNodes = JSON.parse(JSON.stringify(initialNodes)) as FlowNode[];
+      const start = nextNodes.find(node => node.kind === 'start');
+      if (start) {
+        start.label = `${item.name}入口`;
+        start.config = { ...start.config, method: item.method ?? 'GET', path: `/api/${item.id}` };
+      }
+      setNodes(nextNodes);
+      setEdges(JSON.parse(JSON.stringify(initialEdges)) as FlowEdge[]);
+      setSelectedId('start');
+      setResourceId(null);
+      setResourceKey(item.id);
+      setResourceName(item.name);
+      setLastSaved('未保存');
+      toast.message(`已打开接口：${item.name}（尚未保存到本地）`);
+    } catch (error) {
+      toast.error(error instanceof Error ? `打开接口失败：${error.message}` : '打开接口失败');
+    }
+  };
+  const saveFlow = async (silent = false) => {
+    try {
+      const resource = resourceId
+        ? await updateLowcodeResource(resourceId, flowInput())
+        : await createLowcodeResource(flowInput());
+      applyResource(resource);
+      if (!silent) toast.success('接口编排已保存到浏览器内存');
+      return resource.id;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '保存接口编排失败');
+      return null;
+    }
+  };
+  const runTest = async () => {
+    const id = resourceId ?? await saveFlow(true);
+    if (!id) return;
+    try {
+      const result = await testLowcodeResource(id);
+      setTestTrace(result.trace);
+      setTestOpen(true);
+      toast[result.successful ? 'success' : 'error'](result.successful ? '安全模拟运行完成' : '接口编排校验未通过');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '测试运行失败');
+    }
+  };
+  const publishFlow = async () => {
+    const id = resourceId ?? await saveFlow(true);
+    if (!id) return;
+    try {
+      const release = await publishLowcodeResource(id, '从接口编排页面发布');
+      toast.success(`接口已发布为 ${release.version}，可在页面设计器中绑定`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '发布接口失败');
+    }
+  };
 
   const filteredTree = useMemo(() => treeItems.map(item => ({ ...item, children: item.children?.filter(child => child.name.includes(treeSearch)) })).filter(item => !treeSearch || item.name.includes(treeSearch) || item.children?.length), [treeSearch, treeItems]);
   const snapshot = () => setUndoStack(previous => [...previous.slice(-29), clone(nodes, edges)]);
@@ -158,11 +248,22 @@ export default function ApiOrchestrationPage() {
     updateFlow(nodes.map(node => node.id === selected.id ? { ...node, x: Math.max(4, node.x + x), y: Math.max(4, node.y + y) } : node));
   };
   useEffect(() => {
+    let active = true;
+    void listLowcodeResources('api').then(resources => {
+      if (!active) return;
+      const resource = resources.find(item => item.resourceKey === 'order-create') ?? resources[0];
+      if (resource) applyResource(resource);
+    }).catch(error => {
+      if (active) toast.error(error instanceof Error ? `读取接口编排失败：${error.message}` : '读取接口编排失败');
+    });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
     const isEditingTarget = (target: EventTarget | null) => target instanceof HTMLElement && Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
     const onKeyDown = (event: KeyboardEvent) => {
       if (isEditingTarget(event.target)) return;
       const modifier = event.ctrlKey || event.metaKey;
-      if (modifier && event.key.toLowerCase() === 's') { event.preventDefault(); setLastSaved(formatTime()); toast.success('接口编排已保存'); return; }
+      if (modifier && event.key.toLowerCase() === 's') { event.preventDefault(); void saveFlow(); return; }
       if (event.key === 'Escape') { if (connectingFrom) { setConnectingFrom(null); toast.message('已取消正在创建的连线'); } return; }
       if (!selected) return;
       if (event.key === 'F2' || event.key.toLowerCase() === 'e') { event.preventDefault(); renameSelected(); return; }
@@ -204,12 +305,12 @@ export default function ApiOrchestrationPage() {
   };
 
   return (
-    <PageShell title="接口编排" description="通过可视化流程编排，将 HTTP、脚本、数据库与外部服务组合成可发布接口。" actions={<><LowcodeButton onClick={() => { setLastSaved(formatTime()); toast.success('接口编排已保存'); }}><SaveIcon size={14} />保存</LowcodeButton><LowcodeButton onClick={() => setTestOpen(true)}><CirclePlayIcon size={14} />测试运行</LowcodeButton><LowcodeButton primary onClick={() => toast.success('接口已发布为 v1.2.0，可在页面设计器中绑定') }><SendIcon size={14} />发布</LowcodeButton></>}>
+    <PageShell title="接口编排" description="通过可视化流程编排，将 HTTP、脚本、数据库与外部服务组合成可发布接口。当前为纯前端演示模式，数据不会提交到后端。" actions={<><LowcodeButton onClick={() => void saveFlow()}><SaveIcon size={14} />保存</LowcodeButton><LowcodeButton onClick={() => void runTest()}><CirclePlayIcon size={14} />测试运行</LowcodeButton><LowcodeButton primary onClick={() => void publishFlow()}><SendIcon size={14} />发布</LowcodeButton></>}>
       <section className="lc-card lc-workbench lc-workbench-resizable" style={{ '--lc-inspector-width': `${inspectorWidth}px` } as React.CSSProperties}>
         <aside className="lc-side-panel left">
           <div className="lc-panel-title"><span>接口目录</span><div style={{ display: 'flex', gap: 4 }}><button className="lc-tiny-btn" title="新建接口" onClick={() => treeAction('new')}><FileCode2Icon size={15} /></button><button className="lc-tiny-btn" title="新建文件夹" onClick={() => treeAction('folder')}><FolderIcon size={15} /></button></div></div>
           <div className="lc-tree-search"><SearchIcon size={14} /><input className="lc-input" placeholder="搜索接口" value={treeSearch} onChange={event => setTreeSearch(event.target.value)} /></div>
-          <div className="lc-tree">{filteredTree.map(item => <div key={item.id}>{item.folder ? <><button className="lc-tree-row" onClick={() => setOpenFolders(prev => ({ ...prev, [item.id]: !prev[item.id] }))}>{openFolders[item.id] ? <ChevronDownIcon size={14} /> : <ChevronRightIcon size={14} />}<FolderIcon size={14} color="#FFB400" /><span>{item.name}</span><span className="tree-actions"><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('rename', item.id, item.name); }}><Settings2Icon size={12} /></span><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('delete', item.id, item.name); }}><Trash2Icon size={12} /></span></span></button>{openFolders[item.id] && item.children?.map(child => <button key={child.id} className={`lc-tree-row ${child.id === 'order-create' ? 'active' : ''}`} style={{ paddingLeft: 32 }} onClick={() => toast.message(`已打开接口：${child.name}`)}><FileCode2Icon size={13} /><span>{child.name}</span><small style={{ color: child.method === 'GET' ? 'var(--lc-success)' : 'var(--lc-warning)' }}>{child.method}</small><span className="tree-actions"><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('rename', child.id, child.name); }}><Settings2Icon size={12} /></span><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('delete', child.id, child.name); }}><Trash2Icon size={12} /></span></span></button>)}</> : <button className="lc-tree-row" onClick={() => toast.message(`已打开接口：${item.name}`)}><FileCode2Icon size={13} /><span>{item.name}</span><small style={{ color: 'var(--lc-success)' }}>{item.method}</small><span className="tree-actions"><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('rename', item.id, item.name); }}><Settings2Icon size={12} /></span><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('delete', item.id, item.name); }}><Trash2Icon size={12} /></span></span></button>}</div>)}</div>
+          <div className="lc-tree">{filteredTree.map(item => <div key={item.id}>{item.folder ? <><button className="lc-tree-row" onClick={() => setOpenFolders(prev => ({ ...prev, [item.id]: !prev[item.id] }))}>{openFolders[item.id] ? <ChevronDownIcon size={14} /> : <ChevronRightIcon size={14} />}<FolderIcon size={14} color="#FFB400" /><span>{item.name}</span><span className="tree-actions"><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('rename', item.id, item.name); }}><Settings2Icon size={12} /></span><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('delete', item.id, item.name); }}><Trash2Icon size={12} /></span></span></button>{openFolders[item.id] && item.children?.map(child => <button key={child.id} className={`lc-tree-row ${child.id === activeTreeId ? 'active' : ''}`} style={{ paddingLeft: 32 }} onClick={() => void openApi(child)}><FileCode2Icon size={13} /><span>{child.name}</span><small style={{ color: child.method === 'GET' ? 'var(--lc-success)' : 'var(--lc-warning)' }}>{child.method}</small><span className="tree-actions"><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('rename', child.id, child.name); }}><Settings2Icon size={12} /></span><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('delete', child.id, child.name); }}><Trash2Icon size={12} /></span></span></button>)}</> : <button className={`lc-tree-row ${item.id === activeTreeId ? 'active' : ''}`} onClick={() => void openApi(item)}><FileCode2Icon size={13} /><span>{item.name}</span><small style={{ color: 'var(--lc-success)' }}>{item.method}</small><span className="tree-actions"><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('rename', item.id, item.name); }}><Settings2Icon size={12} /></span><span className="lc-tiny-btn" onClick={event => { event.stopPropagation(); treeAction('delete', item.id, item.name); }}><Trash2Icon size={12} /></span></span></button>}</div>)}</div>
           <div className="lc-node-palette"><p className="lc-node-palette-title">拖入 / 点击添加节点</p><div className="lc-node-palette-list">{(Object.keys(nodeMeta) as NodeKind[]).map(kind => { const Icon = nodeMeta[kind].icon; return <button key={kind} onClick={() => addNode(kind)}><Icon size={12} color={nodeMeta[kind].color} />{nodeMeta[kind].label.replace('节点', '')}</button>; })}</div></div>
         </aside>
         <div className="lc-canvas-column">
@@ -220,11 +321,11 @@ export default function ApiOrchestrationPage() {
               {nodes.map(node => { const meta = nodeMeta[node.kind]; const Icon = meta.icon; return <div key={node.id} className={`lc-flow-node ${node.id === selectedId ? 'selected' : ''}`} style={{ left: node.x, top: node.y }} onPointerDown={event => startDrag(event, node)} onClick={() => setSelectedId(node.id)}><span className="lc-port in" title="连接输入" onPointerUp={event => { event.stopPropagation(); connect(node.id); }} /><div className="lc-node-bar" style={{ background: meta.color }}><Icon size={13} /><span>{meta.label}</span></div><div className="lc-node-body">{node.label || meta.hint}</div><span className="lc-port out" title="拖拽连线" onPointerDown={event => { event.stopPropagation(); setConnectingFrom(node.id); }} /></div>; })}
             </div>
           </div>
-          <div className="lc-statusbar"><span><b style={{ color: 'var(--foreground)' }}>创建订单</b></span><span>最后保存：{lastSaved}</span><span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i className="lc-status-dot" />运行状态：就绪</span><span style={{ marginLeft: 'auto' }}>F2/E 编辑 · 方向键移动 · 单击连线可断开</span></div>
+          <div className="lc-statusbar"><span><b style={{ color: 'var(--foreground)' }}>{resourceName}</b></span><span>最后保存：{lastSaved}</span><span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i className="lc-status-dot" />运行状态：就绪</span><span style={{ marginLeft: 'auto' }}>F2/E 编辑 · 方向键移动 · 单击连线可断开</span></div>
         </div>
         <aside className="lc-side-panel right" style={{ position: 'relative' }}><div className="lc-resize-handle" title="拖动调整属性面板宽度" onPointerDown={event => { event.preventDefault(); resizingInspector.current = true; }} /><div className="lc-panel-title"><span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Settings2Icon size={15} />节点配置</span><span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>{selected && <span style={{ color: nodeMeta[selected.kind].color, fontSize: 11 }}>{nodeMeta[selected.kind].label}</span>}{selected?.kind === 'script' && <button className="lc-tiny-btn" title="全屏编辑代码" onClick={() => setEditorFullscreen(true)}><Maximize2Icon size={14} /></button>}</span></div>{renderPropertyPanel()}</aside>
       </section>
-      <Modal title="测试运行 · 创建订单" open={testOpen} onClose={() => setTestOpen(false)} footer={<><LowcodeButton onClick={() => setTestOpen(false)}>关闭</LowcodeButton><LowcodeButton primary onClick={() => toast.success('执行日志已下载')}>下载日志</LowcodeButton></>}><div className="lc-log"><div>[10:31:09.024] <span className="warning">INFO</span> HTTP POST /api/v1/orders 已触发</div><div>[10:31:09.086] <span className="success">PASS</span> 参数标准化执行完成，耗时 62ms</div><div>[10:31:09.163] <span className="success">PASS</span> MySQL 写入订单成功，orderId=20260805001</div><div>[10:31:09.234] <span className="success">PASS</span> 外部库存服务返回 200，扣减成功</div><div>[10:31:09.245] <span className="success">SUCCESS</span> 流程运行结束，总耗时 221ms</div></div></Modal>
+      <Modal title="测试运行 · 创建订单" open={testOpen} onClose={() => setTestOpen(false)} footer={<><LowcodeButton onClick={() => setTestOpen(false)}>关闭</LowcodeButton><LowcodeButton primary onClick={() => navigator.clipboard?.writeText(testTrace.join('\n')).then(() => toast.success('执行日志已复制')).catch(() => toast.error('复制执行日志失败'))}>复制日志</LowcodeButton></>}><div className="lc-log">{testTrace.map((line, index) => <div key={`${line}-${index}`}><span className={line.includes('ERROR') ? 'warning' : line.includes('SUCCESS') || line.includes('PASS') ? 'success' : ''}>{line}</span></div>)}</div><p className="lc-tip">测试运行是前端安全 dry-run：只校验和模拟执行路径，不执行画布中的脚本、SQL 或外部 HTTP 请求。</p></Modal>
       <Modal title="节点编辑快捷键" open={shortcutOpen} onClose={() => setShortcutOpen(false)} footer={<LowcodeButton primary onClick={() => setShortcutOpen(false)}>知道了</LowcodeButton>}><div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: '10px 14px', fontSize: 13 }}><b>F2 / E</b><span>编辑当前选中节点名称</span><b>方向键</b><span>按 10px 移动选中节点（Shift + 方向键为 30px）</span><b>Delete / Backspace</b><span>删除选中节点（开始与结束节点受保护）</span><b>Ctrl/Cmd + C / V</b><span>复制并粘贴节点</span><b>Ctrl/Cmd + D</b><span>快速复制节点</span><b>Ctrl/Cmd + S</b><span>保存当前接口编排</span><b>Esc</b><span>取消正在创建的连线</span></div><p className="lc-tip" style={{ marginBottom: 0, marginTop: 16 }}>焦点位于输入框、下拉框或代码编辑器时，页面不会拦截这些快捷键。</p></Modal>
       {editorFullscreen && selected?.kind === 'script' && <div className="lc-code-fullscreen"><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Code2Icon size={19} color="var(--theme-primary)" /><b style={{ fontSize: 16 }}>代码编辑器 · {selected.label}</b><select className="lc-select" style={{ width: 135, marginLeft: 12 }} value={String(selected.config.language ?? 'JavaScript')} onChange={event => updateConfig('language', event.target.value)}><option>Lua</option><option>JavaScript</option><option>JSON</option></select><span style={{ marginLeft: 'auto' }} /><LowcodeButton onClick={() => { setEditorFullscreen(false); toast.success('代码已保存'); }}><SaveIcon size={14} />保存并退出</LowcodeButton><button className="lc-icon-btn" title="退出全屏" onClick={() => setEditorFullscreen(false)}><XIcon size={16} /></button></div><textarea autoFocus spellCheck={false} className="lc-code-editor" value={String(selected.config.code ?? '')} onChange={event => updateConfig('code', event.target.value)} /></div>}
     </PageShell>

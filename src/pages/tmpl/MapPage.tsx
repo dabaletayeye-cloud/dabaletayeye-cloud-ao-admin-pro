@@ -232,8 +232,8 @@ export default function MapPage() {
 
   const data = mapResource.data ?? [];
   useEffect(() => { if (data.length) setSelected(data[0]); }, [data]);
-  if (mapResource.loading || mapResource.error || !selected) return <AdminLayout><ApiState loading={mapResource.loading} error={mapResource.error} /></AdminLayout>;
   const sortedData = useMemo(() => [...data].sort((a, b) => b.value - a.value), [data]);
+  if (mapResource.loading || mapResource.error || !selected) return <AdminLayout><ApiState loading={mapResource.loading} error={mapResource.error} /></AdminLayout>;
   const total = data.reduce((sum, item) => sum + item.value, 0);
   const average = Math.round(total / data.length);
   const fastest = [...data].sort((a, b) => (b.growth ?? 0) - (a.growth ?? 0))[0];

@@ -45,7 +45,7 @@ export default function ArticleListPage() {
   const { themeState } = useTheme();
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? PINK : 'var(--primary)';
-  const articlesResource = useApiResource(() => listArticles({ pageSize: 1000 }));
+  const articlesResource = useApiResource(() => listArticles({ pageSize: 100 }));
   const [articles, setArticles] = useState<Article[]>([]);
   useEffect(() => { if (articlesResource.data) setArticles(articlesResource.data.list); }, [articlesResource.data]);
 

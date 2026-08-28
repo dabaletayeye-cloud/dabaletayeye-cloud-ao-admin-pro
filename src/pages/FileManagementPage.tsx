@@ -13,12 +13,14 @@ import {
   FolderIcon,
   FolderOpenIcon,
   ImageIcon,
+  Music2Icon,
   SearchIcon,
   Trash2Icon,
   UploadIcon,
+  VideoIcon,
 } from 'lucide-react';
 
-type FileKind = 'document' | 'spreadsheet' | 'image' | 'archive';
+type FileKind = 'document' | 'spreadsheet' | 'image' | 'archive' | 'video' | 'audio';
 type FolderId = 'all' | 'uploads' | 'documents' | 'images' | 'archives';
 
 interface ManagedFile {
@@ -41,7 +43,7 @@ const INITIAL_FILES: ManagedFile[] = [
   { id: '5', name: 'user-import-template.csv', kind: 'spreadsheet', size: 35_778, folder: 'uploads', path: '/uploads/user-import-template.csv', uploader: '陈编辑', updatedAt: '2025-07-10 16:45' },
 ];
 
-const FILE_KINDS: FileKind[] = ['document', 'spreadsheet', 'image', 'archive'];
+const FILE_KINDS: FileKind[] = ['document', 'spreadsheet', 'image', 'video', 'audio', 'archive'];
 
 function formatSize(size: number) {
   if (size >= 1024 * 1024) return `${(size / 1024 / 1024).toFixed(1)} MB`;
@@ -60,6 +62,8 @@ function detectKind(file: File): FileKind {
 function FileTypeIcon({ kind, size = 17 }: { kind: FileKind; size?: number }) {
   const iconProps = { size, strokeWidth: 1.8 };
   if (kind === 'image') return <ImageIcon {...iconProps} />;
+  if (kind === 'video') return <VideoIcon {...iconProps} />;
+  if (kind === 'audio') return <Music2Icon {...iconProps} />;
   if (kind === 'spreadsheet') return <FileSpreadsheetIcon {...iconProps} />;
   if (kind === 'archive') return <ArchiveIcon {...iconProps} />;
   return <FileTextIcon {...iconProps} />;

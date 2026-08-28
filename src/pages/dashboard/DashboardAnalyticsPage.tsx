@@ -4,6 +4,8 @@ import ReactECharts from 'echarts-for-react';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
+import { getDashboardAnalytics } from '../../api';
+import type { DashboardAnalyticsData, DashboardAnalyticsRange } from '../../api';
 import {
   DollarSignIcon,
   ShoppingBagIcon,
@@ -14,6 +16,8 @@ import {
   ArrowDownIcon,
   TrendingUpIcon,
   FlagIcon,
+  LoaderCircleIcon,
+  RefreshCwIcon,
 } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -29,20 +33,32 @@ interface StatItem {
   iconColor: string;
 }
 
-// ── Mock data ──────────────────────────────────────────────────────────────────
-const RETURNING   = [820,  932,  701, 1034, 1290, 1180,  960];
-const NEW_USER    = [420,  530,  480,  620,  780,  890,  640];
+const makeEmptyAnalytics = (days: DashboardAnalyticsRange): DashboardAnalyticsData => ({
+  days,
+  rangeStart: '',
+  rangeEnd: '',
+  labels: Array.from({ length: days }, (_, index) => String(index + 1)),
+  metrics: { revenue: 0, orders: 0, conversion: 0, newUsers: 0, revenueChange: 0, ordersChange: 0, conversionChange: 0, newUsersChange: 0 },
+  visitor: { returningCustomers: Array(days).fill(0), newCustomers: Array(days).fill(0) },
+  revenue: { online: Array(days).fill(0), offline: Array(days).fill(0) },
+  completion: { previous: Array(days).fill(0), current: Array(days).fill(0) },
+  target: { actual: Array(days).fill(0), target: Array(days).fill(0), actualTotal: 0, targetTotal: 0, progress: 0 },
+});
 
-// 总收入分组柱
-const ONLINE_REV  = [4200, 5800, 3900, 6700, 8100, 7300, 5500];
-const OFFLINE_REV = [2100, 3200, 2700, 4100, 3800, 5100, 3300];
-
-// 客户满意度
-const SAT_LAST    = [72, 68, 75, 71, 78, 74, 80];
-const SAT_THIS    = [76, 74, 79, 83, 85, 88, 87];
-
-// 目标与实际
-const TARGET_ACT  = [1100, 1350, 980, 1520, 1680, 1320, 870];
+function downloadAnalyticsCsv(data: DashboardAnalyticsData) {
+  const quote = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
+  const rows: Array<Array<string | number>> = [
+    ['日期', '回访客户', '新增客户', '线上收入', '线下收入', '订单完成率', '实际收入', '目标收入'],
+    ...data.labels.map((label, index) => [label, data.visitor.returningCustomers[index] ?? 0, data.visitor.newCustomers[index] ?? 0, data.revenue.online[index] ?? 0, data.revenue.offline[index] ?? 0, data.completion.current[index] ?? 0, data.target.actual[index] ?? 0, data.target.target[index] ?? 0]),
+  ];
+  const blob = new Blob([`\ufeff${rows.map(row => row.map(quote).join(',')).join('\n')}`], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `分析报表-${data.rangeStart || new Date().toISOString().slice(0, 10)}-${data.rangeEnd || 'latest'}.csv`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
 
 // ── Animated counter ───────────────────────────────────────────────────────────
 function useCountUp(target: number, duration = 1300): number {
@@ -156,6 +172,23 @@ export default function DashboardAnalyticsPage() {
   const isDark     = themeState.mode === 'dark';
   const primaryHex = isManga ? '#E91E8C' : '#6366f1';
   const primaryAlpha = isManga ? 'rgba(233,30,140,0.12)' : 'rgba(99,102,241,0.12)';
+  const [range, setRange] = useState<DashboardAnalyticsRange>(7);
+  const [analytics, setAnalytics] = useState<DashboardAnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    void getDashboardAnalytics(range)
+      .then(data => { if (active) { setAnalytics(data); setLoadError(''); } })
+      .catch(reason => { if (active) setLoadError(reason instanceof Error ? reason.message : '分析数据加载失败'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [range, reloadKey]);
+
+  const analyticsData = analytics ?? makeEmptyAnalytics(range);
 
   // ── Shared chart style tokens ──────────────────────────────────────────────
   const gridLine    = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
@@ -164,7 +197,7 @@ export default function DashboardAnalyticsPage() {
   const tipBorder   = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
   const tipText     = isDark ? '#e2e8f0' : '#1e293b';
   const barRadius   = [6, 6, 0, 0] as [number, number, number, number];
-  const weekDays = Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(i18n.language, { weekday: 'short' }).format(new Date(2024, 0, index + 1)));
+  const periodLabels = analyticsData.labels;
 
   const tooltipBase = {
     trigger: 'axis' as const,
@@ -199,10 +232,10 @@ export default function DashboardAnalyticsPage() {
 
   // ── Stat items ─────────────────────────────────────────────────────────────
   const STATS: StatItem[] = [
-    { key: 'revenue',    label: t('analytics.todayRevenue'), value: 128640, prefix: '¥', suffix: '',  change: 12.5,  icon: <DollarSignIcon size={20} />, iconBg: primaryAlpha,               iconColor: primaryHex   },
-    { key: 'orders',     label: t('analytics.todayOrders'), value: 3842,   prefix: '',  suffix: i18n.language.startsWith('zh') ? '单' : '', change: 8.3,   icon: <ShoppingBagIcon size={20} />, iconBg: 'rgba(16,185,129,0.12)',   iconColor: '#10b981'    },
-    { key: 'conversion', label: t('analytics.conversion'), value: 68,     prefix: '',  suffix: '%',  change: -2.1,  icon: <TargetIcon size={20} />,     iconBg: 'rgba(245,158,11,0.12)',   iconColor: '#f59e0b'    },
-    { key: 'newUsers',   label: t('analytics.newCustomers'), value: 1247,   prefix: '',  suffix: i18n.language.startsWith('zh') ? '人' : '', change: 15.8,  icon: <UserPlusIcon size={20} />,   iconBg: 'rgba(59,130,246,0.12)',   iconColor: '#3b82f6'    },
+    { key: 'revenue',    label: t('analytics.todayRevenue'), value: analyticsData.metrics.revenue, prefix: '¥', suffix: '', change: analyticsData.metrics.revenueChange, icon: <DollarSignIcon size={20} />, iconBg: primaryAlpha, iconColor: primaryHex },
+    { key: 'orders',     label: t('analytics.todayOrders'), value: analyticsData.metrics.orders, prefix: '', suffix: i18n.language.startsWith('zh') ? '单' : '', change: analyticsData.metrics.ordersChange, icon: <ShoppingBagIcon size={20} />, iconBg: 'rgba(16,185,129,0.12)', iconColor: '#10b981' },
+    { key: 'conversion', label: t('analytics.conversion'), value: analyticsData.metrics.conversion, prefix: '', suffix: '%', change: analyticsData.metrics.conversionChange, icon: <TargetIcon size={20} />, iconBg: 'rgba(245,158,11,0.12)', iconColor: '#f59e0b' },
+    { key: 'newUsers',   label: t('analytics.newCustomers'), value: analyticsData.metrics.newUsers, prefix: '', suffix: i18n.language.startsWith('zh') ? '人' : '', change: analyticsData.metrics.newUsersChange, icon: <UserPlusIcon size={20} />, iconBg: 'rgba(59,130,246,0.12)', iconColor: '#3b82f6' },
   ];
 
   // ── Chart 1: 访客洞察 双折线 ───────────────────────────────────────────────
@@ -211,21 +244,21 @@ export default function DashboardAnalyticsPage() {
     grid: { top: 16, right: 12, bottom: 56, left: 44 },
     tooltip: { ...tooltipBase, axisPointer: { type: 'line' as const, lineStyle: { color: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)', width: 1, type: 'dashed' as const } } },
     legend: { bottom: 4, left: 'center', itemWidth: 10, itemHeight: 10, textStyle: { color: axisLabel, fontSize: 12 }, icon: 'circle' },
-    xAxis: { ...xAxisBase(weekDays), boundaryGap: false },
+    xAxis: { ...xAxisBase(periodLabels), boundaryGap: false },
     yAxis: yAxisBase,
     series: [
       {
-        name: t('analytics.returningCustomers'), type: 'line', data: RETURNING, smooth: true, symbol: 'none',
+        name: t('analytics.returningCustomers'), type: 'line', data: analyticsData.visitor.returningCustomers, smooth: true, symbol: 'none',
         lineStyle: { color: primaryHex, width: 2.5 }, itemStyle: { color: primaryHex },
         areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: isManga ? 'rgba(233,30,140,0.22)' : 'rgba(99,102,241,0.22)' }, { offset: 1, color: 'rgba(0,0,0,0)' }] } },
       },
       {
-        name: t('analytics.newCustomers'), type: 'line', data: NEW_USER, smooth: true, symbol: 'none',
+        name: t('analytics.newCustomers'), type: 'line', data: analyticsData.visitor.newCustomers, smooth: true, symbol: 'none',
         lineStyle: { color: '#10b981', width: 2.5 }, itemStyle: { color: '#10b981' },
         areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(16,185,129,0.18)' }, { offset: 1, color: 'rgba(0,0,0,0)' }] } },
       },
     ],
-  }), [isManga, isDark, primaryHex, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
+  }), [analyticsData, isManga, isDark, primaryHex, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
 
   // ── Chart 2: 总收入 分组柱 ─────────────────────────────────────────────────
   const revenueOption = useMemo(() => ({
@@ -233,22 +266,22 @@ export default function DashboardAnalyticsPage() {
     grid: { top: 16, right: 12, bottom: 56, left: 48 },
     tooltip: tooltipBase,
     legend: { bottom: 4, left: 'center', itemWidth: 10, itemHeight: 10, textStyle: { color: axisLabel, fontSize: 12 }, icon: 'circle' },
-    xAxis: xAxisBase(weekDays),
+    xAxis: xAxisBase(periodLabels),
     yAxis: { ...yAxisBase, axisLabel: { color: axisLabel, fontSize: 10, formatter: (v: number) => v >= 1000 ? `${v / 1000}k` : String(v) } },
     series: [
       {
-        name: t('analytics.onlineSales'), type: 'bar', data: ONLINE_REV, barMaxWidth: 14,
+        name: t('analytics.onlineSales'), type: 'bar', data: analyticsData.revenue.online, barMaxWidth: 14,
         itemStyle: { color: primaryHex, borderRadius: barRadius },
       },
       {
-        name: t('analytics.offlineSales'), type: 'bar', data: OFFLINE_REV, barMaxWidth: 14,
+        name: t('analytics.offlineSales'), type: 'bar', data: analyticsData.revenue.offline, barMaxWidth: 14,
         itemStyle: {
           color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: '#38bdf8' }, { offset: 1, color: '#0ea5e9' }] },
           borderRadius: barRadius,
         },
       },
     ],
-  }), [isManga, isDark, primaryHex, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
+  }), [analyticsData, isManga, isDark, primaryHex, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
 
   // ── Chart 3: 客户满意度 双折线面积 ────────────────────────────────────────
   const satOption = useMemo(() => ({
@@ -256,32 +289,32 @@ export default function DashboardAnalyticsPage() {
     grid: { top: 16, right: 12, bottom: 56, left: 40 },
     tooltip: { ...tooltipBase, axisPointer: { type: 'line' as const, lineStyle: { color: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)', width: 1, type: 'dashed' as const } } },
     legend: { bottom: 4, left: 'center', itemWidth: 10, itemHeight: 10, textStyle: { color: axisLabel, fontSize: 12 }, icon: 'circle' },
-    xAxis: { ...xAxisBase(weekDays), boundaryGap: false },
-    yAxis: { ...yAxisBase, min: 60, max: 100, axisLabel: { color: axisLabel, fontSize: 10, formatter: (v: number) => `${v}%` } },
+    xAxis: { ...xAxisBase(periodLabels), boundaryGap: false },
+    yAxis: { ...yAxisBase, min: 0, max: 100, axisLabel: { color: axisLabel, fontSize: 10, formatter: (v: number) => `${v}%` } },
     series: [
       {
-        name: t('analytics.lastMonth'), type: 'line', data: SAT_LAST, smooth: true, symbol: 'none',
+        name: '上一日', type: 'line', data: analyticsData.completion.previous, smooth: true, symbol: 'none',
         lineStyle: { color: '#f59e0b', width: 2 }, itemStyle: { color: '#f59e0b' },
         areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(245,158,11,0.18)' }, { offset: 1, color: 'rgba(245,158,11,0)' }] } },
       },
       {
-        name: t('analytics.thisMonth'), type: 'line', data: SAT_THIS, smooth: true, symbol: 'none',
+        name: '当日', type: 'line', data: analyticsData.completion.current, smooth: true, symbol: 'none',
         lineStyle: { color: '#3b82f6', width: 2.5 }, itemStyle: { color: '#3b82f6' },
         areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(59,130,246,0.22)' }, { offset: 1, color: 'rgba(59,130,246,0)' }] } },
       },
     ],
-  }), [isDark, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
+  }), [analyticsData, isDark, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
 
   // ── Chart 4: 目标与实际 单柱 ───────────────────────────────────────────────
   const targetOption = useMemo(() => ({
     backgroundColor: 'transparent',
     grid: { top: 12, right: 12, bottom: 40, left: 44 },
     tooltip: tooltipBase,
-    xAxis: xAxisBase(weekDays),
+    xAxis: xAxisBase(periodLabels),
     yAxis: { ...yAxisBase, axisLabel: { color: axisLabel, fontSize: 10, formatter: (v: number) => v >= 1000 ? `${v / 1000}k` : String(v) } },
     series: [
       {
-        name: t('analytics.actualSales'), type: 'bar', data: TARGET_ACT, barMaxWidth: 18,
+        name: t('analytics.actualSales'), type: 'bar', data: analyticsData.target.actual, barMaxWidth: 18,
         itemStyle: {
           borderRadius: barRadius,
           color: {
@@ -293,12 +326,13 @@ export default function DashboardAnalyticsPage() {
           },
         },
       },
+      { name: t('analytics.targetSales'), type: 'line', data: analyticsData.target.target, smooth: true, symbol: 'none', lineStyle: { color: '#3b82f6', type: 'dashed', width: 2 } },
     ],
-  }), [isManga, isDark, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
+  }), [analyticsData, isManga, isDark, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
 
   // ── Local states ───────────────────────────────────────────────────────────
   const [exportHover, setExportHover] = useState(false);
-  const handleExport = () => toast.success(t('analytics.reportExported'));
+  const handleExport = () => { downloadAnalyticsCsv(analyticsData); toast.success(t('analytics.reportExported')); };
 
   // ── Section card wrapper style ────────────────────────────────────────────
   const cardStyle: React.CSSProperties = {
@@ -325,13 +359,25 @@ export default function DashboardAnalyticsPage() {
         style={{ minHeight: '100%', background: 'var(--background)', padding: '24px', display: 'flex', flexDirection: 'column', gap: 24 }}
       >
         {/* ── 页头 ─────────────────────────────────────────────────────────── */}
-        <div>
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--foreground)' }}>{t('analytics.title')}</h1>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--muted-foreground)' }}>{t('analytics.subtitle')}</p>
+        <div className="analytics-page-heading" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--foreground)' }}>{t('analytics.title')}</h1>
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--muted-foreground)' }}>{t('analytics.subtitle')}</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', padding: 3, border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)' }}>
+              {([7, 30, 90] as DashboardAnalyticsRange[]).map(days => <button key={days} type="button" onClick={() => setRange(days)} disabled={loading && range === days} style={{ height: 28, padding: '0 10px', border: 0, borderRadius: 7, background: range === days ? primaryHex : 'transparent', color: range === days ? '#fff' : 'var(--muted-foreground)', fontSize: 12, fontWeight: 650, cursor: 'pointer' }}>近{days}天</button>)}
+            </div>
+            <button type="button" onClick={() => setReloadKey(value => value + 1)} disabled={loading} title="刷新分析数据" style={{ width: 36, height: 36, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', color: 'var(--muted-foreground)', cursor: loading ? 'wait' : 'pointer' }}>
+              <RefreshCwIcon size={15} className={loading ? 'animate-spin' : undefined} />
+            </button>
+          </div>
         </div>
 
+        {loadError && <div role="alert" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 14px', border: '1px solid #fecaca', borderRadius: 10, background: '#fef2f2', color: '#b91c1c', fontSize: 13 }}><span>{loadError}</span><button type="button" onClick={() => setReloadKey(value => value + 1)} style={{ border: 0, background: 'transparent', color: '#b91c1c', fontWeight: 700, cursor: 'pointer' }}>重试</button></div>}
+
         {/* ── 上半区 ────────────────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', gap: 20, alignItems: 'stretch' }}>
+        <div className="analytics-page-row" style={{ display: 'flex', gap: 20, alignItems: 'stretch' }}>
 
           {/* 今日销售 */}
           <div style={{ ...cardStyle, flex: '6 1 0', minWidth: 0, gap: 22 }}>
@@ -373,7 +419,7 @@ export default function DashboardAnalyticsPage() {
         </div>
 
         {/* ── 下半区三列 ───────────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', gap: 20, alignItems: 'stretch' }}>
+        <div className="analytics-page-row" style={{ display: 'flex', gap: 20, alignItems: 'stretch' }}>
 
           {/* ① 总收入 — 分组柱状图 */}
           <div style={{ ...cardStyle, flex: '1 1 0', minWidth: 0 }}>
@@ -385,7 +431,7 @@ export default function DashboardAnalyticsPage() {
 
           {/* ② 客户满意度 — 双折线面积 */}
           <div style={{ ...cardStyle, flex: '1 1 0', minWidth: 0 }}>
-            {cardTitle(t('analytics.satisfaction'), t('analytics.satisfactionSubtitle'))}
+            {cardTitle('订单完成率', '按每日订单状态计算')}
             <div style={{ height: 220 }}>
               <ReactECharts option={satOption} style={{ height: '100%', width: '100%' }} notMerge />
             </div>
@@ -417,7 +463,7 @@ export default function DashboardAnalyticsPage() {
                   </div>
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--foreground)', letterSpacing: '-0.5px', fontVariantNumeric: 'tabular-nums' }}>
-                  <AnimatedNum value={8823} />
+                  <AnimatedNum value={analyticsData.target.actualTotal} prefix="¥" />
                 </div>
               </div>
 
@@ -433,7 +479,7 @@ export default function DashboardAnalyticsPage() {
                   </div>
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--foreground)', letterSpacing: '-0.5px', fontVariantNumeric: 'tabular-nums' }}>
-                  <AnimatedNum value={12122} />
+                  <AnimatedNum value={analyticsData.target.targetTotal} prefix="¥" />
                 </div>
               </div>
 
@@ -441,12 +487,12 @@ export default function DashboardAnalyticsPage() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 10, color: 'var(--muted-foreground)' }}>
                   <span>{t('analytics.progress')}</span>
-                  <span style={{ fontWeight: 700, color: primaryHex }}>72.8%</span>
+                  <span style={{ fontWeight: 700, color: primaryHex }}>{analyticsData.target.progress}%</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 99, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)', overflow: 'hidden' }}>
                   <div
                     style={{
-                      height: '100%', width: '72.8%', borderRadius: 99,
+                      height: '100%', width: `${Math.min(100, analyticsData.target.progress)}%`, borderRadius: 99,
                       background: `linear-gradient(90deg, ${primaryHex}, ${isManga ? '#ff6eb4' : '#818cf8'})`,
                     }}
                   />
@@ -457,6 +503,8 @@ export default function DashboardAnalyticsPage() {
           </div>
 
         </div>
+        {loading && <div style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 300, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', boxShadow: '0 8px 24px rgba(0,0,0,.12)', color: 'var(--muted-foreground)', fontSize: 12 }}><LoaderCircleIcon size={14} className="animate-spin" />数据加载中</div>}
+        <style>{`@media (max-width: 1100px) { .analytics-page-row { flex-direction: column; } } @media (max-width: 640px) { .analytics-page-heading { flex-direction: column; } .analytics-page-heading > div:last-child { justify-content: flex-start !important; } }`}</style>
       </div>
     </AdminLayout>
   );

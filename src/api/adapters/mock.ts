@@ -2,8 +2,8 @@ import { MOCK_ACTIVITIES, MOCK_NEW_USERS, MOCK_TODOS, MONTHLY_DATA, MOCK_USERS, 
 import { MOCK_ARTICLES, MOCK_CATEGORIES_FLAT, MOCK_TAGS } from '../../data/contentData';
 import { MOCK_EVENTS } from '../../data/calendarData';
 import { CHINA_DATA, WORLD_DATA } from '../../data/mapData';
-import type { ApiAdapter } from './types';
-import type { Article, Category, DictItem, DictType, ExceptionLog, FileStorageInfo, LoginLog, ManagedFile, MenuItem, OperationLog, Role, SystemConfig, Tag } from '../types';
+import type { ApiAdapter, LowcodeDataSource, LowcodeDataSourceInput, LowcodeRelease, LowcodeResource, LowcodeResourceInput } from './types';
+import type { Article, Category, DashboardAnalyticsData, DashboardAnalyticsRange, DictItem, DictType, EcommerceDashboardData, ExceptionLog, FileStorageInfo, LoginLog, ManagedFile, MenuItem, OperationLog, OrderInfo, OrderStats, Role, ServerInfo, SystemConfig, Tag } from '../types';
 
 const wait = (ms = 300) => new Promise<void>(resolve => setTimeout(resolve, ms));
 const clone = <T>(value: T): T => (typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value)) as T);
@@ -25,6 +25,37 @@ let systemConfig: SystemConfig = {
   theme: { defaultTheme: 'classic', defaultMode: 'light', sidebarWidth: '220', cornerRadius: '0.75' },
   storage: { provider: 'local', maxFileSizeMb: 50, localDirectory: './data/uploads', region: '', bucket: '', prefix: 'ao-admin-pro', cosConfigured: false },
 };
+let managedServers: ServerInfo[] = [
+  { id: 1, key: 's1', name: '开发服务器', ip: '192.168.1.100', cpu: 40, ram: 69, swap: 18, disk: 69, status: 'online', os: 'CentOS 8.4', uptime: '12d 6h 24m' },
+  { id: 2, key: 's2', name: '测试服务器', ip: '192.168.1.101', cpu: 33, ram: 18, swap: 37, disk: 13, status: 'online', os: 'Ubuntu 22.04', uptime: '5d 11h 02m' },
+  { id: 3, key: 's3', name: '预发布服务器', ip: '192.168.1.102', cpu: 63, ram: 0, swap: 100, disk: 7, status: 'online', os: 'Debian 11', uptime: '30d 0h 00m' },
+  { id: 4, key: 's4', name: '线上服务器', ip: '192.168.1.103', cpu: 24, ram: 15, swap: 79, disk: 55, status: 'online', os: 'CentOS 8.4', uptime: '88d 3h 47m' },
+];
+let managedOrders: OrderInfo[] = [
+  { id: 1, orderNo: 'ORD-20240001', customer: '林晓薇', avatar: '林', product: '漫剧年会员 · 1年', channel: '微信支付', amount: 198, status: 'completed', date: '2024-06-01' },
+  { id: 2, orderNo: 'ORD-20240002', customer: '陈建国', avatar: '陈', product: '漫剧季会员 · 3月', channel: '支付宝', amount: 68, status: 'shipping', date: '2024-06-02' },
+  { id: 3, orderNo: 'ORD-20240003', customer: '张雨欣', avatar: '张', product: '单话解锁 × 5', channel: '微信支付', amount: 25, status: 'pending', date: '2024-06-03' },
+  { id: 4, orderNo: 'ORD-20240004', customer: '王浩然', avatar: '王', product: '漫剧月会员 · 1月', channel: '银行卡', amount: 28, status: 'completed', date: '2024-06-04' },
+  { id: 5, orderNo: 'ORD-20240005', customer: '刘梦琪', avatar: '刘', product: '漫剧年会员 · 1年', channel: '支付宝', amount: 198, status: 'cancelled', date: '2024-06-05' },
+  { id: 6, orderNo: 'ORD-20240006', customer: '赵天宇', avatar: '赵', product: '单话解锁 × 10', channel: '微信支付', amount: 50, status: 'completed', date: '2024-06-06' },
+  { id: 7, orderNo: 'ORD-20240007', customer: '孙悦', avatar: '孙', product: '漫剧季会员 · 3月', channel: '支付宝', amount: 68, status: 'pending', date: '2024-06-07' },
+  { id: 8, orderNo: 'ORD-20240008', customer: '周晨曦', avatar: '周', product: '漫剧年会员 · 1年', channel: '微信支付', amount: 198, status: 'completed', date: '2024-06-08' },
+  { id: 9, orderNo: 'ORD-20240009', customer: '吴佳怡', avatar: '吴', product: '单话解锁 × 3', channel: '银行卡', amount: 15, status: 'shipping', date: '2024-06-09' },
+  { id: 10, orderNo: 'ORD-20240010', customer: '郑子轩', avatar: '郑', product: '漫剧月会员 · 1月', channel: '微信支付', amount: 28, status: 'completed', date: '2024-06-10' },
+];
+let lowcodeResources: LowcodeResource[] = [];
+let lowcodeDataSources: LowcodeDataSource[] = [];
+let lowcodeReleases: LowcodeRelease[] = [];
+const lowcodeNow = () => new Date().toISOString();
+const lowcodeResource = (input: LowcodeResourceInput, id = `lc-${Date.now()}`): LowcodeResource => ({
+  id, ...clone(input), status: 'draft', currentVersion: null, createdBy: '当前管理员', createdAt: lowcodeNow(), updatedAt: lowcodeNow(),
+});
+const lowcodeDataSource = (input: LowcodeDataSourceInput, id = `ds-${Date.now()}`): LowcodeDataSource => ({
+  id, name: input.name, sourceType: input.sourceType.toLowerCase(), host: input.host ?? null, port: input.port ?? null,
+  username: input.username ?? null, secretRef: input.secretRef ?? null, secretConfigured: Boolean(input.secretRef), databaseName: input.databaseName ?? null,
+  baseUrl: input.baseUrl ?? null, headersJson: input.headersJson ?? null, status: input.secretRef || input.sourceType.toLowerCase() === 'http' ? 'ready' : 'incomplete',
+  createdBy: '当前管理员', createdAt: lowcodeNow(), updatedAt: lowcodeNow(),
+});
 
 const roleActions = (scope: string, actions: Array<[string, string]>) => actions.map(([key, label]) => ({ key: `${scope}:${key}`, label }));
 const permissionKeys = ['dashboard:view', 'user:list', 'role:list', 'menu:list', 'log:list', 'dict:list', 'config:view', 'article:list', 'category:list', 'tag:list', 'analytics:traffic', 'analytics:portrait', 'analytics:funnel', 'coupon:list', 'event:list', 'push:send', 'media:list', 'order:list', 'message:list', 'perm:list'];
@@ -73,6 +104,88 @@ const page = <T,>(items: T[], query: { page?: number; pageSize?: number; keyword
   return { list: clone(items.slice(start, start + size)), total: items.length, page: current, pageSize: size };
 };
 
+const dashboardAnalytics = (days: DashboardAnalyticsRange = 7): DashboardAnalyticsData => {
+  const end = new Date(2024, 5, 10);
+  const labels = Array.from({ length: days }, (_, index) => {
+    const value = new Date(end); value.setDate(end.getDate() - days + index + 1);
+    return `${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+  });
+  const inRange = managedOrders.filter(order => labels.includes(order.date.slice(5)));
+  const byDay = (date: string) => inRange.filter(order => order.date.slice(5) === date);
+  const actual = labels.map(date => byDay(date).filter(order => order.status === 'completed').reduce((sum, order) => sum + order.amount, 0));
+  const orders = labels.map(date => byDay(date).length);
+  const newCustomers = labels.map(date => byDay(date).length);
+  const previousCustomers = new Set<string>();
+  const returningCustomers = labels.map(date => {
+    const daily = byDay(date); const returning = daily.filter(order => previousCustomers.has(order.customer)).length;
+    daily.forEach(order => previousCustomers.add(order.customer)); return returning;
+  });
+  const online = labels.map((date, index) => byDay(date).filter(order => order.status === 'completed' && !order.channel.includes('银行卡')).reduce((sum, order) => sum + order.amount, 0));
+  const offline = labels.map((date, index) => actual[index] - online[index]);
+  const completion = labels.map((date, index) => orders[index] ? Math.round(actual[index] > 0 ? byDay(date).filter(order => order.status === 'completed').length * 100 / orders[index] : 0) : 0);
+  const totalRevenue = actual.reduce((sum, value) => sum + value, 0);
+  const targetPerDay = totalRevenue ? Math.round(totalRevenue / days * 1.15 * 100) / 100 : 0;
+  const change = (current: number, previous: number) => previous ? Math.round((current - previous) / Math.abs(previous) * 1000) / 10 : current ? 100 : 0;
+  const last = days - 1; const previous = Math.max(0, last - 1);
+  const totalOrders = orders.reduce((sum, value) => sum + value, 0);
+  const totalCompleted = inRange.filter(order => order.status === 'completed').length;
+  return {
+    days, rangeStart: `2024-${labels[0]}`, rangeEnd: `2024-${labels[last]}`, labels,
+    metrics: { revenue: actual[last], orders: orders[last], conversion: totalOrders ? Math.round(totalCompleted * 100 / totalOrders) : 0, newUsers: newCustomers.reduce((sum, value) => sum + value, 0), revenueChange: change(actual[last], actual[previous]), ordersChange: change(orders[last], orders[previous]), conversionChange: completion[last] - completion[previous], newUsersChange: change(newCustomers[last], newCustomers[previous]) },
+    visitor: { returningCustomers, newCustomers }, revenue: { online, offline }, completion: { previous: completion.map((value, index) => index ? completion[index - 1] : 0), current: completion },
+    target: { actual, target: labels.map(() => targetPerDay), actualTotal: totalRevenue, targetTotal: targetPerDay * days, progress: targetPerDay ? Math.round(totalRevenue / (targetPerDay * days) * 1000) / 10 : 0 },
+  };
+};
+
+const ecommerceDashboard = (days: DashboardAnalyticsRange = 7): EcommerceDashboardData => {
+  const end = new Date(2024, 5, 10);
+  const dates = Array.from({ length: days }, (_, index) => {
+    const value = new Date(end); value.setDate(end.getDate() - days + index + 1);
+    return value.toISOString().slice(0, 10);
+  });
+  const previousDates = Array.from({ length: days }, (_, index) => {
+    const value = new Date(end); value.setDate(end.getDate() - days * 2 + index + 1);
+    return value.toISOString().slice(0, 10);
+  });
+  const current = managedOrders.filter(order => dates.includes(order.date));
+  const previous = managedOrders.filter(order => previousDates.includes(order.date));
+  const sumRevenue = (orders: OrderInfo[]) => orders.filter(order => order.status === 'completed').reduce((sum, order) => sum + order.amount, 0);
+  const countCompleted = (orders: OrderInfo[]) => orders.filter(order => order.status === 'completed').length;
+  const rate = (orders: OrderInfo[]) => orders.length ? Math.round(countCompleted(orders) / orders.length * 100) : 0;
+  const change = (currentValue: number, previousValue: number) => previousValue ? Math.round((currentValue - previousValue) / Math.abs(previousValue) * 1000) / 10 : currentValue ? 100 : 0;
+  const currentSales = dates.map(date => sumRevenue(current.filter(order => order.date === date)));
+  const previousSales = previousDates.map(date => sumRevenue(previous.filter(order => order.date === date)));
+  const categoryMap = new Map<string, number>();
+  current.filter(order => order.status === 'completed').forEach(order => {
+    const name = order.product.includes('会员') ? '会员订阅' : order.product.includes('解锁') ? '内容解锁' : '其他商品';
+    categoryMap.set(name, (categoryMap.get(name) ?? 0) + order.amount);
+  });
+  const currentRevenue = sumRevenue(current);
+  const previousRevenue = sumRevenue(previous);
+  const latest = current.filter(order => order.date === dates[days - 1]);
+  const previousLatest = previous.filter(order => order.date === previousDates[days - 1]);
+  const users = new Set(current.map(order => order.customer));
+  const previousUsers = new Set(previous.map(order => order.customer));
+  const products = new Set(current.map(order => order.product));
+  const previousProducts = new Set(previous.map(order => order.product));
+  return {
+    days, rangeStart: dates[0], rangeEnd: dates[days - 1], labels: dates.map(date => date.slice(5)),
+    metrics: {
+      todaySales: sumRevenue(latest), todaySalesChange: change(sumRevenue(latest), sumRevenue(previousLatest)),
+      totalOrders: current.length, ordersChange: change(current.length, previous.length),
+      activeUsers: users.size, activeUsersChange: change(users.size, previousUsers.size),
+      totalProducts: products.size, productsChange: change(products.size, previousProducts.size),
+      fulfillmentRate: rate(current), fulfillmentChange: rate(current) - rate(previous),
+      conversionCount: countCompleted(current), conversionChange: change(countCompleted(current), countCompleted(previous)),
+      revenue: currentRevenue, netProfit: Math.round(currentRevenue * 0.3 * 100) / 100,
+    },
+    salesTrend: { current: currentSales, previous: previousSales },
+    categories: [...categoryMap.entries()].sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value })),
+    conversionTrend: dates.map(date => rate(current.filter(order => order.date === date))),
+    recentOrders: [...current].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id).slice(0, 8).map(order => ({ id: order.id, orderNo: order.orderNo, customer: order.customer, product: order.product, amount: order.amount, status: order.status, date: order.date })),
+  };
+};
+
 export const mockAdapter: ApiAdapter = {
   async login() { await wait(); return { token: 'mock-token', accessToken: 'mock-token', refreshToken: 'mock-refresh-token', user: clone(users[0]) }; },
   async logout() { await wait(); },
@@ -91,6 +204,8 @@ export const mockAdapter: ApiAdapter = {
   async updateMenu(id, input) { await wait(); const update = (items: MenuItem[]): MenuItem[] => items.map(item => item.id === id ? { ...item, ...input, id } as MenuItem : { ...item, children: item.children ? update(item.children) : item.children }); menus = update(menus); const found = update(menus).find(item => item.id === id); if (!found) throw new Error('Menu not found'); return clone(found); },
   async deleteMenu(id) { await wait(); const remove = (items: MenuItem[]) => items.filter(item => item.id !== id).map(item => ({ ...item, children: item.children ? remove(item.children) : item.children })); menus = remove(menus); },
   async getDashboard() { await wait(); return clone({ statCards: STAT_CARDS, monthly: MONTHLY_DATA, yearly: YEARLY_TREND, activities: MOCK_ACTIVITIES, newUsers: MOCK_NEW_USERS, todos: MOCK_TODOS }); },
+  async getDashboardAnalytics(days = 7) { await wait(); return clone(dashboardAnalytics(days)); },
+  async getEcommerceDashboard(days = 7) { await wait(); return clone(ecommerceDashboard(days)); },
   async listArticles(query = {}) { await wait(); const filtered = articles.filter(item => (!query.keyword || `${item.title}${item.author}${item.category}`.includes(query.keyword)) && (!query.status || item.status === query.status)); return page(filtered, query); },
   async createArticle(input) { await wait(); const item = { id: Date.now(), cover: input.cover ?? '', title: input.title ?? '', author: input.author ?? '', category: input.category ?? '', tags: input.tags ?? [], views: input.views ?? 0, status: input.status ?? 'draft', publishTime: input.publishTime ?? new Date().toISOString() } as Article; articles = [item, ...articles]; return clone(item); },
   async updateArticle(id, input) { await wait(); const index = articles.findIndex(item => item.id === id); if (index < 0) throw new Error('Article not found'); articles[index] = { ...articles[index], ...input, id }; return clone(articles[index]); },
@@ -149,4 +264,56 @@ export const mockAdapter: ApiAdapter = {
     systemConfig = { ...systemConfig, ...clone(input), storage: systemConfig.storage };
     return clone(systemConfig);
   },
+  async listServers() {
+    await wait(220);
+    managedServers = managedServers.map(server => server.status === 'online' ? {
+      ...server,
+      cpu: Math.max(0, Math.min(100, server.cpu + Math.floor(Math.random() * 9) - 4)),
+      ram: Math.max(0, Math.min(100, server.ram + Math.floor(Math.random() * 7) - 3)),
+      swap: Math.max(0, Math.min(100, server.swap + Math.floor(Math.random() * 7) - 3)),
+      disk: Math.max(0, Math.min(100, server.disk + Math.floor(Math.random() * 3) - 1)),
+    } : server.status === 'restarting' ? { ...server, status: 'online' as const } : server);
+    return clone(managedServers);
+  },
+  async serverAction(id, action) {
+    await wait(180);
+    const index = managedServers.findIndex(server => server.id === id);
+    if (index < 0) throw new Error('服务器不存在');
+    const status = action === 'start' ? 'online' : action === 'stop' ? 'offline' : 'restarting';
+    managedServers[index] = { ...managedServers[index], status };
+    return clone(managedServers[index]);
+  },
+  async listOrders(query = {}) {
+    await wait(220);
+    const keyword = query.keyword?.trim().toLowerCase() ?? '';
+    return clone(managedOrders.filter(order => (!keyword || `${order.orderNo}${order.customer}${order.product}`.toLowerCase().includes(keyword)) && (!query.status || order.status === query.status)));
+  },
+  async getOrderStats() {
+    await wait(180);
+    const stats: OrderStats = { total: managedOrders.length, pending: managedOrders.filter(order => order.status === 'pending').length, shipping: managedOrders.filter(order => order.status === 'shipping').length, completed: managedOrders.filter(order => order.status === 'completed').length, cancelled: managedOrders.filter(order => order.status === 'cancelled').length, revenue: managedOrders.filter(order => order.status === 'completed').reduce((sum, order) => sum + order.amount, 0) };
+    return clone(stats);
+  },
+  async orderAction(id, action) {
+    await wait(180);
+    const index = managedOrders.findIndex(order => order.id === id);
+    if (index < 0) throw new Error('订单不存在');
+    const status = action === 'process' || action === 'ship' ? 'shipping' : action === 'complete' ? 'completed' : action === 'cancel' ? 'cancelled' : 'pending';
+    managedOrders[index] = { ...managedOrders[index], status };
+    return clone(managedOrders[index]);
+  },
+  async listLowcodeResources(type) { await wait(); return clone(lowcodeResources.filter(resource => !type || resource.resourceType === type)); },
+  async getLowcodeResource(id) { await wait(); const resource = lowcodeResources.find(item => item.id === id); if (!resource) throw new Error('低代码资源不存在'); return clone(resource); },
+  async createLowcodeResource(input) { await wait(); const resource = lowcodeResource(input); lowcodeResources = [resource, ...lowcodeResources]; return clone(resource); },
+  async updateLowcodeResource(id, input) { await wait(); const index = lowcodeResources.findIndex(item => item.id === id); if (index < 0) throw new Error('低代码资源不存在'); lowcodeResources[index] = { ...lowcodeResources[index], ...clone(input), updatedAt: lowcodeNow() }; return clone(lowcodeResources[index]); },
+  async deleteLowcodeResource(id) { await wait(); lowcodeResources = lowcodeResources.filter(item => item.id !== id); lowcodeReleases = lowcodeReleases.filter(item => item.resourceId !== id); },
+  async validateLowcodeResource(id) { await wait(); const resource = lowcodeResources.find(item => item.id === id); if (!resource) throw new Error('低代码资源不存在'); const definition = resource.definition as { nodes?: Array<{ id?: string; kind?: string }>; edges?: unknown[] }; const valid = resource.resourceType !== 'api' || (Array.isArray(definition.nodes) && definition.nodes.filter(node => node.kind === 'start').length === 1 && definition.nodes.filter(node => node.kind === 'end').length === 1 && Array.isArray(definition.edges)); return { valid, issues: valid ? [] : [{ code: 'FLOW_INVALID', message: '接口编排必须包含一个开始节点、一个结束节点以及连线。', nodeId: null }] }; },
+  async testLowcodeResource(id) { const validation = await this.validateLowcodeResource(id); return { successful: validation.valid, dryRun: true, validation, trace: validation.valid ? ['INFO 安全 dry-run 已启动：不会执行脚本、SQL 或外部 HTTP 调用。', 'SUCCESS 流程结构有效，安全模拟完成。'] : ['ERROR 流程校验失败，请根据错误修正后重试。'] }; },
+  async listLowcodeDataSources() { await wait(); return clone(lowcodeDataSources); },
+  async createLowcodeDataSource(input) { await wait(); const source = lowcodeDataSource(input); lowcodeDataSources = [source, ...lowcodeDataSources]; return clone(source); },
+  async updateLowcodeDataSource(id, input) { await wait(); const index = lowcodeDataSources.findIndex(item => item.id === id); if (index < 0) throw new Error('低代码数据源不存在'); lowcodeDataSources[index] = { ...lowcodeDataSource(input, id), createdAt: lowcodeDataSources[index].createdAt }; return clone(lowcodeDataSources[index]); },
+  async deleteLowcodeDataSource(id) { await wait(); lowcodeDataSources = lowcodeDataSources.filter(item => item.id !== id); },
+  async testLowcodeDataSource(id) { await wait(); const source = lowcodeDataSources.find(item => item.id === id); if (!source) throw new Error('低代码数据源不存在'); const ready = source.status === 'ready'; return { ready, status: source.status, messages: ready ? ['配置校验通过（Mock 模式不会发起真实网络或数据库连接）。'] : ['请配置密钥变量名或完整 HTTP 地址。'], checkedAt: lowcodeNow() }; },
+  async listLowcodeReleases(query = {}) { await wait(); const resources = new Map(lowcodeResources.map(resource => [resource.id, resource])); return clone(lowcodeReleases.filter(item => (!query.type || item.resourceType === query.type) && (!query.resourceId || item.resourceId === query.resourceId)).map(item => ({ ...item, resourceName: resources.get(item.resourceId)?.name ?? item.resourceName }))); },
+  async publishLowcodeResource(id, releaseNote) { await wait(); const resource = lowcodeResources.find(item => item.id === id); if (!resource) throw new Error('低代码资源不存在'); const version = `v1.0.${lowcodeReleases.filter(item => item.resourceId === id).length}`; lowcodeReleases = lowcodeReleases.map(item => item.resourceId === id ? { ...item, active: false } : item); const release: LowcodeRelease = { id: `release-${Date.now()}`, resourceId: id, resourceName: resource.name, resourceType: resource.resourceType, version, publisher: '当前管理员', releaseNote, snapshotJson: JSON.stringify(resource.definition, null, 2), active: true, createdAt: lowcodeNow() }; lowcodeReleases = [release, ...lowcodeReleases]; resource.status = 'published'; resource.currentVersion = version; resource.updatedAt = lowcodeNow(); return clone(release); },
+  async rollbackLowcodeRelease(id) { await wait(); const release = lowcodeReleases.find(item => item.id === id); if (!release) throw new Error('低代码发布版本不存在'); lowcodeReleases = lowcodeReleases.map(item => item.resourceId === release.resourceId ? { ...item, active: item.id === id } : item); const resource = lowcodeResources.find(item => item.id === release.resourceId); if (resource) { resource.definition = JSON.parse(release.snapshotJson) as Record<string, unknown>; resource.status = 'published'; resource.currentVersion = release.version; resource.updatedAt = lowcodeNow(); } return clone({ ...release, active: true }); },
 };

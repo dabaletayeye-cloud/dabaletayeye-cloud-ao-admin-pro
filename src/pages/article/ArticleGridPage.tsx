@@ -42,7 +42,7 @@ export default function ArticleGridPage() {
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? '#E91E8C' : 'var(--primary)';
   const navigate = useNavigate();
-  const articlesResource = useApiResource(() => listArticles({ pageSize: 1000 }));
+  const articlesResource = useApiResource(() => listArticles({ pageSize: 100 }));
   const [articles, setArticles] = useState<Article[]>([]);
   useEffect(() => { if (articlesResource.data) setArticles(articlesResource.data.list); }, [articlesResource.data]);
 
@@ -61,8 +61,6 @@ export default function ArticleGridPage() {
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  if (articlesResource.loading || articlesResource.error) return <AdminLayout><ApiState loading={articlesResource.loading} error={articlesResource.error} /></AdminLayout>;
 
   const openDetail = (a: Article) => {
     setDetailArticle(a);
@@ -85,6 +83,8 @@ export default function ArticleGridPage() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [drawerOpen]);
+
+  if (articlesResource.loading || articlesResource.error) return <AdminLayout><ApiState loading={articlesResource.loading} error={articlesResource.error} /></AdminLayout>;
 
   const handleSearch = (v: string) => {
     setSearch(v);

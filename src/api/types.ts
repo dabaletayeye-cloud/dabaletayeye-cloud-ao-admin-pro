@@ -36,6 +36,56 @@ export interface DashboardData {
   todos: TodoItem[];
 }
 
+export type DashboardAnalyticsRange = 7 | 30 | 90;
+
+export interface DashboardAnalyticsData {
+  days: DashboardAnalyticsRange;
+  rangeStart: string;
+  rangeEnd: string;
+  labels: string[];
+  metrics: {
+    revenue: number;
+    orders: number;
+    conversion: number;
+    newUsers: number;
+    revenueChange: number;
+    ordersChange: number;
+    conversionChange: number;
+    newUsersChange: number;
+  };
+  visitor: { returningCustomers: number[]; newCustomers: number[] };
+  revenue: { online: number[]; offline: number[] };
+  completion: { previous: number[]; current: number[] };
+  target: { actual: number[]; target: number[]; actualTotal: number; targetTotal: number; progress: number };
+}
+
+export interface EcommerceDashboardData {
+  days: DashboardAnalyticsRange;
+  rangeStart: string;
+  rangeEnd: string;
+  labels: string[];
+  metrics: {
+    todaySales: number;
+    todaySalesChange: number;
+    totalOrders: number;
+    ordersChange: number;
+    activeUsers: number;
+    activeUsersChange: number;
+    totalProducts: number;
+    productsChange: number;
+    fulfillmentRate: number;
+    fulfillmentChange: number;
+    conversionCount: number;
+    conversionChange: number;
+    revenue: number;
+    netProfit: number;
+  };
+  salesTrend: { current: number[]; previous: number[] };
+  categories: Array<{ name: string; value: number }>;
+  conversionTrend: number[];
+  recentOrders: Array<{ id: number; orderNo: string; customer: string; product: string; amount: number; status: 'pending' | 'shipping' | 'completed' | 'cancelled'; date: string }>;
+}
+
 export interface Role {
   id: number;
   name: string;
@@ -133,7 +183,7 @@ export interface FunnelData {
   steps: Array<{ name: string; value: number; rate?: number }>;
 }
 
-export type ManagedFileKind = 'document' | 'spreadsheet' | 'image' | 'archive';
+export type ManagedFileKind = 'document' | 'spreadsheet' | 'image' | 'archive' | 'video' | 'audio';
 export type ManagedFileFolder = 'uploads' | 'documents' | 'images' | 'archives';
 
 export interface ManagedFile {
@@ -215,4 +265,41 @@ export interface SystemConfig {
   notification: NotificationConfig;
   theme: ThemeConfig;
   storage: SystemStorageConfig;
+}
+
+export type ServerStatus = 'online' | 'offline' | 'restarting';
+
+export interface ServerInfo {
+  id: number;
+  key: string;
+  name: string;
+  ip: string;
+  cpu: number;
+  ram: number;
+  swap: number;
+  disk: number;
+  status: ServerStatus;
+  os: string;
+  uptime: string;
+}
+
+export type OrderStatus = 'pending' | 'shipping' | 'completed' | 'cancelled';
+export interface OrderInfo {
+  id: number;
+  orderNo: string;
+  customer: string;
+  avatar: string;
+  product: string;
+  channel: string;
+  amount: number;
+  status: OrderStatus;
+  date: string;
+}
+export interface OrderStats {
+  total: number;
+  pending: number;
+  shipping: number;
+  completed: number;
+  cancelled: number;
+  revenue: number;
 }

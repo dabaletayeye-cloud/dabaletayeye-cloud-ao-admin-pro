@@ -1,10 +1,61 @@
 import type {
-  ApiListQuery, Article, Category, DashboardData, DictItem, DictType, ExceptionLog,
+  ApiListQuery, Article, Category, DashboardAnalyticsData, DashboardAnalyticsRange, DashboardData, DictItem, DictType, EcommerceDashboardData, ExceptionLog,
   FunnelData, LoginLog, MenuItem, OperationLog, PageResult, Role, Tag, User,
   UserPortraitData, VisitStatsData,
   FileStorageInfo, ManagedFile, ManagedFileFolder,
   SystemConfig,
+  ServerInfo,
+  OrderInfo, OrderStats,
 } from '../types';
+
+export type LowcodeResourceType = 'api' | 'page' | 'form' | 'report' | 'print' | 'generator';
+export interface LowcodeResource {
+  id: string;
+  resourceType: LowcodeResourceType;
+  resourceKey: string;
+  name: string;
+  definition: Record<string, unknown>;
+  status: 'draft' | 'published' | string;
+  currentVersion?: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface LowcodeValidationIssue { code: string; message: string; nodeId?: string | null; }
+export interface LowcodeValidationResult { valid: boolean; issues: LowcodeValidationIssue[]; }
+export interface LowcodeTestRun { successful: boolean; dryRun: boolean; trace: string[]; validation: LowcodeValidationResult; }
+export interface LowcodeDataSource {
+  id: string;
+  name: string;
+  sourceType: 'mysql' | 'postgresql' | 'redis' | 'http' | string;
+  host?: string | null;
+  port?: number | null;
+  username?: string | null;
+  secretRef?: string | null;
+  secretConfigured: boolean;
+  databaseName?: string | null;
+  baseUrl?: string | null;
+  headersJson?: string | null;
+  status: 'ready' | 'incomplete' | string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface LowcodeDataSourceTest { ready: boolean; status: string; messages: string[]; checkedAt: string; }
+export interface LowcodeRelease {
+  id: string;
+  resourceId: string;
+  resourceName: string;
+  resourceType: LowcodeResourceType | string;
+  version: string;
+  publisher: string;
+  releaseNote: string;
+  snapshotJson: string;
+  active: boolean;
+  createdAt: string;
+}
+export interface LowcodeResourceInput { resourceType: LowcodeResourceType; resourceKey: string; name: string; definition: Record<string, unknown>; }
+export interface LowcodeDataSourceInput { name: string; sourceType: string; host?: string; port?: number; username?: string; secretRef?: string; databaseName?: string; baseUrl?: string; headersJson?: string; }
 
 export interface ApiAdapter {
   login(input: { username: string; password: string }): Promise<{
@@ -31,6 +82,8 @@ export interface ApiAdapter {
   updateMenu(id: number, input: Partial<MenuItem>): Promise<MenuItem>;
   deleteMenu(id: number): Promise<void>;
   getDashboard(): Promise<DashboardData>;
+  getDashboardAnalytics(days?: DashboardAnalyticsRange): Promise<DashboardAnalyticsData>;
+  getEcommerceDashboard(days?: DashboardAnalyticsRange): Promise<EcommerceDashboardData>;
   listArticles(query?: ApiListQuery & { category?: string }): Promise<PageResult<Article>>;
   createArticle(input: Partial<Article>): Promise<Article>;
   updateArticle(id: number, input: Partial<Article>): Promise<Article>;
@@ -58,4 +111,24 @@ export interface ApiAdapter {
   getFileStorageInfo(): Promise<FileStorageInfo>;
   getSystemConfig(): Promise<SystemConfig>;
   updateSystemConfig(input: Omit<SystemConfig, 'storage'>): Promise<SystemConfig>;
+  listServers(): Promise<ServerInfo[]>;
+  serverAction(id: number, action: 'start' | 'stop' | 'restart'): Promise<ServerInfo>;
+  listOrders(query?: { keyword?: string; status?: string }): Promise<OrderInfo[]>;
+  getOrderStats(): Promise<OrderStats>;
+  orderAction(id: number, action: 'process' | 'ship' | 'complete' | 'cancel' | 'restore'): Promise<OrderInfo>;
+  listLowcodeResources(type?: LowcodeResourceType): Promise<LowcodeResource[]>;
+  getLowcodeResource(id: string): Promise<LowcodeResource>;
+  createLowcodeResource(input: LowcodeResourceInput): Promise<LowcodeResource>;
+  updateLowcodeResource(id: string, input: LowcodeResourceInput): Promise<LowcodeResource>;
+  deleteLowcodeResource(id: string): Promise<void>;
+  validateLowcodeResource(id: string): Promise<LowcodeValidationResult>;
+  testLowcodeResource(id: string): Promise<LowcodeTestRun>;
+  listLowcodeDataSources(): Promise<LowcodeDataSource[]>;
+  createLowcodeDataSource(input: LowcodeDataSourceInput): Promise<LowcodeDataSource>;
+  updateLowcodeDataSource(id: string, input: LowcodeDataSourceInput): Promise<LowcodeDataSource>;
+  deleteLowcodeDataSource(id: string): Promise<void>;
+  testLowcodeDataSource(id: string): Promise<LowcodeDataSourceTest>;
+  listLowcodeReleases(query?: { type?: LowcodeResourceType; resourceId?: string }): Promise<LowcodeRelease[]>;
+  publishLowcodeResource(id: string, releaseNote: string): Promise<LowcodeRelease>;
+  rollbackLowcodeRelease(id: string): Promise<LowcodeRelease>;
 }

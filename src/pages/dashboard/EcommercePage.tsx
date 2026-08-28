@@ -2,658 +2,155 @@ import { useEffect, useRef, useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
 import { useLocale } from '../../hooks/useLocale';
+import { getEcommerceDashboard } from '../../api';
+import type { DashboardAnalyticsRange, EcommerceDashboardData } from '../../api';
+import { toast } from '../../lib/localizedToast';
 import {
-  ArrowUpIcon,
-  ShoppingCartIcon,
-  UsersIcon,
-  PackageIcon,
-  StarIcon,
-  DollarSignIcon,
-  TrendingUpIcon,
-  ClockIcon,
-  CheckCircleIcon,
   AlertCircleIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  DownloadIcon,
+  LoaderCircleIcon,
+  PackageIcon,
   RefreshCwIcon,
-  BoxIcon,
+  ShoppingCartIcon,
+  StarIcon,
+  TrendingUpIcon,
   TruckIcon,
+  UsersIcon,
 } from 'lucide-react';
 
-// ── count-up hook ────────────────────────────────────────────────────────────
-function useCountUp(target: number, duration = 1300): number {
-  const [cur, setCur] = useState(0);
-  const raf = useRef<number | null>(null);
-  const t0  = useRef<number | null>(null);
+const CATEGORY_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#e879f9', '#38bdf8'];
+
+function useCountUp(target: number, duration = 800) {
+  const [value, setValue] = useState(0);
+  const frame = useRef<number | null>(null);
+
   useEffect(() => {
-    t0.current = null;
-    setCur(0);
-    const tick = (ts: number) => {
-      if (!t0.current) t0.current = ts;
-      const p     = Math.min((ts - t0.current) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setCur(Math.round(eased * target));
-      if (p < 1) raf.current = requestAnimationFrame(tick);
+    const startedAt = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / duration);
+      setValue(Math.round(target * (1 - Math.pow(1 - progress, 3))));
+      if (progress < 1) frame.current = requestAnimationFrame(tick);
     };
-    raf.current = requestAnimationFrame(tick);
-    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+    frame.current = requestAnimationFrame(tick);
+    return () => { if (frame.current) cancelAnimationFrame(frame.current); };
   }, [target, duration]);
-  return cur;
+
+  return value;
 }
 
-// ── SVG Analytics Illustration ───────────────────────────────────────────────
-function AnalyticsIllustration() {
-  return (
-    <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg"
-      style={{ width: '100%', height: '100%', display: 'block' }} aria-hidden="true">
-      <ellipse cx="260" cy="190" rx="54" ry="22" fill="rgba(139,92,246,0.10)" />
-      <ellipse cx="60"  cy="200" rx="38" ry="14" fill="rgba(99,102,241,0.08)" />
-      <rect x="48" y="158" width="224" height="10" rx="5" fill="#c7d2fe" />
-      <rect x="80" y="168" width="10"  height="30" rx="4" fill="#a5b4fc" />
-      <rect x="230" y="168" width="10" height="30" rx="4" fill="#a5b4fc" />
-      <rect x="136" y="148" width="6"  height="14" rx="2" fill="#818cf8" />
-      <rect x="118" y="154" width="42" height="6"  rx="2" fill="#818cf8" />
-      <rect x="108" y="68"  width="104" height="84" rx="10" fill="#1e1b4b" />
-      <rect x="112" y="72"  width="96"  height="76" rx="7"  fill="#0f172a" />
-      <rect x="124" y="118" width="10" height="20" rx="2" fill="#6366f1" opacity="0.7" />
-      <rect x="139" y="108" width="10" height="30" rx="2" fill="#818cf8" />
-      <rect x="154" y="100" width="10" height="38" rx="2" fill="#a5b4fc" />
-      <rect x="169" y="112" width="10" height="26" rx="2" fill="#6366f1" opacity="0.7" />
-      <rect x="184" y="95"  width="10" height="43" rx="2" fill="#c7d2fe" />
-      <polyline points="122,117 137,107 152,99 167,111 182,94 197,104"
-        fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="122" cy="117" r="2.5" fill="#38bdf8" />
-      <circle cx="137" cy="107" r="2.5" fill="#38bdf8" />
-      <circle cx="152" cy="99"  r="2.5" fill="#38bdf8" />
-      <circle cx="167" cy="111" r="2.5" fill="#38bdf8" />
-      <circle cx="182" cy="94"  r="2.5" fill="#38bdf8" />
-      <circle cx="197" cy="104" r="2.5" fill="#38bdf8" />
-      <rect x="74"  y="128" width="14" height="36" rx="6" fill="#6366f1" />
-      <rect x="92"  y="128" width="14" height="36" rx="6" fill="#6366f1" />
-      <ellipse cx="81"  cy="164" rx="10" ry="5" fill="#3730a3" />
-      <ellipse cx="99"  cy="164" rx="10" ry="5" fill="#3730a3" />
-      <rect x="68" y="88" width="54" height="46" rx="14" fill="#818cf8" />
-      <path d="M85 88 Q95 98 105 88" fill="none" stroke="#6366f1" strokeWidth="1.5" />
-      <path d="M122 102 Q138 96 148 88" fill="none" stroke="#818cf8" strokeWidth="10" strokeLinecap="round" />
-      <path d="M68 108 Q52 120 46 132" fill="none" stroke="#818cf8" strokeWidth="10" strokeLinecap="round" />
-      <circle cx="44" cy="135" r="6" fill="#fde68a" />
-      <circle cx="95" cy="72" r="22" fill="#fde68a" />
-      <path d="M73 66 Q75 46 95 44 Q115 46 117 66" fill="#1e293b" />
-      <rect x="80" y="68" width="12" height="8"  rx="4" fill="none" stroke="#1e293b" strokeWidth="1.5" />
-      <rect x="98" y="68" width="12" height="8"  rx="4" fill="none" stroke="#1e293b" strokeWidth="1.5" />
-      <line x1="92" y1="72" x2="98" y2="72" stroke="#1e293b" strokeWidth="1.5" />
-      <path d="M87 80 Q95 86 103 80" fill="none" stroke="#f97316" strokeWidth="1.5" strokeLinecap="round" />
-      <rect x="218" y="72" width="72" height="40" rx="8" fill="white" opacity="0.92" />
-      <rect x="226" y="80" width="20" height="6"  rx="3" fill="#e0e7ff" />
-      <rect x="226" y="91" width="36" height="8"  rx="3" fill="#6366f1" />
-      <circle cx="272" cy="85" r="6" fill="#a5b4fc" />
-      <rect x="228" y="120" width="64" height="32" rx="7" fill="white" opacity="0.88" />
-      <rect x="235" y="127" width="24" height="5" rx="2" fill="#e0e7ff" />
-      <rect x="235" y="136" width="16" height="5" rx="2" fill="#34d399" />
-      <polyline points="262,141 268,133 274,137 280,129" fill="none" stroke="#6366f1" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="32"  cy="52"  r="2" fill="#a5b4fc" opacity="0.7" />
-      <circle cx="290" cy="42"  r="3" fill="#c7d2fe" opacity="0.8" />
-      <circle cx="308" cy="90"  r="2" fill="#818cf8" opacity="0.6" />
-      <circle cx="22"  cy="150" r="2" fill="#a5b4fc" opacity="0.5" />
-    </svg>
-  );
+function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return <section style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 18, overflow: 'hidden', ...style }}>{children}</section>;
 }
 
-// ── Mini donut ────────────────────────────────────────────────────────────────
-function MiniDonut({ percent, color }: { percent: number; color: string }) {
-  const r = 26, cx = 34, cy = 34;
-  const circ = 2 * Math.PI * r;
-  const dash  = (percent / 100) * circ;
-  return (
-    <svg width="68" height="68" viewBox="0 0 68 68">
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(148,163,184,0.15)" strokeWidth="7" />
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="7"
-        strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} strokeDashoffset={circ * 0.25}
-        style={{ transition: 'stroke-dasharray 0.8s ease' }} />
-      <text x={cx} y={cy + 5} textAnchor="middle" fontSize="11" fontWeight="700" fill={color}>
-        {percent}%
-      </text>
-    </svg>
-  );
+function CardHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return <div style={{ padding: '20px 22px 0' }}><div style={{ fontSize: 15, fontWeight: 800, color: 'var(--foreground)' }}>{title}</div><div style={{ fontSize: 11, color: 'var(--muted-foreground)', marginTop: 3 }}>{subtitle}</div></div>;
 }
 
-// ── Mini bar ──────────────────────────────────────────────────────────────────
-function MiniBar({ data, color }: { data: number[]; color: string }) {
-  const max = Math.max(...data);
-  const W = 72, H = 40, bw = 8;
-  const gap = (W - data.length * bw) / (data.length + 1);
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-      {data.map((v, i) => {
-        const h = Math.max(4, (v / max) * (H - 4));
-        return <rect key={i} x={gap + i * (bw + gap)} y={H - h} width={bw} height={h} rx="3"
-          fill={color} opacity={i === data.length - 1 ? 1 : 0.45} />;
-      })}
-    </svg>
-  );
-}
-
-// ── Mini area ─────────────────────────────────────────────────────────────────
-function MiniArea({ data, color, width = 88, height = 44 }: { data: number[]; color: string; width?: number; height?: number }) {
-  const max = Math.max(...data);
-  const W = width, H = height;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * W;
-    const y = H - (v / max) * (H - 4) - 2;
-    return [x, y] as [number, number];
-  });
-  const line = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-  const area = `${line} L${W},${H} L0,${H} Z`;
-  const gid  = `mg-${color.replace('#', '')}-${W}`;
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={color} stopOpacity="0.35" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.02" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill={`url(#${gid})`} />
-      <path d={line}  fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="3" fill={color} />
-    </svg>
-  );
-}
-
-// ── StatMiniCard ─────────────────────────────────────────────────────────────
-interface MiniCardProps {
-  label: string; value: number; prefix?: string; suffix?: string;
-  change: number; icon: React.ReactNode; iconColor: string; iconBg: string; chart: React.ReactNode;
-}
-function StatMiniCard({ label='', value=0, prefix='', suffix='', change=0,
-  icon=null, iconColor='#6366f1', iconBg='rgba(99,102,241,0.12)', chart=null }: MiniCardProps) {
-  const animated = useCountUp(value, 1200);
-  const display  = value >= 10000 ? (animated / 10000).toFixed(1) + 'w' : animated.toLocaleString();
-  return (
-    <div data-cmp="StatMiniCard" style={{
-      background:'var(--card)', border:'1px solid var(--border)', borderRadius:18,
-      padding:'18px 20px', display:'flex', flexDirection:'column', gap:12, flex:'1 1 0', minWidth:0,
-    }}>
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <div style={{ width:38, height:38, borderRadius:11, background:iconBg, color:iconColor,
-            display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{icon}</div>
-          <span style={{ fontSize:12, color:'var(--muted-foreground)', fontWeight:600 }}>{label}</span>
-        </div>
-        <span style={{ display:'inline-flex', alignItems:'center', gap:2, fontSize:11, fontWeight:700,
-          color:'#10b981', background:'rgba(16,185,129,0.11)', padding:'3px 8px', borderRadius:20 }}>
-          <ArrowUpIcon size={9}/>{change}%
-        </span>
-      </div>
-      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:8 }}>
-        <div style={{ fontSize:28, fontWeight:800, color:'var(--foreground)',
-          letterSpacing:'-0.5px', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
-          {prefix}{display}{suffix}
-        </div>
-        <div style={{ flexShrink:0 }}>{chart}</div>
-      </div>
+function StatCard({ label, value, prefix = '', suffix = '', change, icon, color, chart }: { label: string; value: number; prefix?: string; suffix?: string; change: number; icon: React.ReactNode; color: string; chart: React.ReactNode }) {
+  const animated = useCountUp(value);
+  const up = change >= 0;
+  return <Card style={{ padding: '17px 18px', flex: '1 1 0', minWidth: 170 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}><span style={{ width: 36, height: 36, borderRadius: 10, background: `${color}20`, color, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span><span style={{ fontSize: 12, color: 'var(--muted-foreground)', fontWeight: 650 }}>{label}</span></div>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, padding: '3px 7px', borderRadius: 99, fontSize: 10, fontWeight: 750, color: up ? '#059669' : '#dc2626', background: up ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)' }}>{up ? <ArrowUpIcon size={10} /> : <ArrowDownIcon size={10} />}{Math.abs(change)}%</span>
     </div>
-  );
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 6, marginTop: 14 }}><strong style={{ fontSize: 27, lineHeight: 1, color: 'var(--foreground)', letterSpacing: '-.5px', fontVariantNumeric: 'tabular-nums' }}>{prefix}{animated.toLocaleString()}{suffix}</strong>{chart}</div>
+  </Card>;
 }
 
-// ── Bidirectional bar chart (SVG) ─────────────────────────────────────────────
-const SALES_A = [42, 58, 35, 67, 80, 55, 72, 90, 63, 74, 88, 95]; // 本年
-const SALES_B = [30, 45, 52, 48, 60, 72, 50, 65, 80, 55, 70, 82]; // 去年
-
-type Translate = ReturnType<typeof useLocale>['t'];
-
-function BidirectionalBarChart({ t }: { t: Translate }) {
-  const months = Array.from({ length: 12 }, (_, index) => t(`dashboard.month${index + 1}`));
-  const W = 560, H = 220;
-  const midY   = H / 2;
-  const maxVal = 100;
-  const barW   = 10;
-  const cols   = months.length;
-  const colW   = W / cols;
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width:'100%', height:'100%', display:'block', overflow:'visible' }}>
-      <defs>
-        {months.map((_, i) => (
-          <linearGradient key={`ga-${i}`} id={`ga-${i}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="#6366f1" stopOpacity="1" />
-            <stop offset="100%" stopColor="#a5b4fc" stopOpacity="0.5" />
-          </linearGradient>
-        ))}
-        {months.map((_, i) => (
-          <linearGradient key={`gb-${i}`} id={`gb-${i}`} x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%"   stopColor="#f97316" stopOpacity="1" />
-            <stop offset="100%" stopColor="#fcd34d" stopOpacity="0.5" />
-          </linearGradient>
-        ))}
-      </defs>
-
-      {/* center axis */}
-      <line x1="0" y1={midY} x2={W} y2={midY} stroke="var(--border)" strokeWidth="1" />
-
-      {/* y-axis labels */}
-      {[100, 50, 0, 50, 100].map((v, i) => {
-        const y = (i / 4) * H;
-        return (
-          <text key={v + '-' + i} x={-6} y={y + 4} textAnchor="end" fontSize="9"
-            fill="var(--muted-foreground)">{v === 0 ? '' : v}</text>
-        );
-      })}
-
-      {months.map((m, i) => {
-        const x    = i * colW + colW / 2;
-        const hA   = (SALES_A[i] / maxVal) * (midY - 16);
-        const hB   = (SALES_B[i] / maxVal) * (midY - 16);
-        const xA   = x - barW - 2;
-        const xB   = x + 2;
-        return (
-          <g key={m}>
-            {/* upward bar (本年) */}
-            <rect x={xA} y={midY - hA} width={barW} height={hA} rx="3"
-              fill={`url(#ga-${i})`} />
-            {/* downward bar (去年) */}
-            <rect x={xB} y={midY} width={barW} height={hB} rx="3"
-              fill={`url(#gb-${i})`} />
-            {/* month label */}
-            <text x={x} y={H + 14} textAnchor="middle" fontSize="9" fill="var(--muted-foreground)">{m}</text>
-          </g>
-        );
-      })}
-
-      {/* legend */}
-      <rect x={W - 130} y={4} width="10" height="10" rx="2" fill="#6366f1" />
-      <text x={W - 116} y={13} fontSize="9" fill="var(--muted-foreground)">{t('ecommerce.currentYear')}</text>
-      <rect x={W - 80}  y={4} width="10" height="10" rx="2" fill="#f97316" />
-      <text x={W - 66}  y={13} fontSize="9" fill="var(--muted-foreground)">{t('ecommerce.previousYear')}</text>
-    </svg>
-  );
+function ProgressDonut({ value, color }: { value: number; color: string }) {
+  const radius = 25; const circumference = 2 * Math.PI * radius; const percent = Math.max(0, Math.min(100, value));
+  return <svg width="62" height="62" viewBox="0 0 62 62" aria-label={`${percent}%`}><circle cx="31" cy="31" r={radius} fill="none" stroke="var(--muted)" strokeWidth="7" /><circle cx="31" cy="31" r={radius} fill="none" stroke={color} strokeWidth="7" strokeLinecap="round" strokeDasharray={`${circumference * percent / 100} ${circumference}`} transform="rotate(-90 31 31)" /><text x="31" y="35" textAnchor="middle" fontSize="11" fontWeight="750" fill={color}>{percent}%</text></svg>;
 }
 
-// ── Donut chart (SVG) for 销售分类 ────────────────────────────────────────────
-interface DonutSlice { label: string; value: number; color: string; }
-const DONUT_DATA: DonutSlice[] = [
-  { label: 'ecommerce.categoryClothing', value: 35, color: '#6366f1' },
-  { label: 'ecommerce.categoryDigital', value: 25, color: '#10b981' },
-  { label: 'ecommerce.categoryFood', value: 20, color: '#f59e0b' },
-  { label: 'ecommerce.categoryHome', value: 12, color: '#e879f9' },
-  { label: 'ecommerce.categoryOther', value: 8, color: '#38bdf8' },
-];
-
-function SalesDonut({ t }: { t: Translate }) {
-  const cx = 90, cy = 90, R = 68, r = 44;
-  const total = DONUT_DATA.reduce((s, d) => s + d.value, 0);
-  let angle = -Math.PI / 2;
-  const slices = DONUT_DATA.map(d => {
-    const a0  = angle;
-    const a1  = angle + (d.value / total) * 2 * Math.PI;
-    angle     = a1;
-    const gap = 0.03;
-    const sa  = a0 + gap, ea = a1 - gap;
-    const x0  = cx + R * Math.cos(sa), y0 = cy + R * Math.sin(sa);
-    const x1  = cx + r * Math.cos(sa), y1 = cy + r * Math.sin(sa);
-    const x2  = cx + R * Math.cos(ea), y2 = cy + R * Math.sin(ea);
-    const x3  = cx + r * Math.cos(ea), y3 = cy + r * Math.sin(ea);
-    const lg  = (a1 - a0) > Math.PI ? 1 : 0;
-    const path = [
-      `M ${x0.toFixed(2)} ${y0.toFixed(2)}`,
-      `A ${R} ${R} 0 ${lg} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`,
-      `L ${x3.toFixed(2)} ${y3.toFixed(2)}`,
-      `A ${r} ${r} 0 ${lg} 0 ${x1.toFixed(2)} ${y1.toFixed(2)}`,
-      'Z',
-    ].join(' ');
-    return { ...d, path };
-  });
-
-  return (
-    <svg viewBox="0 0 180 180" style={{ width: '100%', maxWidth: 180, display: 'block', margin: '0 auto' }}>
-      {slices.map(s => (
-        <path key={s.label} d={s.path} fill={s.color} opacity="0.9" />
-      ))}
-      {/* center label */}
-      <text x={cx} y={cy - 8} textAnchor="middle" fontSize="9" fill="var(--muted-foreground)">{t('ecommerce.totalSales')}</text>
-      <text x={cx} y={cy + 8} textAnchor="middle" fontSize="13" fontWeight="800" fill="var(--foreground)">¥300,458</text>
-    </svg>
-  );
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  const width = 88; const height = 42; const values = data.length > 1 ? data : [0, 0]; const max = Math.max(...values, 1);
+  const points = values.map((value, index) => `${(index / (values.length - 1) * width).toFixed(1)},${(height - value / max * (height - 6) - 3).toFixed(1)}`).join(' ');
+  return <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}><polyline points={points} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /><circle cx={width} cy={Number(points.split(' ').at(-1)?.split(',')[1] ?? height / 2)} r="3" fill={color} /></svg>;
 }
 
-// ── Large area chart for 转化率 ───────────────────────────────────────────────
-const CONV_DATA = [38, 52, 45, 68, 55, 72, 65, 80, 74, 90, 83, 95];
-
-function ConversionArea({ t }: { t: Translate }) {
-  const W = 340, H = 130;
-  const max = Math.max(...CONV_DATA);
-  const pts = CONV_DATA.map((v, i) => {
-    const x = (i / (CONV_DATA.length - 1)) * W;
-    const y = H - (v / max) * (H - 16) - 4;
-    return [x, y] as [number, number];
-  });
-
-  // smooth cubic bezier
-  const smooth = (ps: [number, number][]) => {
-    let d = `M ${ps[0][0].toFixed(1)} ${ps[0][1].toFixed(1)}`;
-    for (let i = 1; i < ps.length; i++) {
-      const [px, py] = ps[i - 1];
-      const [cx2, cy2] = ps[i];
-      const cpx1 = px + (cx2 - px) * 0.5;
-      const cpy1 = py;
-      const cpx2 = cx2 - (cx2 - px) * 0.5;
-      const cpy2 = cy2;
-      d += ` C ${cpx1.toFixed(1)} ${cpy1.toFixed(1)}, ${cpx2.toFixed(1)} ${cpy2.toFixed(1)}, ${cx2.toFixed(1)} ${cy2.toFixed(1)}`;
-    }
-    return d;
-  };
-
-  const linePath = smooth(pts);
-  const areaPath = `${linePath} L${W},${H} L0,${H} Z`;
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width:'100%', height:'100%', display:'block' }}>
-      <defs>
-        <linearGradient id="conv-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#6366f1" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0.01" />
-        </linearGradient>
-      </defs>
-      <path d={areaPath} fill="url(#conv-grad)" />
-      <path d={linePath} fill="none" stroke="#6366f1" strokeWidth="2.5"
-        strokeLinecap="round" strokeLinejoin="round" />
-      {/* month ticks */}
-      {[1, 3, 5, 7, 9, 11].map((month, i) => {
-        const xi = i * 2;
-        const x  = (xi / (CONV_DATA.length - 1)) * W;
-        return <text key={month} x={x} y={H + 14} textAnchor="middle" fontSize="9"
-          fill="var(--muted-foreground)">{t(`dashboard.month${month}`)}</text>;
-      })}
-      {/* last dot */}
-      <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="4" fill="#6366f1" />
-      <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="7" fill="#6366f1" opacity="0.2" />
-    </svg>
-  );
+function SalesTrendChart({ labels, current, previous }: { labels: string[]; current: number[]; previous: number[] }) {
+  const width = 660; const height = 235; const mid = 104; const max = Math.max(...current, ...previous, 1); const column = width / Math.max(labels.length, 1); const bar = Math.max(4, Math.min(11, 100 / Math.max(labels.length, 1)));
+  return <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}>
+    <line x1="0" y1={mid} x2={width} y2={mid} stroke="var(--border)" />
+    {[0, .5, 1].map((fraction, index) => <line key={index} x1="0" y1={mid - fraction * 82} x2={width} y2={mid - fraction * 82} stroke="var(--border)" strokeDasharray="3 4" opacity={fraction ? .55 : 1} />)}
+    {labels.map((label, index) => { const x = index * column + column / 2; const up = ((current[index] ?? 0) / max) * 82; const down = ((previous[index] ?? 0) / max) * 82; return <g key={`${label}-${index}`}><rect x={x - bar - 2} y={mid - up} width={bar} height={up} rx="3" fill="#6366f1" /><rect x={x + 2} y={mid} width={bar} height={down} rx="3" fill="#f59e0b" opacity=".85" /><text x={x} y="211" textAnchor="middle" fontSize="9" fill="var(--muted-foreground)">{label}</text></g>; })}
+    <g transform="translate(510 12)"><rect width="9" height="9" rx="2" fill="#6366f1" /><text x="14" y="8" fontSize="10" fill="var(--muted-foreground)">本周期</text><rect x="70" width="9" height="9" rx="2" fill="#f59e0b" /><text x="84" y="8" fontSize="10" fill="var(--muted-foreground)">上一周期</text></g>
+  </svg>;
 }
 
-// ── Recent activity data ──────────────────────────────────────────────────────
-interface ActivityItem {
-  id: number;
-  icon: React.ReactNode;
-  iconBg: string;
-  titleKey: string;
-  subKey: string;
-  statusKey: 'pending' | 'completed' | 'processing' | 'cancelled';
-  timeKey: string;
+interface CategorySlice { name: string; value: number; color: string; }
+function CategoryDonut({ data, total }: { data: CategorySlice[]; total: number }) {
+  const cx = 90; const cy = 90; const outer = 66; const inner = 43; const safeTotal = Math.max(total, 1); let angle = -Math.PI / 2;
+  const slices = data.map(item => { const start = angle + .025; angle += item.value / safeTotal * 2 * Math.PI; const end = angle - .025; const large = end - start > Math.PI ? 1 : 0; const point = (radius: number, a: number) => [cx + radius * Math.cos(a), cy + radius * Math.sin(a)]; const [x0, y0] = point(outer, start); const [x1, y1] = point(inner, start); const [x2, y2] = point(outer, end); const [x3, y3] = point(inner, end); return { ...item, path: `M ${x0} ${y0} A ${outer} ${outer} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 ${large} 0 ${x1} ${y1} Z` }; });
+  return <svg viewBox="0 0 180 180" style={{ width: '100%', maxWidth: 180, display: 'block', margin: '0 auto' }}>{slices.length ? slices.map(item => <path key={item.name} d={item.path} fill={item.color} />) : <circle cx={cx} cy={cy} r={(outer + inner) / 2} fill="none" stroke="var(--muted)" strokeWidth={outer - inner} />}<text x={cx} y={cy - 7} textAnchor="middle" fontSize="10" fill="var(--muted-foreground)">销售收入</text><text x={cx} y={cy + 12} textAnchor="middle" fontSize="13" fontWeight="800" fill="var(--foreground)">¥{total.toLocaleString()}</text></svg>;
 }
 
-const ACTIVITIES: ActivityItem[] = [
-  { id:1, icon:<ShoppingCartIcon size={14}/>, iconBg:'rgba(99,102,241,0.14)',
-    titleKey:'ecommerce.activity1Title', subKey:'ecommerce.activity1Sub',
-    statusKey:'pending', timeKey:'ecommerce.activity1Time' },
-  { id:2, icon:<TruckIcon size={14}/>, iconBg:'rgba(16,185,129,0.14)',
-    titleKey:'ecommerce.activity2Title', subKey:'ecommerce.activity2Sub',
-    statusKey:'completed', timeKey:'ecommerce.activity2Time' },
-  { id:3, icon:<BoxIcon size={14}/>, iconBg:'rgba(245,158,11,0.14)',
-    titleKey:'ecommerce.activity3Title', subKey:'ecommerce.activity3Sub',
-    statusKey:'pending', timeKey:'ecommerce.activity3Time' },
-  { id:4, icon:<RefreshCwIcon size={14}/>, iconBg:'rgba(239,68,68,0.13)',
-    titleKey:'ecommerce.activity4Title', subKey:'ecommerce.activity4Sub',
-    statusKey:'processing', timeKey:'ecommerce.activity4Time' },
-  { id:5, icon:<CheckCircleIcon size={14}/>, iconBg:'rgba(16,185,129,0.14)',
-    titleKey:'ecommerce.activity5Title', subKey:'ecommerce.activity5Sub',
-    statusKey:'completed', timeKey:'ecommerce.activity5Time' },
-  { id:6, icon:<AlertCircleIcon size={14}/>, iconBg:'rgba(245,158,11,0.14)',
-    titleKey:'ecommerce.activity6Title', subKey:'ecommerce.activity6Sub',
-    statusKey:'pending', timeKey:'ecommerce.activity6Time' },
-];
+function ConversionChart({ labels, data }: { labels: string[]; data: number[] }) {
+  const width = 360; const height = 135; const values = data.length > 1 ? data : [0, 0]; const points = values.map((value, index) => [index / (values.length - 1) * width, height - Math.min(100, Math.max(0, value)) / 100 * (height - 16) - 5] as const); const line = points.map(([x, y], index) => `${index ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' '); const area = `${line} L${width} ${height} L0 ${height} Z`;
+  return <svg viewBox={`0 0 ${width} ${height + 18}`} style={{ width: '100%', height: '100%', display: 'block' }}><defs><linearGradient id="ecommerce-conversion" x1="0" x2="0" y2="1"><stop stopColor="#6366f1" stopOpacity=".28" /><stop offset="1" stopColor="#6366f1" stopOpacity="0" /></linearGradient></defs><path d={area} fill="url(#ecommerce-conversion)" /><path d={line} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />{labels.filter((_, index) => index === 0 || index === labels.length - 1 || index % Math.ceil(labels.length / 4) === 0).map(label => { const index = labels.indexOf(label); return <text key={label} x={index / Math.max(labels.length - 1, 1) * width} y={height + 14} textAnchor="middle" fontSize="9" fill="var(--muted-foreground)">{label}</text>; })}</svg>;
+}
 
-const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  pending: { bg:'rgba(245,158,11,0.14)', color:'#d97706' },
-  completed: { bg:'rgba(16,185,129,0.13)', color:'#059669' },
-  processing: { bg:'rgba(99,102,241,0.13)', color:'#6366f1' },
-  cancelled: { bg:'rgba(148,163,184,0.15)', color:'#64748b' },
+const emptyDashboard = (days: DashboardAnalyticsRange): EcommerceDashboardData => ({ days, rangeStart: '', rangeEnd: '', labels: Array.from({ length: days }, (_, index) => String(index + 1)), metrics: { todaySales: 0, todaySalesChange: 0, totalOrders: 0, ordersChange: 0, activeUsers: 0, activeUsersChange: 0, totalProducts: 0, productsChange: 0, fulfillmentRate: 0, fulfillmentChange: 0, conversionCount: 0, conversionChange: 0, revenue: 0, netProfit: 0 }, salesTrend: { current: Array(days).fill(0), previous: Array(days).fill(0) }, categories: [], conversionTrend: Array(days).fill(0), recentOrders: [] });
+
+function exportCsv(data: EcommerceDashboardData) {
+  const quote = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
+  const rows: Array<Array<string | number>> = [['日期', '本周期已完成收入', '上一周期已完成收入', '订单完成率'], ...data.labels.map((label, index) => [label, data.salesTrend.current[index] ?? 0, data.salesTrend.previous[index] ?? 0, data.conversionTrend[index] ?? 0])];
+  const blob = new Blob([`\ufeff${rows.map(row => row.map(quote).join(',')).join('\n')}`], { type: 'text/csv;charset=utf-8' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `电商报表-${data.rangeStart || 'latest'}-${data.rangeEnd || 'latest'}.csv`; link.click(); window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+const ORDER_STATUS: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  pending: { label: '待处理', color: '#b45309', bg: '#fef3c7', icon: <ClockIcon size={14} /> },
+  shipping: { label: '配送中', color: '#2563eb', bg: '#dbeafe', icon: <TruckIcon size={14} /> },
+  completed: { label: '已完成', color: '#16a34a', bg: '#dcfce7', icon: <CheckCircleIcon size={14} /> },
+  cancelled: { label: '已取消', color: '#64748b', bg: '#e2e8f0', icon: <AlertCircleIcon size={14} /> },
 };
 
-// ── Card wrapper ──────────────────────────────────────────────────────────────
-function Card({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return (
-    <div style={{
-      background: 'var(--card)', border: '1px solid var(--border)',
-      borderRadius: 20, overflow: 'hidden', ...style,
-    }}>
-      {children}
-    </div>
-  );
-}
-
-function CardHeader({ title, sub }: { title: string; sub?: string }) {
-  return (
-    <div style={{ padding:'20px 22px 0', display:'flex', alignItems:'baseline', justifyContent:'space-between' }}>
-      <div>
-        <div style={{ fontSize:15, fontWeight:800, color:'var(--foreground)' }}>{title}</div>
-        {sub && <div style={{ fontSize:11, color:'var(--muted-foreground)', marginTop:2 }}>{sub}</div>}
-      </div>
-    </div>
-  );
-}
-
-// ── Page ─────────────────────────────────────────────────────────────────────
 export default function EcommercePage() {
   const { themeState } = useTheme();
   const { t } = useLocale();
-  const isManga    = themeState.themeId === 'manga';
-  const _primary   = isManga ? '#E91E8C' : '#6366f1';
+  const primary = themeState.themeId === 'manga' ? '#E91E8C' : '#6366f1';
+  const [range, setRange] = useState<DashboardAnalyticsRange>(7);
+  const [data, setData] = useState<EcommerceDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const todaySales  = useCountUp(2340,  1500);
-  const convCount   = useCountUp(2545,  1400);
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    void getEcommerceDashboard(range).then(result => { if (active) { setData(result); setError(''); } }).catch(reason => { if (active) setError(reason instanceof Error ? reason.message : '电商数据加载失败'); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [range, reloadKey]);
 
-  return (
-    <AdminLayout>
-      <div data-cmp="EcommercePage" style={{
-        minHeight:'100%', background:'var(--background)',
-        padding:'24px', display:'flex', flexDirection:'column', gap:24,
-      }}>
+  const dashboard = data ?? emptyDashboard(range);
+  const categoryTotal = dashboard.categories.reduce((sum, item) => sum + item.value, 0);
+  const categories: CategorySlice[] = dashboard.categories.map((item, index) => ({ ...item, color: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }));
+  const todaySales = useCountUp(dashboard.metrics.todaySales);
+  const conversionCount = useCountUp(dashboard.metrics.conversionCount);
+  const period = dashboard.rangeStart && dashboard.rangeEnd ? `${dashboard.rangeStart} 至 ${dashboard.rangeEnd}` : `近 ${range} 天`;
 
-        {/* page header */}
-        <div>
-          <h1 style={{ margin:0, fontSize:20, fontWeight:800, color:'var(--foreground)' }}>{t('ecommerce.title')}</h1>
-          <p style={{ margin:'4px 0 0', fontSize:13, color:'var(--muted-foreground)' }}>
-            {t('ecommerce.subtitle')}
-          </p>
-        </div>
-
-        {/* ══ 上半区 ═══════════════════════════════════════════════════════════ */}
-        <div style={{ display:'flex', gap:20, alignItems:'stretch' }}>
-
-          {/* ① 欢迎横幅 */}
-          <div style={{
-            flex:'5 1 0', minWidth:0, borderRadius:22, overflow:'hidden', position:'relative',
-            background:'linear-gradient(135deg,#dbeafe 0%,#ede9fe 55%,#c7d2fe 100%)',
-            padding:'32px 36px', display:'flex', alignItems:'center', justifyContent:'space-between', minHeight:220,
-          }}>
-            <div style={{ position:'absolute', top:-40, right:120, width:180, height:180,
-              borderRadius:'50%', background:'rgba(139,92,246,0.08)', pointerEvents:'none' }} />
-            <div style={{ position:'absolute', bottom:-30, left:200, width:120, height:120,
-              borderRadius:'50%', background:'rgba(99,102,241,0.07)', pointerEvents:'none' }} />
-
-            <div style={{ position:'relative', zIndex:1, maxWidth:260 }}>
-              <div style={{ display:'inline-flex', alignItems:'center', gap:6,
-                background:'rgba(255,255,255,0.65)', border:'1px solid rgba(99,102,241,0.2)',
-                borderRadius:99, padding:'4px 12px', fontSize:11, fontWeight:700, color:'#4f46e5',
-                marginBottom:14, backdropFilter:'blur(4px)' }}>
-                <StarIcon size={10} style={{ fill:'#f59e0b', color:'#f59e0b' }} />{t('ecommerce.todayOverview')}
-              </div>
-              <h2 style={{ margin:'0 0 6px', fontSize:24, fontWeight:900, color:'#1e1b4b', lineHeight:1.2 }}>
-                {t('ecommerce.welcome', { name: 'Admin' })} 👋
-              </h2>
-              <p style={{ margin:'0 0 22px', fontSize:13, color:'#4f46e5', opacity:0.75, fontWeight:500 }}>
-                {t('ecommerce.storePerformance')}
-              </p>
-              <div style={{ background:'rgba(255,255,255,0.70)', backdropFilter:'blur(8px)',
-                border:'1px solid rgba(255,255,255,0.9)', borderRadius:16, padding:'14px 20px',
-                display:'inline-flex', flexDirection:'column', gap:4, minWidth:180 }}>
-                <span style={{ fontSize:11, color:'#6366f1', fontWeight:700, letterSpacing:'0.04em', textTransform:'uppercase' }}>
-                  {t('ecommerce.todaySales')}
-                </span>
-                <span style={{ fontSize:34, fontWeight:900, color:'#1e1b4b',
-                  fontVariantNumeric:'tabular-nums', letterSpacing:'-1px' }}>
-                  ¥{todaySales.toLocaleString()}
-                </span>
-                <div style={{ display:'flex', alignItems:'center', gap:5, marginTop:2 }}>
-                  <span style={{ display:'inline-flex', alignItems:'center', gap:3,
-                    background:'rgba(16,185,129,0.15)', color:'#059669', fontSize:12, fontWeight:800,
-                    padding:'2px 8px', borderRadius:99 }}>
-                    <ArrowUpIcon size={10}/>35%
-                  </span>
-                  <span style={{ fontSize:11, color:'#64748b' }}>{t('ecommerce.previousDay')}</span>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ flex:'0 0 320px', height:220, position:'relative', zIndex:1, display:'flex', alignItems:'flex-end' }}>
-              <AnalyticsIllustration />
-            </div>
-          </div>
-
-          {/* ② 2×2 mini stat cards */}
-          <div style={{ flex:'4 1 0', minWidth:0, display:'flex', flexDirection:'column', gap:16 }}>
-            <div style={{ display:'flex', gap:16, flex:'1 1 0' }}>
-              <StatMiniCard label={t('ecommerce.totalOrders')} value={12849} change={18.2}
-                icon={<ShoppingCartIcon size={17}/>} iconColor="#6366f1" iconBg="rgba(99,102,241,0.12)"
-                chart={<MiniDonut percent={72} color="#6366f1"/>} />
-              <StatMiniCard label={t('ecommerce.activeUsers')} value={3682} change={9.4}
-                icon={<UsersIcon size={17}/>} iconColor="#10b981" iconBg="rgba(16,185,129,0.12)"
-                chart={<MiniBar data={[55,72,61,88,76,95,83]} color="#10b981"/>} />
-            </div>
-            <div style={{ display:'flex', gap:16, flex:'1 1 0' }}>
-              <StatMiniCard label={t('ecommerce.totalProducts')} value={847} change={5.6}
-                icon={<PackageIcon size={17}/>} iconColor="#f59e0b" iconBg="rgba(245,158,11,0.12)"
-                chart={<MiniArea data={[40,55,48,67,59,78,72,85,91]} color="#f59e0b"/>} />
-              <StatMiniCard label={t('ecommerce.rating')} value={96} suffix="%" change={2.1}
-                icon={<StarIcon size={17}/>} iconColor="#e879f9" iconBg="rgba(232,121,249,0.12)"
-                chart={<MiniDonut percent={96} color="#e879f9"/>} />
-            </div>
-          </div>
-        </div>
-
-        {/* ══ 下半区 Row 1 ═════════════════════════════════════════════════════ */}
-        <div style={{ display:'flex', gap:20, alignItems:'stretch' }}>
-
-          {/* ③ 销售趋势 — 双向柱状图 */}
-          <Card style={{ flex:'4 1 0', minWidth:0 }}>
-            <CardHeader title={t('ecommerce.salesTrend')} sub={t('ecommerce.salesTrendSubtitle')} />
-            <div style={{ padding:'16px 22px 24px', height:240, boxSizing:'border-box' }}>
-              <BidirectionalBarChart t={t} />
-            </div>
-          </Card>
-
-          {/* ④ 销售分类 — 环形图 */}
-          <Card style={{ flex:'3 1 0', minWidth:0 }}>
-            <CardHeader title={t('ecommerce.salesCategory')} sub={t('ecommerce.salesCategorySubtitle')} />
-            <div style={{ padding:'12px 22px 20px', display:'flex', flexDirection:'column', gap:12 }}>
-              <SalesDonut t={t} />
-              {/* legend dots */}
-              <div style={{ display:'flex', flexWrap:'wrap', gap:'6px 14px', justifyContent:'center' }}>
-                {DONUT_DATA.map(d => (
-                  <div key={d.label} style={{ display:'flex', alignItems:'center', gap:5 }}>
-                    <div style={{ width:8, height:8, borderRadius:'50%', background:d.color, flexShrink:0 }} />
-                    <span style={{ fontSize:11, color:'var(--muted-foreground)' }}>{t(d.label)}</span>
-                    <span style={{ fontSize:11, fontWeight:700, color:'var(--foreground)' }}>{d.value}%</span>
-                  </div>
-                ))}
-              </div>
-              {/* 总收入 / 净利润 */}
-              <div style={{ borderTop:'1px solid var(--border)', paddingTop:14, display:'flex', flexDirection:'column', gap:10 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                  <div style={{ width:32, height:32, borderRadius:10, background:'rgba(99,102,241,0.12)',
-                    color:'#6366f1', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <DollarSignIcon size={15}/>
-                  </div>
-                  <div>
-                    <div style={{ fontSize:11, color:'var(--muted-foreground)', fontWeight:500 }}>{t('ecommerce.revenue')}</div>
-                    <div style={{ fontSize:16, fontWeight:800, color:'var(--foreground)', letterSpacing:'-0.3px' }}>¥500,458</div>
-                  </div>
-                </div>
-                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                  <div style={{ width:32, height:32, borderRadius:10, background:'rgba(16,185,129,0.12)',
-                    color:'#10b981', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <TrendingUpIcon size={15}/>
-                  </div>
-                  <div>
-                    <div style={{ fontSize:11, color:'var(--muted-foreground)', fontWeight:500 }}>{t('ecommerce.netProfit')}</div>
-                    <div style={{ fontSize:16, fontWeight:800, color:'var(--foreground)', letterSpacing:'-0.3px' }}>¥130,580</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* ⑤ 购物车转化率 */}
-          <Card style={{ flex:'3 1 0', minWidth:0 }}>
-            <CardHeader title={t('ecommerce.cartConversion')} sub={t('ecommerce.cartConversionSubtitle')} />
-            <div style={{ padding:'14px 22px 0' }}>
-              {/* big number */}
-              <div style={{ display:'flex', alignItems:'baseline', gap:10, marginBottom:14 }}>
-                <span style={{ fontSize:44, fontWeight:900, color:'var(--foreground)',
-                  letterSpacing:'-2px', fontVariantNumeric:'tabular-nums', lineHeight:1 }}>
-                  {convCount.toLocaleString()}
-                </span>
-                <span style={{ display:'inline-flex', alignItems:'center', gap:3,
-                  background:'rgba(16,185,129,0.13)', color:'#059669',
-                  fontSize:12, fontWeight:800, padding:'3px 9px', borderRadius:99 }}>
-                  <ArrowUpIcon size={10}/>1.2%
-                </span>
-              </div>
-              <p style={{ margin:'0 0 10px', fontSize:11, color:'var(--muted-foreground)' }}>
-                {t('ecommerce.newConversions')}
-              </p>
-            </div>
-            {/* area chart */}
-            <div style={{ padding:'0 10px', height:160, boxSizing:'border-box' }}>
-              <ConversionArea t={t} />
-            </div>
-          </Card>
-        </div>
-
-        {/* ══ 下半区 Row 2 — 最近活动 ═════════════════════════════════════════ */}
-        <Card>
-          <CardHeader title={t('ecommerce.recentActivity')} sub={t('ecommerce.storeActivity')} />
-          <div style={{ padding:'14px 0 8px' }}>
-            {ACTIVITIES.map((item, idx) => {
-              const ss = STATUS_STYLE[item.statusKey] ?? STATUS_STYLE.cancelled;
-              return (
-                <div key={item.id} style={{
-                  display:'flex', alignItems:'center', gap:14,
-                  padding:'13px 22px',
-                  borderTop: idx === 0 ? 'none' : '1px solid var(--border)',
-                }}>
-                  {/* icon */}
-                  <div style={{ width:36, height:36, borderRadius:11, background:item.iconBg,
-                    color:'var(--foreground)', display:'flex', alignItems:'center',
-                    justifyContent:'center', flexShrink:0 }}>
-                    {item.icon}
-                  </div>
-                  {/* text */}
-                  <div style={{ flex:'1 1 0', minWidth:0 }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:'var(--foreground)',
-                      whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                      {t(item.titleKey)}
-                    </div>
-                    <div style={{ fontSize:11, color:'var(--muted-foreground)', marginTop:2 }}>{t(item.subKey)}</div>
-                  </div>
-                  {/* status badge */}
-                  <span style={{ flexShrink:0, display:'inline-flex', alignItems:'center', gap:5,
-                    background:ss.bg, color:ss.color, fontSize:11, fontWeight:700,
-                    padding:'4px 10px', borderRadius:99, whiteSpace:'nowrap' }}>
-                    {t(`ecommerce.status${item.statusKey[0].toUpperCase()}${item.statusKey.slice(1)}`)}
-                  </span>
-                  {/* time */}
-                  <div style={{ flexShrink:0, display:'flex', alignItems:'center', gap:4,
-                    fontSize:11, color:'var(--muted-foreground)', minWidth:72, justifyContent:'flex-end' }}>
-                    <ClockIcon size={11}/>
-                    {t(item.timeKey)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-
-      </div>
-    </AdminLayout>
-  );
+  return <AdminLayout><main data-cmp="EcommercePage" style={{ minHeight: '100%', padding: 24, background: 'var(--background)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <header className="ecommerce-heading" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+      <div><h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--foreground)' }}>{t('ecommerce.title')}</h1><p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--muted-foreground)' }}>{t('ecommerce.subtitle')} · {period}</p></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}><div style={{ display: 'flex', padding: 3, border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)' }}>{([7, 30, 90] as DashboardAnalyticsRange[]).map(days => <button key={days} type="button" onClick={() => setRange(days)} style={{ height: 28, padding: '0 10px', border: 0, borderRadius: 7, background: range === days ? primary : 'transparent', color: range === days ? '#fff' : 'var(--muted-foreground)', cursor: 'pointer', fontWeight: 650, fontSize: 12 }}>近{days}天</button>)}</div><button type="button" onClick={() => setReloadKey(value => value + 1)} disabled={loading} title="刷新数据" style={{ width: 36, height: 36, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', color: 'var(--muted-foreground)', cursor: loading ? 'wait' : 'pointer' }}><RefreshCwIcon size={15} className={loading ? 'animate-spin' : undefined} /></button><button type="button" onClick={() => { exportCsv(dashboard); toast.success('电商报表已导出'); }} style={{ height: 36, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', color: 'var(--foreground)', cursor: 'pointer', fontSize: 12, fontWeight: 650 }}><DownloadIcon size={14} />导出</button></div>
+    </header>
+    {error && <div role="alert" style={{ padding: '10px 13px', border: '1px solid #fecaca', borderRadius: 10, background: '#fef2f2', color: '#b91c1c', fontSize: 13, display: 'flex', justifyContent: 'space-between' }}><span>{error}</span><button type="button" onClick={() => setReloadKey(value => value + 1)} style={{ border: 0, background: 'transparent', color: '#b91c1c', fontWeight: 700, cursor: 'pointer' }}>重试</button></div>}
+    <div className="ecommerce-top" style={{ display: 'grid', gridTemplateColumns: 'minmax(360px, 1.1fr) minmax(450px, .9fr)', gap: 18 }}>
+      <section style={{ position: 'relative', minHeight: 224, overflow: 'hidden', borderRadius: 20, padding: '30px 34px', color: '#1e1b4b', background: 'linear-gradient(135deg,#dbeafe 0%,#ede9fe 52%,#c7d2fe 100%)' }}><div style={{ position: 'absolute', width: 190, height: 190, borderRadius: '50%', right: 55, top: -60, background: 'rgba(139,92,246,.12)' }} /><div style={{ position: 'absolute', right: 44, bottom: 35, width: 180, height: 105, borderRadius: 16, transform: 'skew(-8deg)', background: 'rgba(99,102,241,.14)' }} /><div style={{ position: 'relative', zIndex: 1 }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99, background: 'rgba(255,255,255,.68)', border: '1px solid rgba(99,102,241,.18)', color: '#4f46e5', fontSize: 11, fontWeight: 750 }}><StarIcon size={10} fill="#f59e0b" color="#f59e0b" />实时订单数据</span><h2 style={{ margin: '15px 0 6px', fontSize: 24, fontWeight: 900 }}>欢迎回来 Admin 👋</h2><p style={{ margin: 0, color: '#4f46e5', fontSize: 13 }}>销售额、订单和完成率均来自订单管理。</p><div style={{ marginTop: 22, display: 'inline-flex', flexDirection: 'column', gap: 5, padding: '14px 18px', minWidth: 190, borderRadius: 15, background: 'rgba(255,255,255,.72)', border: '1px solid rgba(255,255,255,.9)' }}><span style={{ fontSize: 11, color: '#6366f1', fontWeight: 750 }}>最近交易日销售额</span><strong style={{ fontSize: 31, fontVariantNumeric: 'tabular-nums' }}>¥{todaySales.toLocaleString()}</strong><span style={{ color: dashboard.metrics.todaySalesChange >= 0 ? '#059669' : '#dc2626', fontSize: 12, fontWeight: 750 }}>{dashboard.metrics.todaySalesChange >= 0 ? <ArrowUpIcon size={11} /> : <ArrowDownIcon size={11} />} 较上一周期同日 {Math.abs(dashboard.metrics.todaySalesChange)}%</span></div></div></section>
+      <div className="ecommerce-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14 }}><StatCard label="总订单量" value={dashboard.metrics.totalOrders} change={dashboard.metrics.ordersChange} icon={<ShoppingCartIcon size={17} />} color="#6366f1" chart={<ProgressDonut value={dashboard.metrics.fulfillmentRate} color="#6366f1" />} /><StatCard label="活跃用户" value={dashboard.metrics.activeUsers} change={dashboard.metrics.activeUsersChange} icon={<UsersIcon size={17} />} color="#10b981" chart={<Sparkline data={dashboard.conversionTrend} color="#10b981" />} /><StatCard label="商品总数" value={dashboard.metrics.totalProducts} change={dashboard.metrics.productsChange} icon={<PackageIcon size={17} />} color="#f59e0b" chart={<Sparkline data={dashboard.salesTrend.current} color="#f59e0b" />} /><StatCard label="订单完成率" value={dashboard.metrics.fulfillmentRate} suffix="%" change={dashboard.metrics.fulfillmentChange} icon={<CheckCircleIcon size={17} />} color="#e879f9" chart={<ProgressDonut value={dashboard.metrics.fulfillmentRate} color="#e879f9" />} /></div>
+    </div>
+    <div className="ecommerce-charts" style={{ display: 'grid', gridTemplateColumns: '1.2fr .9fr .85fr', gap: 18 }}>
+      <Card><CardHeader title="销售趋势" subtitle="按订单完成状态统计的销售收入" /><div style={{ height: 235, padding: '12px 22px 20px' }}><SalesTrendChart labels={dashboard.labels} current={dashboard.salesTrend.current} previous={dashboard.salesTrend.previous} /></div></Card>
+      <Card><CardHeader title="销售分类" subtitle="按已完成订单中的商品类型统计" /><div style={{ padding: '10px 20px 19px' }}><CategoryDonut data={categories} total={categoryTotal} /><div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '7px 12px' }}>{categories.length ? categories.map(item => <span key={item.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--muted-foreground)' }}><i style={{ width: 8, height: 8, borderRadius: '50%', background: item.color }} />{item.name} {categoryTotal ? Math.round(item.value / categoryTotal * 100) : 0}%</span>) : <span style={{ color: 'var(--muted-foreground)', fontSize: 12 }}>暂无已完成订单</span>}</div><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 15, paddingTop: 14, borderTop: '1px solid var(--border)' }}><div><div style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>营业收入</div><strong style={{ fontSize: 17, color: 'var(--foreground)' }}>¥{dashboard.metrics.revenue.toLocaleString()}</strong></div><div><div style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>预估净利润</div><strong style={{ fontSize: 17, color: 'var(--foreground)' }}>¥{dashboard.metrics.netProfit.toLocaleString()}</strong></div></div></div></Card>
+      <Card><CardHeader title="订单转化" subtitle="当前周期内每日订单完成率" /><div style={{ padding: '17px 22px 8px' }}><div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}><strong style={{ fontSize: 39, color: 'var(--foreground)', letterSpacing: '-1px' }}>{conversionCount.toLocaleString()}</strong><span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, padding: '3px 8px', borderRadius: 99, background: dashboard.metrics.conversionChange >= 0 ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)', color: dashboard.metrics.conversionChange >= 0 ? '#059669' : '#dc2626', fontSize: 11, fontWeight: 750 }}>{dashboard.metrics.conversionChange >= 0 ? <ArrowUpIcon size={10} /> : <ArrowDownIcon size={10} />}{Math.abs(dashboard.metrics.conversionChange)}%</span></div><p style={{ margin: '5px 0 8px', fontSize: 11, color: 'var(--muted-foreground)' }}>本周期完成订单数</p></div><div style={{ height: 153, padding: '0 12px 4px' }}><ConversionChart labels={dashboard.labels} data={dashboard.conversionTrend} /></div></Card>
+    </div>
+    <Card><CardHeader title="最近订单活动" subtitle="当前筛选周期内最新的订单记录" /><div style={{ padding: '13px 0 7px' }}>{dashboard.recentOrders.length ? dashboard.recentOrders.map((order, index) => { const status = ORDER_STATUS[order.status] ?? ORDER_STATUS.cancelled; return <div key={order.id} style={{ display: 'grid', gridTemplateColumns: '38px minmax(0,1fr) auto auto', gap: 12, alignItems: 'center', padding: '12px 22px', borderTop: index ? '1px solid var(--border)' : 0 }}><span style={{ width: 36, height: 36, borderRadius: 10, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: status.bg, color: status.color }}>{status.icon}</span><div style={{ minWidth: 0 }}><strong style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--foreground)', fontSize: 13 }}>{order.orderNo} · {order.customer}</strong><span style={{ display: 'block', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--muted-foreground)', fontSize: 11 }}>{order.product}</span></div><span style={{ color: primary, fontSize: 13, fontWeight: 750 }}>¥{order.amount.toLocaleString()}</span><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 9px', borderRadius: 99, background: status.bg, color: status.color, fontSize: 11, fontWeight: 700 }}>{status.label} · {order.date}</span></div>; }) : <div style={{ padding: 38, textAlign: 'center', color: 'var(--muted-foreground)', fontSize: 13 }}>当前周期暂无订单</div>}</div></Card>
+    {loading && <div style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 300, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', boxShadow: '0 8px 24px rgba(0,0,0,.12)', color: 'var(--muted-foreground)', fontSize: 12 }}><LoaderCircleIcon size={14} className="animate-spin" />电商数据加载中</div>}
+    <style>{`@media (max-width: 1160px) { .ecommerce-top, .ecommerce-charts { grid-template-columns: 1fr !important; } } @media (max-width: 650px) { .ecommerce-heading { flex-direction: column; } .ecommerce-stats { grid-template-columns: 1fr !important; } [data-cmp="EcommercePage"] { padding: 16px !important; } }`}</style>
+  </main></AdminLayout>;
 }

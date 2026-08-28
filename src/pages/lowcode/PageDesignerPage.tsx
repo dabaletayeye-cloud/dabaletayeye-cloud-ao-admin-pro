@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import {
   AreaChartIcon, BarChart3Icon, BringToFrontIcon, CalendarDaysIcon, ChevronDownIcon, CircleUserRoundIcon,
   ClipboardCopyIcon, ComponentIcon, EyeIcon, FormInputIcon, ImageIcon, Layers2Icon, LayoutPanelLeftIcon,
@@ -6,6 +6,7 @@ import {
   SaveIcon, SendIcon, SmartphoneIcon, Table2Icon, TabletIcon, Trash2Icon, Undo2Icon, UsersIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { createLowcodeResource, listLowcodeResources, publishLowcodeResource, updateLowcodeResource } from '../../api/lowcode';
 import { LowcodeButton, Modal, PageShell } from './LowcodeShared';
 
 type Device = 'pc' | 'tablet' | 'mobile';
@@ -74,6 +75,7 @@ function ComponentView({ component }: { component: DesignComponent }) {
 
 export default function PageDesignerPage() {
   const [components, setComponents] = useState<DesignComponent[]>(initialComponents);
+  const [resourceId, setResourceId] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>('pc');
   const [selectedIds, setSelectedIds] = useState<string[]>(['button']);
   const [panelTab, setPanelTab] = useState<PanelTab>('props');
@@ -85,6 +87,17 @@ export default function PageDesignerPage() {
   const deviceRef = useRef<HTMLDivElement>(null);
   const selected = components.find(component => component.id === selectedIds.at(-1)) ?? null;
   const selectedMeta = selected ? componentMeta[selected.kind] : null;
+  const pageInput = () => ({ resourceType: 'page' as const, resourceKey: 'order-workbench', name: '订单运营工作台', definition: { components, device } });
+  const savePage = async (silent = false) => {
+    try { const resource = resourceId ? await updateLowcodeResource(resourceId, pageInput()) : await createLowcodeResource(pageInput()); setResourceId(resource.id); if (!silent) toast.success('页面草稿已保存到浏览器内存'); return resource.id; }
+    catch (error) { toast.error(error instanceof Error ? error.message : '保存页面草稿失败'); return null; }
+  };
+  const publishPage = async () => {
+    const id = resourceId ?? await savePage(true); if (!id) return;
+    try { const release = await publishLowcodeResource(id, '从页面设计器发布'); setPublished(true); toast.success(`页面已发布，版本号 ${release.version}`); }
+    catch (error) { toast.error(error instanceof Error ? error.message : '发布页面失败'); }
+  };
+  useEffect(() => { let active = true; void listLowcodeResources('page').then(resources => { const resource = resources.find(item => item.resourceKey === 'order-workbench') ?? resources[0]; const definition = resource?.definition as { components?: DesignComponent[]; device?: Device } | undefined; if (active && resource) { setResourceId(resource.id); if (Array.isArray(definition?.components)) setComponents(definition.components); if (definition?.device) setDevice(definition.device); } }).catch(() => {}); return () => { active = false; }; }, []);
   const grouped = useMemo(() => groupOrder.map(group => ({ group, items: (Object.keys(componentMeta) as ComponentKind[]).filter(key => componentMeta[key].group === group) })), []);
   const snapshot = () => setUndoStack(previous => [...previous.slice(-29), JSON.parse(JSON.stringify(components))]);
   const updateComponents = (next: DesignComponent[]) => { snapshot(); setComponents(next); setRedoStack([]); };
@@ -113,7 +126,7 @@ export default function PageDesignerPage() {
   };
 
   return (
-    <PageShell title="页面设计器" description="以自由拖拽方式构建页面，组件可直接绑定已发布接口与 {{data.xxx}} 变量。" actions={<><LowcodeButton onClick={() => setPreview(true)}><EyeIcon size={14} />预览</LowcodeButton><LowcodeButton onClick={() => toast.success('页面草稿已保存')}><SaveIcon size={14} />保存</LowcodeButton><LowcodeButton primary onClick={() => { setPublished(true); toast.success('页面已发布，版本号 v1.0.0'); }}><SendIcon size={14} />发布</LowcodeButton></>}>
+    <PageShell title="页面设计器" description="以自由拖拽方式构建页面，组件可直接绑定已发布接口与 {{data.xxx}} 变量。" actions={<><LowcodeButton onClick={() => setPreview(true)}><EyeIcon size={14} />预览</LowcodeButton><LowcodeButton onClick={() => void savePage()}><SaveIcon size={14} />保存</LowcodeButton><LowcodeButton primary onClick={() => void publishPage()}><SendIcon size={14} />发布</LowcodeButton></>}>
       <section className="lc-card lc-designer">
         <aside className="lc-side-panel left"><div className="lc-panel-title"><span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><ComponentIcon size={15} />组件库</span><span style={{ color: 'var(--muted-foreground)', fontSize: 11 }}>点击添加</span></div>{grouped.map(({ group, items }) => <div className="lc-library-group" key={group}><h3>{group}</h3><div className="lc-library-items">{items.map(kind => { const meta = componentMeta[kind]; const Icon = meta.icon; return <button className="lc-library-item" key={kind} onClick={() => addComponent(kind)}><Icon size={13} color="#165DFF" />{meta.label}</button>; })}</div></div>)}</aside>
         <div className="lc-canvas-column"><div className="lc-toolbar"><LowcodeButton onClick={undo} disabled={!undoStack.length}><Undo2Icon size={14} />撤销</LowcodeButton><LowcodeButton onClick={redo} disabled={!redoStack.length}><Redo2Icon size={14} />重做</LowcodeButton><LowcodeButton onClick={duplicate} disabled={!selected}><ClipboardCopyIcon size={14} />复制</LowcodeButton><LowcodeButton onClick={deleteSelected} danger disabled={!selectedIds.length}><Trash2Icon size={14} />删除</LowcodeButton><span className="lc-tool-divider" />{([{ id: 'pc', icon: MonitorIcon, label: 'PC' }, { id: 'tablet', icon: TabletIcon, label: '平板' }, { id: 'mobile', icon: SmartphoneIcon, label: '手机' }] as const).map(item => <LowcodeButton key={item.id} primary={device === item.id} onClick={() => setDevice(item.id)}><item.icon size={14} />{item.label}</LowcodeButton>)}<span style={{ marginLeft: 'auto' }} /><LowcodeButton danger onClick={() => { if (window.confirm('确定清空画布中的全部组件吗？')) { updateComponents([]); setSelectedIds([]); toast.success('画布已清空'); } }}><Trash2Icon size={14} />清空画布</LowcodeButton></div>
