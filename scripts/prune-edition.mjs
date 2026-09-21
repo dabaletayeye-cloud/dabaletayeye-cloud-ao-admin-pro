@@ -58,7 +58,7 @@ async function main() {
     if (dryRun) return console.log('预览模式：未修改文件。');
     if (!await confirm('确认回退这次版本裁剪？')) return;
     await restoreEdition(root, plan.id, generate);
-    console.log('回退完成，已重新生成模块注册表。请重启前端开发服务；页面版本按需切回全部版。');
+    console.log('回退完成，已恢复模块及裁剪前的本地版本（首次回退为全部版）。重启前端后自动生效。');
     return;
   }
   if (options['--backup']) throw new Error('--backup 仅用于 --restore。');
@@ -76,14 +76,13 @@ async function main() {
   if (plan.autoKept.length) console.log(`自动保留依赖：${plan.autoKept.join(', ')}`);
   if (edition === 'devplatform' && plan.keep.includes('operations')) console.log('服务器管理属于 operations，物理裁剪保留该模块；界面选择开发者平台版后只开放服务器入口。');
   if (dryRun) return console.log('预览模式：未修改文件，也未创建备份。');
-  if (!plan.remove.length) return console.log('无需裁剪。若需恢复已删模块，请运行 restore:edition。');
   if (!args.includes('--allow-dirty')) {
     const { stdout } = await exec('git', ['status', '--porcelain', '--untracked-files=all'], { cwd: root });
     if (stdout.trim()) throw new Error('工作区有未提交修改，请先提交，或添加 --allow-dirty 使用文件快照备份后裁剪。');
   }
   if (!await confirm('确认备份并移除上述模块？')) return;
   const snapshot = await applyPlan(plan, generate);
-  console.log(`裁剪完成。备份：${snapshot.id}\n回退：npm run restore:edition -- --yes\n请重启前端开发服务，在版本面板选择 ${plan.label}；本脚本不会修改服务器上的系统版本配置。`);
+  console.log(`裁剪完成，已自动设置为 ${plan.label}。备份：${snapshot.id}\n回退：npm run restore:edition -- --yes\n请重启前端开发服务，无需在页面手动切换；服务器上的系统版本配置不会被脚本修改。`);
 }
 
 main().catch(error => { console.error(error.message); process.exitCode = 1; });

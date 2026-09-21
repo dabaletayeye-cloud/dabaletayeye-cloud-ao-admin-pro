@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { applyPlan, listBackups, planEdition, restoreEdition } from './edition-prune-lib.mjs';
+import { readBuildEdition } from './build-edition.mjs';
 
 const project = await realpath(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
 const exec = promisify(execFile);
@@ -36,11 +37,13 @@ test('preview does not write, dependencies are retained, restore preserves later
   assert.deepEqual(await listBackups(root), []);
   const original = await readFile(path.join(root, 'src/modules/erp/page.tsx'));
   await applyPlan(plan, noop);
+  assert.equal(JSON.parse(await readFile(path.join(root, 'src/config/build-edition.json'), 'utf8')).edition, 'cms');
   await assert.rejects(access(path.join(root, 'src/modules/erp')));
   await writeFile(path.join(root, 'src/modules/content/page.tsx'), '// later changes');
   await restoreEdition(root, undefined, noop, true);
   await assert.rejects(access(path.join(root, 'src/modules/erp')));
   await restoreEdition(root, undefined, noop);
+  assert.equal(JSON.parse(await readFile(path.join(root, 'src/config/build-edition.json'), 'utf8')).edition, 'full');
   assert.deepEqual(await readFile(path.join(root, 'src/modules/erp/page.tsx')), original);
   assert.equal(await readFile(path.join(root, 'src/modules/content/page.tsx'), 'utf8'), '// later changes');
 });
@@ -64,6 +67,7 @@ test('restoration refuses conflicts and damaged backups; stacked pruning restore
   const second = await applyPlan(await planEdition(root, 'minimal', presets), noop);
   await assert.rejects(restoreEdition(root, first.id, noop), /逆序/);
   await restoreEdition(root, second.id, noop);
+  assert.equal(JSON.parse(await readFile(path.join(root, 'src/config/build-edition.json'), 'utf8')).edition, 'saas');
   await module(root, 'erp');
   await assert.rejects(restoreEdition(root, first.id, noop), /恢复冲突/);
   const conflict = path.join(root, 'src/modules/erp');
@@ -89,6 +93,21 @@ test('generator failures leave recoverable snapshots and interrupted restores ca
   assert.equal((await listBackups(root))[0].status, 'restored');
 });
 
+test('old completed snapshots migrate automatically, including zero-removal edition changes', async t => {
+  const root = await fixture(t);
+  await module(root, 'content'); await module(root, 'erp');
+  await mkdir(path.join(root, 'scripts'));
+  await writeFile(path.join(root, 'scripts/edition-presets.json'), JSON.stringify(presets));
+  await applyPlan(await planEdition(root, 'saas', presets), noop);
+  await rm(path.join(root, 'src/config/build-edition.json'));
+  assert.equal((await readBuildEdition(root)).edition, 'saas');
+  const next = await applyPlan(await planEdition(root, 'cms', presets), noop);
+  assert.deepEqual(next.remove, []);
+  assert.equal((await readBuildEdition(root)).edition, 'cms');
+  await restoreEdition(root, undefined, noop);
+  assert.equal((await readBuildEdition(root)).edition, 'saas');
+});
+
 test('directory junctions cannot be pruned', async t => {
   const root = await fixture(t);
   const outside = path.join(root, 'protected');
@@ -103,7 +122,9 @@ if (process.argv.includes('--build')) test('real source copy builds as SaaS and 
   const root = await fixture(t);
   await cp(path.join(project, 'src'), path.join(root, 'src'), { recursive: true });
   await mkdir(path.join(root, 'scripts'));
-  await cp(path.join(project, 'scripts/gen-registry.mjs'), path.join(root, 'scripts/gen-registry.mjs'));
+  for (const script of ['gen-registry.mjs', 'build-edition.mjs', 'edition-prune-lib.mjs', 'edition-presets.json']) {
+    await cp(path.join(project, 'scripts', script), path.join(root, 'scripts', script));
+  }
   for (const name of ['package.json', 'index.html', 'vite.config.ts', 'tsconfig.json', 'tsconfig.app.json', 'tsconfig.node.json', 'auto-imports.d.ts']) {
     await cp(path.join(project, name), path.join(root, name));
   }

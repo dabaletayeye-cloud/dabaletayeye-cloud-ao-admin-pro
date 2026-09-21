@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { build } from 'esbuild';
+const compiled = await build({ entryPoints: ['src/core/buildEdition.ts'], bundle: true, write: false, format: 'esm' });
+const { applyBuildEdition } = await import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString('base64')}`);
+const server = { edition: 'erp', enabledModules: ['erp'], presets: { erp: ['erp'] } };
+const target = { edition: 'saas', enabledModules: ['content', 'media'], revision: 'crop-1' };
+assert.equal(applyBuildEdition(server, target, null).edition, 'saas');
+assert.deepEqual(applyBuildEdition(server, target, null).enabledModules, ['content', 'media']);
+assert.equal(applyBuildEdition(server, target, 'old-crop').edition, 'saas');
+assert.equal(applyBuildEdition(server, target, 'crop-1').edition, 'erp');
+assert.equal(applyBuildEdition(server, { edition: 'full', enabledModules: [], revision: 'crop-1:restored' }, 'crop-1').edition, 'full');
+assert.equal(applyBuildEdition(server, null, null), server);
+console.log('Automatic build edition, manual override and rollback priority passed.');

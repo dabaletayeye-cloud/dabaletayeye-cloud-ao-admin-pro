@@ -17,7 +17,7 @@ async function checkedModule(root, id) {
   return target;
 }
 
-async function rejectLinks(root, target) {
+export async function rejectLinks(root, target) {
   const relative = path.relative(root, target);
   if (relative.startsWith('..') || path.isAbsolute(relative)) throw new Error(`路径越界：${target}`);
   let current = root;
@@ -87,7 +87,7 @@ export async function planEdition(projectRoot, edition, presets) {
   const remove = [...modules.keys()].filter(id => !keep.has(id)).sort();
   const hashes = {};
   for (const id of remove) hashes[id] = await fingerprints(await checkedModule(root, id));
-  return { root, edition, label: preset.label, keep: [...keep].sort(), autoKept: [...keep].filter(id => !requested.includes(id)), remove, hashes };
+  return { root, edition, label: preset.label, enabledModules: edition === 'full' ? [] : wanted.filter(id => keep.has(id) || id === 'server' && keep.has('operations')), keep: [...keep].sort(), autoKept: [...keep].filter(id => !requested.includes(id)), remove, hashes };
 }
 
 export async function listBackups(projectRoot) {
@@ -115,7 +115,6 @@ async function lock(root, action) {
 }
 
 export async function applyPlan(plan, generate) {
-  if (!plan.remove.length) return null;
   return lock(plan.root, async () => {
     for (const id of plan.remove) {
       const actual = await fingerprints(await checkedModule(plan.root, id));
@@ -124,7 +123,10 @@ export async function applyPlan(plan, generate) {
     const id = new Date().toISOString().replace(/[:.]/g, '-') + '-' + randomUUID().slice(0, 8);
     const directory = path.join(plan.root, backupFolder, id);
     await mkdir(path.join(directory, 'modules'), { recursive: true });
-    const snapshot = { ...plan, id, status: 'backing-up', removed: [], createdAt: new Date().toISOString() };
+    const buildFile = path.join(plan.root, 'src/config/build-edition.json');
+    await rejectLinks(plan.root, buildFile);
+    const previousBuild = await exists(buildFile) ? JSON.parse(await readFile(buildFile, 'utf8')) : null;
+    const snapshot = { ...plan, previousBuild, id, status: 'backing-up', removed: [], createdAt: new Date().toISOString() };
     const metadata = path.join(directory, 'snapshot.json');
     await save(metadata, snapshot);
     // Complete and verify every backup before removing the first module.
@@ -144,6 +146,8 @@ export async function applyPlan(plan, generate) {
         await save(metadata, snapshot);
         await rm(target, { recursive: true });
       }
+      await mkdir(path.dirname(buildFile), { recursive: true });
+      await save(buildFile, { edition: plan.edition, enabledModules: plan.enabledModules, revision: id });
       await generate();
       snapshot.status = 'complete';
       await save(metadata, snapshot);
@@ -185,6 +189,11 @@ export async function restoreEdition(projectRoot, requestedId, generate, dryRun 
       const target = await checkedModule(root, id);
       if (!await exists(target)) await cp(path.join(directory, 'modules', id), target, { recursive: true, errorOnExist: true, force: false });
     }
+    const buildFile = path.join(root, 'src/config/build-edition.json');
+    await rejectLinks(root, buildFile);
+    await mkdir(path.dirname(buildFile), { recursive: true });
+    const previousBuild = snapshot.previousBuild ?? { edition: 'full', enabledModules: [] };
+    await save(buildFile, { ...previousBuild, revision: `${snapshot.id}:restored` });
     await generate();
     snapshot.status = 'restored';
     snapshot.restoredAt = new Date().toISOString();
