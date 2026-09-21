@@ -20,6 +20,7 @@ import {
   ShieldCheckIcon,
   BellIcon,
   CircleHelpIcon,
+  LayersIcon,
 } from 'lucide-react';
 import { NAV_ITEMS } from './Sidebar';
 import NotificationPanel from './NotificationPanel';
@@ -27,6 +28,7 @@ import AppLauncher from './AppLauncher';
 import ChatAssistantPanel from './ChatAssistantPanel';
 import { getCurrentAccount } from '../lib/currentAccount';
 import appConfig from '../config/app.json';
+import { logout } from '../api/auth';
 
 interface TopbarProps {
   onOpenThemePanel?: () => void;
@@ -35,6 +37,7 @@ interface TopbarProps {
   showMixedNav?: boolean;
   showToggle?: boolean;
   showQuickEntry?: boolean;
+  showEditionSwitch?: boolean;
   showReloadButton?: boolean;
   showLanguageSelector?: boolean;
   showTopProgress?: boolean;
@@ -47,6 +50,7 @@ export default function Topbar({
   showMixedNav      = false,
   showToggle        = true,
   showQuickEntry = true,
+  showEditionSwitch = true,
   showReloadButton = true,
   showLanguageSelector = true,
   showTopProgress = false,
@@ -57,6 +61,8 @@ export default function Topbar({
   const navigate = useNavigate();
   const isDark = themeState.mode === 'dark';
   const primaryColor = 'var(--primary)';
+  const editionSwitchActive = location.pathname === '/system/config'
+    && new URLSearchParams(location.search).get('tab') === 'edition';
 
   // Refresh button spin state
   const [spinning, setSpinning] = useState(false);
@@ -327,6 +333,16 @@ export default function Topbar({
             <MessageSquareIcon size={16} />
           </button>
 
+          {/* Edition switch shortcut */}
+          {showEditionSwitch && <button
+            onClick={() => navigate('/system/config?tab=edition')}
+            style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: editionSwitchActive ? 'var(--accent)' : 'transparent', border: 'none', cursor: 'pointer', color: editionSwitchActive ? 'var(--primary)' : 'var(--foreground)' }}
+            title="版本切换"
+            aria-label="版本切换"
+          >
+            <LayersIcon size={16} />
+          </button>}
+
           {/* System settings shortcut */}
           <button
             onClick={() => navigate('/settings')}
@@ -460,8 +476,10 @@ export default function Topbar({
                   role="menuitem"
                   onClick={() => {
                     setAccountMenuOpen(false);
-                    toast.success(t('signOut'));
-                    navigate('/login');
+                    void logout().catch(() => undefined).finally(() => {
+                      toast.success(t('signOut'));
+                      navigate('/login');
+                    });
                   }}
                   style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 3, padding: '9px 11px', color: 'var(--foreground)', background: 'var(--secondary)', border: '1px solid var(--border)', borderRadius: 7, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
                 >

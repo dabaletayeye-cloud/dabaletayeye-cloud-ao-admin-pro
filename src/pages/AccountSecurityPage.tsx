@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { getCurrentAccount } from '../lib/currentAccount';
+import { changeCurrentPassword } from '../api/profile';
+import { logout } from '../api/auth';
 
 const inputStyle = {
   width: '100%',
@@ -63,8 +65,9 @@ export default function AccountSecurityPage() {
   const [loginAlerts, setLoginAlerts] = useState(true);
   const [trustedBrowser, setTrustedBrowser] = useState(false);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
-  const updatePassword = (event: FormEvent<HTMLFormElement>) => {
+  const updatePassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!oldPassword || !newPassword || !confirmPassword) {
@@ -78,6 +81,16 @@ export default function AccountSecurityPage() {
     if (newPassword !== confirmPassword) {
       toast.error('两次输入的新密码不一致');
       return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      await changeCurrentPassword({ currentPassword: oldPassword, newPassword });
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : '密码更新失败');
+      return;
+    } finally {
+      setUpdatingPassword(false);
     }
 
     setOldPassword('');
@@ -185,7 +198,7 @@ export default function AccountSecurityPage() {
               </div>
 
               <div className="mt-5 flex justify-end">
-                <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold transition-opacity hover:opacity-90" style={{ background: 'var(--primary)', borderColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
+                <button type="submit" disabled={updatingPassword} className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60" style={{ background: 'var(--primary)', borderColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
                   <LockKeyholeIcon size={16} />
                   更新密码
                 </button>
@@ -330,7 +343,7 @@ export default function AccountSecurityPage() {
               </div>
             </section>
 
-            <button type="button" onClick={() => { toast.success('已退出登录'); navigate('/login'); }} className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border bg-transparent text-sm font-semibold transition-colors hover:bg-accent" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+            <button type="button" onClick={() => { void logout().catch(() => undefined).finally(() => { toast.success('已退出登录'); navigate('/login'); }); }} className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border bg-transparent text-sm font-semibold transition-colors hover:bg-accent" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
               <LogOutIcon size={16} />
               退出当前账号
             </button>

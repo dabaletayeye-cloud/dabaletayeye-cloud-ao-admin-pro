@@ -959,9 +959,10 @@ header[data-cmp="Topbar"],
   to { opacity: 1; transform: translateY(0); }
 }
 
-.page-transition-fade { animation: page-fade-in 0.24s ease both; }
-.page-transition-slide-left { animation: page-slide-left-in 0.3s ease both; }
-.page-transition-slide-up { animation: page-slide-up-in 0.3s ease both; }
+/* Release transform/opacity stacking contexts when the entrance animation ends. */
+.page-transition-fade { animation: page-fade-in 0.24s ease backwards; }
+.page-transition-slide-left { animation: page-slide-left-in 0.3s ease backwards; }
+.page-transition-slide-up { animation: page-slide-up-in 0.3s ease backwards; }
 
 [data-color-weak="true"] {
   filter: grayscale(100%);

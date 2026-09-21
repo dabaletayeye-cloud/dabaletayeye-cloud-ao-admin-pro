@@ -91,5 +91,13 @@
   "lowcodeForm": "Moteur de formulaires",
   "lowcodeReport": "Moteur de rapports",
   "lowcodePrint": "Modèles d’impression",
-  "lowcodeGenerator": "Générateur de code"
+  "lowcodeGenerator": "Générateur de code",
+  "erpCenter": "Centre ERP",
+  "erpProducts": "Gestion des produits",
+  "erpOrders": "Gestion des commandes",
+  "erpPurchase": "Gestion des achats",
+  "erpInventory": "Gestion des stocks",
+  "erpCustomers": "Gestion des clients",
+  "erpFinance": "Gestion financière",
+  "erpReports": "Centre des rapports"
 }

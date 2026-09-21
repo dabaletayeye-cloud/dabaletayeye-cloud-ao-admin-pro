@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../lib/localizedToast';
 import {
@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { getCurrentAccount, saveCurrentAccount } from '../lib/currentAccount';
+import { getCurrentProfile, updateCurrentProfile } from '../api/profile';
 
 type ProfilePreferences = {
   emailNotification: boolean;
@@ -140,6 +141,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: () =
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(getCurrentAccount);
+  const [savingProfile, setSavingProfile] = useState(false);
   const [preferences, setPreferences] = useState(getPreferences);
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [todos, setTodos] = useState(getProfileTodos);
@@ -149,6 +151,32 @@ export default function ProfilePage() {
   const [tagSearch, setTagSearch] = useState('');
   const [editingTagId, setEditingTagId] = useState<number | null>(null);
   const [editingTagName, setEditingTagName] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    void getCurrentProfile().then((remote) => {
+      if (!active) return;
+      const current = getCurrentAccount();
+      const synced = {
+        ...current,
+        id: remote.id,
+        account: remote.username?.trim() || current.account,
+        name: remote.name || '',
+        email: remote.email || '',
+        phone: remote.phone || '',
+        avatar: remote.avatar || '',
+        location: remote.region || '',
+        gender: remote.gender || '',
+        role: remote.role || '',
+        department: remote.department || '',
+        position: remote.position || '',
+        bio: remote.bio || '',
+      };
+      setProfile(synced);
+      saveCurrentAccount(synced);
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, []);
 
   const updateProfile = (key: keyof typeof profile, value: string) => {
     setProfile((current) => ({ ...current, [key]: value }));
@@ -163,6 +191,10 @@ export default function ProfilePage() {
       return;
     }
 
+    if (file.size > 1024 * 1024) {
+      toast.error('头像图片不能超过 1 MB');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       updateProfile('avatar', String(reader.result));
@@ -172,15 +204,31 @@ export default function ProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  const saveProfile = (event: FormEvent<HTMLFormElement>) => {
+  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!profile.name.trim() || !profile.email.trim()) {
       toast.error('姓名和邮箱不能为空');
       return;
     }
 
-    saveCurrentAccount(profile);
-    toast.success('个人资料已保存');
+    setSavingProfile(true);
+    try {
+      const saved = await updateCurrentProfile({
+        name: profile.name.trim(), email: profile.email.trim(), phone: profile.phone.trim(), avatar: profile.avatar,
+        region: profile.location.trim(), gender: profile.gender || '', department: profile.department.trim(),
+        position: profile.position.trim(), bio: profile.bio.trim(),
+      });
+      const next = { ...profile, id: saved.id, name: saved.name || profile.name, email: saved.email || profile.email,
+        phone: saved.phone || '', avatar: saved.avatar || '', location: saved.region || '', gender: saved.gender || '',
+        role: saved.role || profile.role, department: saved.department || '', position: saved.position || '', bio: saved.bio || '' };
+      setProfile(next);
+      saveCurrentAccount(next);
+      toast.success('个人资料已保存');
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : '个人资料保存失败');
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   const savePreferences = () => {
@@ -505,7 +553,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="mt-5 flex justify-end">
-                <button className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold transition-opacity hover:opacity-90" type="submit" style={{ background: 'var(--primary)', borderColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
+                <button disabled={savingProfile} className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60" type="submit" style={{ background: 'var(--primary)', borderColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
                   <SaveIcon size={16} />
                   保存资料
                 </button>

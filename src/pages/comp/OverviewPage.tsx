@@ -1,3 +1,4 @@
+import ViewportPortal from '../../components/ViewportPortal';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
@@ -328,7 +329,7 @@ export default function OverviewPage() {
   return (
     <AdminLayout>
       {/* fade-out overlay — always in DOM, pointer-events off when transparent */}
-      <div
+      <ViewportPortal><div
         ref={overlayRef}
         style={{
           position: 'fixed',
@@ -339,7 +340,7 @@ export default function OverviewPage() {
           zIndex: 9999,
           transition: 'opacity 0.28s ease',
         }}
-      />
+      /></ViewportPortal>
 
       <div
         data-cmp="OverviewPage"

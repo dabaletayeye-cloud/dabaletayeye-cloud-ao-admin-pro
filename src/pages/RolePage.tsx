@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
+import ViewportPortal from '../components/ViewportPortal';
+import { useEffect, useMemo, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
 import { listRoles } from '../api';
 import { ApiState, useApiResource } from '../hooks/useApiResource';
 import { toast } from '../lib/localizedToast';
+import { modulePermissionGroups } from '../generated/registry';
+import { useEdition } from '../core/EditionProvider';
+import { filterPermissionGroups } from '../core/edition';
 import {
   PlusIcon,
   SearchIcon,
@@ -51,7 +55,7 @@ interface MenuPermissionGroup {
 const actionsFor = (scope: string, actions: Array<[string, string]>): ButtonPermission[] =>
   actions.map(([key, label]) => ({ key: `${scope}:${key}`, label }));
 
-const MENU_PERMISSION_GROUPS: MenuPermissionGroup[] = [
+const CORE_MENU_PERMISSION_GROUPS: MenuPermissionGroup[] = [
   {
     label: '工作台',
     items: [{ key: 'dashboard:view', label: '工作台', actions: actionsFor('dashboard', [['refresh', '刷新']]) }],
@@ -102,9 +106,31 @@ const MENU_PERMISSION_GROUPS: MenuPermissionGroup[] = [
   },
 ];
 
+const OPTIONAL_PERMISSION_PREFIXES = ['article:', 'category:', 'tag:', 'analytics:', 'coupon:', 'event:', 'push:', 'media:', 'order:', 'message:', 'perm:', 'lowcode:', 'ai:', 'components:', 'templates:', 'examples:', 'commerce:', 'generation:', 'server:', 'file:'];
+const isOptionalPermission = (key: string) => OPTIONAL_PERMISSION_PREFIXES.some((prefix) => key.startsWith(prefix));
+const MENU_PERMISSION_GROUPS: MenuPermissionGroup[] = [
+  ...CORE_MENU_PERMISSION_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.map((item) => ({ ...item, actions: item.actions?.filter((action) => !isOptionalPermission(action.key)) }))
+      .filter((item) => !isOptionalPermission(item.key) || (item.actions?.length ?? 0) > 0),
+  })).filter((group) => group.items.length > 0),
+  ...modulePermissionGroups.map((group) => ({
+    label: group.label,
+    items: group.items.map((item) => ({ key: item.key, label: item.label, actions: item.actions })),
+  })),
+];
+
 const getMenuPermissionKeys = (item: MenuPermissionItem) => [item.key, ...(item.actions?.map(action => action.key) ?? [])];
 const getGroupPermissionKeys = (group: MenuPermissionGroup) => group.items.flatMap(getMenuPermissionKeys);
 const ALL_MENU_PERMISSION_KEYS = MENU_PERMISSION_GROUPS.flatMap(getGroupPermissionKeys);
+const buildVisiblePermissionGroups = (config: Parameters<typeof filterPermissionGroups>[1]) => {
+  const visible = new Map(filterPermissionGroups(modulePermissionGroups, config).map(group => [group.label, new Set(group.items.map(item => item.key))]));
+  const moduleLabels = new Set(modulePermissionGroups.map(group => group.label));
+  return MENU_PERMISSION_GROUPS.filter(group => !moduleLabels.has(group.label) || visible.has(group.label))
+    .map(group => moduleLabels.has(group.label)
+      ? { ...group, items: group.items.filter(item => visible.get(group.label)?.has(item.key)) } : group);
+};
+let ACTIVE_MENU_PERMISSION_GROUPS = MENU_PERMISSION_GROUPS;
 
 const permissionsFor = (...keys: string[]) => keys;
 
@@ -121,6 +147,8 @@ const MOCK_ROLES: Role[] = [
 
 export default function RolePage() {
   const { themeState } = useTheme();
+  const { config } = useEdition();
+  ACTIVE_MENU_PERMISSION_GROUPS = useMemo(() => buildVisiblePermissionGroups(config), [config]);
   const isManga = themeState.themeId === 'manga';
   const primary = isManga ? MANGA_PINK : 'var(--primary)';
 
@@ -136,7 +164,7 @@ export default function RolePage() {
   const [permissionRole, setPermissionRole] = useState<Role | null>(null);
   const [draftPermissions, setDraftPermissions] = useState<string[]>([]);
   const [expandedPermissionGroups, setExpandedPermissionGroups] = useState<Set<string>>(
-    () => new Set(MENU_PERMISSION_GROUPS.map(group => group.label)),
+    () => new Set(ACTIVE_MENU_PERMISSION_GROUPS.map(group => group.label)),
   );
   const [expandedPermissionMenus, setExpandedPermissionMenus] = useState<Set<string>>(() => new Set());
   if (rolesResource.loading || rolesResource.error) return <AdminLayout><ApiState loading={rolesResource.loading} error={rolesResource.error} /></AdminLayout>;
@@ -465,7 +493,7 @@ export default function RolePage() {
         </div>
 
         {/* Add/Edit Modal — always in DOM, visibility by opacity/pointer-events */}
-        <div
+        <ViewportPortal><div
           style={{
             position: 'fixed', inset: 0, zIndex: 100,
             background: 'rgba(0,0,0,0.4)',
@@ -561,10 +589,10 @@ export default function RolePage() {
               </button>
             </div>
           </div>
-        </div>
+        </div></ViewportPortal>
 
         {/* Menu permission modal */}
-        <div
+        <ViewportPortal><div
           style={{
             position: 'fixed', inset: 0, zIndex: 110,
             background: 'rgba(0,0,0,0.4)',
@@ -613,7 +641,7 @@ export default function RolePage() {
             </label>
 
             <div role="tree" className="rounded-xl border p-2" style={{ borderColor: 'var(--border)' }}>
-              {MENU_PERMISSION_GROUPS.map(group => {
+              {ACTIVE_MENU_PERMISSION_GROUPS.map(group => {
                 const groupKeys = getGroupPermissionKeys(group);
                 const selectedCount = groupKeys.filter(key => draftPermissions.includes(key)).length;
                 const isExpanded = expandedPermissionGroups.has(group.label);
@@ -717,7 +745,7 @@ export default function RolePage() {
               </button>
             </div>
           </div>
-        </div>
+        </div></ViewportPortal>
 
         {/* Overlay for dropdowns */}
         <div

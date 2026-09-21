@@ -7,6 +7,34 @@ import type {
   ServerInfo,
   OrderInfo, OrderStats,
 } from '../types';
+import type { EditionConfig } from '../../core/edition';
+
+export interface CurrentProfile {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+  region?: string;
+  gender?: string;
+  role?: string;
+  department?: string;
+  position?: string;
+  bio?: string;
+  username?: string;
+}
+
+export interface CurrentProfileInput {
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string;
+  region: string;
+  gender: string;
+  department: string;
+  position: string;
+  bio: string;
+}
 
 export type LowcodeResourceType = 'api' | 'page' | 'form' | 'report' | 'print' | 'generator';
 export interface LowcodeResource {
@@ -58,6 +86,11 @@ export interface LowcodeResourceInput { resourceType: LowcodeResourceType; resou
 export interface LowcodeDataSourceInput { name: string; sourceType: string; host?: string; port?: number; username?: string; secretRef?: string; databaseName?: string; baseUrl?: string; headersJson?: string; }
 
 export interface ApiAdapter {
+  oaList?(resource: string, query?: Record<string, string>): Promise<Record<string, unknown>[]>;
+  oaGet?(resource: string, id: number): Promise<Record<string, unknown>>;
+  oaCreate?(resource: string, input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  oaUpdate?(resource: string, id: number, input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  oaDelete?(resource: string, id: number): Promise<void>;
   login(input: { username: string; password: string }): Promise<{
     token: string;
     accessToken?: string;
@@ -68,6 +101,9 @@ export interface ApiAdapter {
   }>;
   logout(): Promise<void>;
   getCurrentUser(): Promise<User | null>;
+  getCurrentProfile(): Promise<CurrentProfile>;
+  updateCurrentProfile(input: CurrentProfileInput): Promise<CurrentProfile>;
+  changeCurrentPassword(input: { currentPassword: string; newPassword: string }): Promise<void>;
   listUsers(query?: ApiListQuery): Promise<PageResult<User>>;
   createUser(input: Partial<User>): Promise<User>;
   updateUser(id: number, input: Partial<User>): Promise<User>;
@@ -111,6 +147,8 @@ export interface ApiAdapter {
   getFileStorageInfo(): Promise<FileStorageInfo>;
   getSystemConfig(): Promise<SystemConfig>;
   updateSystemConfig(input: Omit<SystemConfig, 'storage'>): Promise<SystemConfig>;
+  getSystemEdition(): Promise<EditionConfig>;
+  updateSystemEdition(input: EditionConfig): Promise<EditionConfig>;
   listServers(): Promise<ServerInfo[]>;
   serverAction(id: number, action: 'start' | 'stop' | 'restart'): Promise<ServerInfo>;
   listOrders(query?: { keyword?: string; status?: string }): Promise<OrderInfo[]>;
@@ -131,4 +169,15 @@ export interface ApiAdapter {
   listLowcodeReleases(query?: { type?: LowcodeResourceType; resourceId?: string }): Promise<LowcodeRelease[]>;
   publishLowcodeResource(id: string, releaseNote: string): Promise<LowcodeRelease>;
   rollbackLowcodeRelease(id: string): Promise<LowcodeRelease>;
+  listErp(resource: string, query?: { keyword?: string; status?: string }): Promise<Record<string, unknown>[]>;
+  getErp(resource: string, id: number): Promise<Record<string, unknown>>;
+  createErp(resource: string, input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  updateErp(resource: string, id: number, input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  deleteErp(resource: string, id: number): Promise<void>;
+  moveErpInventory(productId: number, input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  listErpInventoryFlows(productId: number): Promise<Record<string, unknown>[]>;
+  getErpReports(): Promise<Record<string, unknown>>;
+  approveErpPurchase(id: number, input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  listErpInventoryAlerts(): Promise<Record<string, unknown>[]>;
+  getErpStats(resource: string): Promise<Record<string, unknown>>;
 }

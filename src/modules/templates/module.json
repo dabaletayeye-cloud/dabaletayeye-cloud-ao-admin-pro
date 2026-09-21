@@ -1,0 +1,25 @@
+{
+  "name": "templates",
+  "title": "模板中心",
+  "icon": "LayoutTemplate",
+  "dependencies": [],
+  "menus": [
+    { "path": "/tmpl/cards", "title": "卡片", "icon": "CreditCard", "perms": ["templates:cards:view"], "order": 220 },
+    { "path": "/tmpl/banners", "title": "横幅", "icon": "PanelTop", "perms": ["templates:banners:view"], "order": 220 },
+    { "path": "/tmpl/charts", "title": "图表", "icon": "LineChart", "perms": ["templates:charts:view"], "order": 220 },
+    { "path": "/tmpl/calendar", "title": "日历", "icon": "Calendar", "perms": ["templates:calendar:view"], "order": 220 },
+    { "path": "/tmpl/chat", "title": "聊天", "icon": "MessageCircle", "perms": ["templates:chat:view"], "order": 220 },
+    { "path": "/tmpl/pricing", "title": "定价", "icon": "BadgeDollarSign", "perms": ["templates:pricing:view"], "order": 220 },
+    { "path": "/tmpl/map", "title": "地图", "icon": "Map", "perms": ["templates:map:view"], "order": 220 }
+  ],
+  "routes": [
+    { "path": "/tmpl/cards", "component": "pages/CardPage", "legacySource": "pages/tmpl/CardPage" },
+    { "path": "/tmpl/banners", "component": "pages/BannerPage", "legacySource": "pages/tmpl/BannerPage" },
+    { "path": "/tmpl/charts", "component": "pages/ChartPage", "legacySource": "pages/tmpl/ChartPage" },
+    { "path": "/tmpl/calendar", "component": "pages/CalendarPage", "legacySource": "pages/tmpl/CalendarPage" },
+    { "path": "/tmpl/chat", "component": "pages/ChatPage", "legacySource": "pages/tmpl/ChatPage" },
+    { "path": "/tmpl/pricing", "component": "pages/PricingPage", "legacySource": "pages/tmpl/PricingPage" },
+    { "path": "/tmpl/map", "component": "pages/MapPage", "legacySource": "pages/tmpl/MapPage" }
+  ],
+  "permissions": [], "dicts": [], "npmDeps": [], "backendTables": []
+}

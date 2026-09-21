@@ -1,0 +1,66 @@
+.manga-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  contain: strict;
+}
+.manga-atmosphere * { pointer-events: none !important; }
+.manga-petal-track, .manga-firefly-track { position: absolute; display: block; }
+.manga-petal-track {
+  top: -40px;
+  width: var(--particle-size);
+  height: var(--particle-size);
+  animation: manga-petal-fall var(--particle-duration) var(--particle-delay) linear infinite;
+}
+.manga-petal-sway {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: manga-petal-sway var(--particle-sway) var(--particle-delay) ease-in-out infinite alternate;
+}
+.manga-sakura { width: 100%; height: 100%; color: #f578ac; filter: drop-shadow(0 1px 3px #f9a8d455); }
+.manga-firefly-track {
+  width: var(--particle-size);
+  height: var(--particle-size);
+  animation: manga-firefly-drift var(--particle-duration) var(--particle-delay) ease-in-out infinite alternate;
+}
+.manga-firefly {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #f5e9ff;
+  box-shadow: 0 0 calc(8px * var(--particle-scale)) calc(3px * var(--particle-scale)) var(--particle-glow),
+    0 0 calc(24px * var(--particle-scale)) calc(9px * var(--particle-scale)) var(--particle-glow),
+    0 0 calc(44px * var(--particle-scale)) calc(14px * var(--particle-scale)) #a855f744;
+  animation: manga-firefly-glow var(--particle-sway) var(--particle-delay) ease-in-out infinite alternate;
+}
+@keyframes manga-petal-fall {
+  0% { transform: translate3d(0, -20px, 0) rotate(0); opacity: 0; }
+  8% { opacity: .8; }
+  85% { opacity: .65; }
+  100% { transform: translate3d(var(--particle-drift), calc(100dvh + 80px), 0) rotate(280deg); opacity: 0; }
+}
+@keyframes manga-petal-sway {
+  from { transform: translateX(-12px) rotate(-18deg) rotateY(0); }
+  to { transform: translateX(12px) rotate(20deg) rotateY(45deg); }
+}
+@keyframes manga-firefly-drift {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(var(--particle-drift), -35px, 0); }
+  100% { transform: translate3d(20px, 25px, 0); }
+}
+@keyframes manga-firefly-glow {
+  0%, 15% { opacity: .2; transform: scale(.75); }
+  70% { opacity: .85; transform: scale(1.1); }
+  100% { opacity: .4; transform: scale(.9); }
+}
+.manga-atmosphere[data-paused="true"] * { animation-play-state: paused; }
+@media (max-width: 768px) { .manga-atmosphere > span:nth-child(n + 13) { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .manga-atmosphere { display: none; }
+  .manga-atmosphere * { animation: none; }
+}

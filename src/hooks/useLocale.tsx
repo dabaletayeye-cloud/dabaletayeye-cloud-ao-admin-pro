@@ -20,6 +20,13 @@ export const LANGUAGE_OPTIONS: LanguageOption[] = [
 ];
 
 const NAVIGATION_KEYS: Record<string, string> = {
+  '\u0045\u0052\u0050 \u4e2d\u5fc3': 'erpCenter',
+  '\u5546\u54c1\u7ba1\u7406': 'erpProducts',
+  '\u91c7\u8d2d\u7ba1\u7406': 'erpPurchase',
+  '\u5e93\u5b58\u7ba1\u7406': 'erpInventory',
+  '\u5ba2\u6237\u7ba1\u7406': 'erpCustomers',
+  '\u8d22\u52a1\u7ba1\u7406': 'erpFinance',
+  '\u62a5\u8868\u4e2d\u5fc3': 'erpReports',
   '工作台': 'workspace', '仪表盘': 'dashboard', '分析页': 'analyticsPage', '电子商务': 'ecommerce', '组件中心': 'components', '功能示例': 'examples', '模板中心': 'templates', '低代码中心': 'lowcode', 'AI中心': 'aiCenter', '内容管理': 'content', '结果页面': 'resultPages', '异常页面': 'errorPages', '数据分析': 'analytics', '媒体库': 'media', '营销工具': 'marketing', '订单管理': 'orders', '消息中心': 'messages', '系统管理': 'system', '用户管理': 'users', '角色管理': 'roles', '菜单管理': 'menus', '日志管理': 'logs', '字典管理': 'dictionaries', '系统配置': 'configuration', '服务器管理': 'servers', '文件管理': 'fileManager', '权限管理': 'permissions',
   '组件总览': 'componentOverview', '按钮组件': 'componentButtons', '表单组件': 'componentForms', '数据表格': 'componentTable', '弹窗反馈': 'componentFeedback', '数据展示': 'componentDisplay', '导航组件': 'componentNavigation', '图标库': 'componentIcons', '数字滚动': 'componentNumberRoll', '富文本编辑器': 'componentRichEditor', '图像裁剪': 'componentImageCrop', '二维码': 'componentQrCode', '视频播放器': 'componentVideoPlayer', '拖拽': 'componentDrag', '右键菜单': 'componentContextMenu', '水印': 'componentWatermark', '文字滚动': 'componentTextScroll', '礼花': 'componentConfetti', 'Excel 导入导出': 'componentExcel', '词云图': 'componentWordCloud', '前端权限': 'frontendPermissions', '标签页': 'tabsExample', '基础表格': 'basicTable', '高级表格': 'advancedTable', '搜索表单': 'searchForm', '左右布局表格': 'splitTable', 'Socket 连接': 'socket', '接口编排': 'lowcodeApi', '页面设计器': 'lowcodePage', '表单引擎': 'lowcodeForm', '报表引擎': 'lowcodeReport', '打印模板': 'lowcodePrint', '代码生成器': 'lowcodeGenerator', '数据源管理': 'lowcodeDatasource', '发布管理': 'lowcodeRelease', 'AI对话': 'aiChat', 'AI助手': 'aiAgent', 'AI客服': 'aiCustomerService', '知识库': 'knowledgeBase', '提示词模板': 'promptTemplates', '模型管理': 'modelManagement', 'AI工作流': 'aiWorkflow', '卡片': 'cardsTemplate', '横幅': 'bannersTemplate', '图表': 'chartsTemplate', '日历': 'calendarTemplate', '聊天': 'chatTemplate', '定价': 'pricingTemplate', '地图': 'mapTemplate', '访问统计': 'traffic', '用户画像': 'portrait', '转化漏斗': 'funnel',
 };

@@ -21,7 +21,7 @@ export default function AdminLayout({ children = null }: AdminLayoutProps) {
 
   const menuLayout = themeState.menuLayout;
   const collapseButtonPosition = themeState.collapseButtonPosition;
-  const { contentLayout, multiTabs, showSidebarToggle, showQuickEntry, showReloadButton, showBreadcrumb, showLanguageSelector, showTopProgress, globalWatermark, sidebarWidth, tabsStyle, pageTransition } = themeState;
+  const { contentLayout, multiTabs, showSidebarToggle, showQuickEntry, showEditionSwitch, showReloadButton, showBreadcrumb, showLanguageSelector, showTopProgress, globalWatermark, sidebarWidth, tabsStyle, pageTransition } = themeState;
 
   const isVertical   = menuLayout === 'vertical';
   const isHorizontal = menuLayout === 'horizontal';
@@ -99,6 +99,7 @@ export default function AdminLayout({ children = null }: AdminLayoutProps) {
           showMixedNav={isMixed}
           showToggle={showTopbarToggle}
           showQuickEntry={showQuickEntry}
+          showEditionSwitch={showEditionSwitch}
           showReloadButton={showReloadButton}
           showLanguageSelector={showLanguageSelector}
           showTopProgress={showTopProgress}

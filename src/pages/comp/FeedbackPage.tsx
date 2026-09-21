@@ -1,3 +1,4 @@
+import ViewportPortal from '../../components/ViewportPortal';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
@@ -128,7 +129,7 @@ function useBtn(accentPrimary: string) {
 
 function Overlay({ visible, onClick }: { visible: boolean; onClick: () => void }) {
   return (
-    <div
+    <ViewportPortal><div
       onClick={onClick}
       style={{
         position: 'fixed', inset: 0, zIndex: 300,
@@ -136,7 +137,7 @@ function Overlay({ visible, onClick }: { visible: boolean; onClick: () => void }
         opacity: visible ? 1 : 0, pointerEvents: visible ? 'auto' : 'none',
         transition: 'opacity .2s',
       }}
-    />
+    /></ViewportPortal>
   );
 }
 
@@ -151,7 +152,7 @@ function Modal({
   return (
     <>
       <Overlay visible={open} onClick={onClose} />
-      <div style={{
+      <ViewportPortal><div style={{
         position: 'fixed', inset: 0, zIndex: 310, display: 'flex', alignItems: 'center', justifyContent: 'center',
         pointerEvents: open ? 'auto' : 'none',
       }}>
@@ -180,7 +181,7 @@ function Modal({
             </div>
           )}
         </div>
-      </div>
+      </div></ViewportPortal>
     </>
   );
 }
@@ -195,7 +196,7 @@ function Drawer({
   return (
     <>
       <Overlay visible={open} onClick={onClose} />
-      <div style={{
+      <ViewportPortal><div style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 310, width: 400, maxWidth: '92vw',
         background: 'var(--card)', boxShadow: '-8px 0 40px rgba(0,0,0,.16)',
         transform: open ? 'translateX(0)' : 'translateX(100%)',
@@ -213,7 +214,7 @@ function Drawer({
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
           {children}
         </div>
-      </div>
+      </div></ViewportPortal>
     </>
   );
 }
@@ -222,7 +223,7 @@ function Drawer({
 
 function ToastList({ toasts, onRemove }: { toasts: ToastItem[]; onRemove: (id: number) => void }) {
   return (
-    <div style={{ position: 'fixed', top: 20, right: 24, zIndex: 400, display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'none' }}>
+    <ViewportPortal><div style={{ position: 'fixed', top: 20, right: 24, zIndex: 400, display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'none' }}>
       {toasts.map(t => {
         const cfg = TOAST_CFG[t.type];
         return (
@@ -247,7 +248,7 @@ function ToastList({ toasts, onRemove }: { toasts: ToastItem[]; onRemove: (id: n
           </div>
         );
       })}
-    </div>
+    </div></ViewportPortal>
   );
 }
 

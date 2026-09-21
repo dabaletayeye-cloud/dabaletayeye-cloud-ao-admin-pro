@@ -1,0 +1,132 @@
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(scriptDir, '..');
+const sourceRoot = path.join(projectRoot, 'src');
+const modulesRoot = path.join(sourceRoot, 'modules');
+const generatedRoot = path.join(sourceRoot, 'generated');
+const generatedRegistry = path.join(generatedRoot, 'registry.ts');
+const bridgeMarker = '// AUTO-GENERATED MODULE BRIDGE. Replace this file with the migrated page when ready.';
+
+function assertArray(value, field, moduleName) {
+  if (!Array.isArray(value)) throw new Error(`Module ${moduleName}: ${field} must be an array.`);
+  return value;
+}
+
+function asImportPath(value) {
+  return value.replace(/\\/g, '/').replace(/\.(tsx?|jsx?)$/, '');
+}
+
+async function readManifests() {
+  let entries = [];
+  try {
+    entries = await readdir(modulesRoot, { withFileTypes: true });
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return [];
+    throw error;
+  }
+
+  const manifests = [];
+  for (const entry of entries.filter((item) => item.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
+    const manifestPath = path.join(modulesRoot, entry.name, 'module.json');
+    let manifest;
+    try {
+      manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    } catch (error) {
+      if (error && error.code === 'ENOENT') continue;
+      throw new Error(`Cannot read ${manifestPath}: ${error.message}`);
+    }
+
+    if (!manifest.name || manifest.name !== entry.name) {
+      throw new Error(`${manifestPath}: name must match its directory (${entry.name}).`);
+    }
+    assertArray(manifest.routes ?? [], 'routes', manifest.name);
+    assertArray(manifest.menus ?? [], 'menus', manifest.name);
+    assertArray(manifest.permissions ?? [], 'permissions', manifest.name);
+    assertArray(manifest.dependencies ?? [], 'dependencies', manifest.name);
+    manifests.push(manifest);
+  }
+
+  const names = new Set(manifests.map((manifest) => manifest.name));
+  const duplicateRoutes = new Set();
+  const routes = new Set();
+  for (const manifest of manifests) {
+    for (const dependency of manifest.dependencies) {
+      if (!names.has(dependency)) {
+        throw new Error(`Module ${manifest.name}: unknown dependency ${dependency}.`);
+      }
+    }
+    for (const route of manifest.routes) {
+      if (!route.path || !route.component) {
+        throw new Error(`Module ${manifest.name}: every route needs path and component.`);
+      }
+      if (routes.has(route.path)) duplicateRoutes.add(route.path);
+      routes.add(route.path);
+    }
+  }
+  if (duplicateRoutes.size > 0) {
+    throw new Error(`Duplicate module routes: ${[...duplicateRoutes].join(', ')}.`);
+  }
+  return manifests;
+}
+
+async function ensureBridge(manifest, route) {
+  if (!route.legacySource) return;
+  const target = path.resolve(modulesRoot, manifest.name, `${route.component}.tsx`);
+  const legacySource = path.resolve(sourceRoot, `${route.legacySource}.tsx`);
+  const relativeSource = asImportPath(path.relative(path.dirname(target), legacySource));
+  const importPath = relativeSource.startsWith('.') ? relativeSource : `./${relativeSource}`;
+
+  try {
+    const existing = await readFile(target, 'utf8');
+    if (!existing.includes(bridgeMarker)) return;
+  } catch (error) {
+    if (!error || error.code !== 'ENOENT') throw error;
+  }
+
+  await mkdir(path.dirname(target), { recursive: true });
+  const exportTarget = route.exportName ? `${route.exportName} as default` : 'default';
+  await writeFile(target, `${bridgeMarker}\nexport { ${exportTarget} } from '${importPath}';\n`, 'utf8');
+}
+
+function renderRegistry(manifests) {
+  const routes = manifests.flatMap((manifest) => manifest.routes.map((route) => ({
+    module: manifest.name,
+    path: route.path,
+    component: route.component,
+  })));
+  const menus = manifests.flatMap((manifest) => (manifest.menus ?? []).map((menu) => ({
+    module: manifest.name,
+    group: menu.group ?? manifest.title,
+    groupIcon: menu.groupIcon ?? manifest.icon ?? 'Package',
+    label: menu.title,
+    path: menu.path,
+    icon: menu.icon ?? manifest.icon ?? 'Package',
+    perms: menu.perms ?? [],
+    order: menu.order ?? 100,
+  })));
+  const permissions = [...new Set(manifests.flatMap((manifest) => manifest.permissions))].sort();
+  const permissionGroups = manifests.map((manifest) => ({
+    label: manifest.title,
+    items: (manifest.menus ?? []).map((menu) => {
+      const perms = menu.perms ?? [];
+      return {
+        key: perms[0] ?? `${manifest.name}:${menu.path}`,
+        label: menu.title,
+        actions: perms.slice(1).map((key) => ({ key, label: key })),
+      };
+    }).filter((item) => item.key),
+  })).filter((group) => group.items.length > 0);
+
+  return `/* eslint-disable */\n// This file is generated by scripts/gen-registry.mjs. Do not edit manually.\nimport { lazy, type ComponentType, type LazyExoticComponent } from 'react';\n\nexport interface ModuleRoute {\n  module: string;\n  path: string;\n  component: LazyExoticComponent<ComponentType>;\n}\n\nexport interface ModuleMenuEntry {\n  module: string;\n  group: string;\n  groupIcon: string;\n  label: string;\n  path: string;\n  icon: string;\n  perms: string[];\n  order: number;\n}\n\nexport interface ModulePermissionGroup {\n  label: string;\n  items: Array<{ key: string; label: string; actions: Array<{ key: string; label: string }> }>;\n}\n\nexport const moduleRoutes: ModuleRoute[] = [\n${routes.map((route) => `  { module: ${JSON.stringify(route.module)}, path: ${JSON.stringify(route.path)}, component: lazy(() => import(${JSON.stringify(`../modules/${route.module}/${route.component}`)})) },`).join('\n')}\n];\n\nexport const moduleMenus: ModuleMenuEntry[] = ${JSON.stringify(menus, null, 2)};\n\nexport const modulePermissions: string[] = ${JSON.stringify(permissions, null, 2)};\n\nexport const modulePermissionGroups: ModulePermissionGroup[] = ${JSON.stringify(permissionGroups, null, 2)};\n`;
+}
+
+const manifests = await readManifests();
+for (const manifest of manifests) {
+  for (const route of manifest.routes) await ensureBridge(manifest, route);
+}
+await mkdir(generatedRoot, { recursive: true });
+await writeFile(generatedRegistry, renderRegistry(manifests), 'utf8');
+console.log(`Generated module registry for ${manifests.length} module(s).`);

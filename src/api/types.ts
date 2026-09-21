@@ -242,7 +242,7 @@ export interface NotificationConfig {
 }
 
 export interface ThemeConfig {
-  defaultTheme: 'classic' | 'mono' | 'purple' | 'manga';
+  defaultTheme: import('../types').ThemeId;
   defaultMode: 'light' | 'dark';
   sidebarWidth: string;
   cornerRadius: string;

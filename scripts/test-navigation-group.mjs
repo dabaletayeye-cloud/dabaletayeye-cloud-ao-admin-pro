@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { build } from 'esbuild';
+const result = await build({ entryPoints: ['src/core/navigationGroup.ts'], bundle: true, write: false, format: 'esm' });
+const { resolveNavigationGroup } = await import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString('base64')}`);
+const groups = ['SaaS', '电商', '数据/BI'].map(label => ({ type: 'group', label, children: [{ path: '/dashboard/analytics' }] }));
+for (const origin of ['电商', 'SaaS', '数据/BI', '电商']) assert.equal(resolveNavigationGroup(groups, '/dashboard/analytics', origin), origin);
+assert.equal(resolveNavigationGroup(groups, '/dashboard/analytics', '已移除类别'), 'SaaS');
+assert.equal(resolveNavigationGroup(groups, '/system/config', '电商'), null);
+assert.equal(resolveNavigationGroup(groups, '/dashboard/analytics'), 'SaaS');
+console.log('Shared route category selection and fallback passed.');

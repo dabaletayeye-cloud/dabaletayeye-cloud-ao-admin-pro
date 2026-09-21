@@ -1,0 +1,28 @@
+{
+  "name": "erp",
+  "title": "ERP 中心",
+  "icon": "ShoppingCart",
+  "dependencies": [],
+  "menus": [
+    { "path": "/erp/products", "title": "商品管理", "icon": "Package", "perms": ["erp:products:list", "erp:products:create", "erp:products:update", "erp:products:delete", "erp:products:export"], "order": 140 },
+    { "path": "/erp/orders", "title": "订单管理", "icon": "ShoppingCart", "perms": ["erp:orders:list", "erp:orders:create", "erp:orders:update", "erp:orders:delete", "erp:orders:export"], "order": 140 },
+    { "path": "/erp/purchase", "title": "采购管理", "icon": "Truck", "perms": ["erp:purchases:list", "erp:purchases:create", "erp:purchases:update", "erp:purchases:delete", "erp:suppliers:list"], "order": 140 },
+    { "path": "/erp/inventory", "title": "库存管理", "icon": "Boxes", "perms": ["erp:inventory:list", "erp:inventory:update"], "order": 140 },
+    { "path": "/erp/customers", "title": "客户管理", "icon": "Users", "perms": ["erp:customers:list", "erp:customers:create", "erp:customers:update", "erp:customers:delete", "erp:customers:export"], "order": 140 },
+    { "path": "/erp/finance", "title": "财务管理", "icon": "WalletCards", "perms": ["erp:finance:list", "erp:finance:create", "erp:finance:update", "erp:finance:delete", "erp:finance:export"], "order": 140 },
+    { "path": "/erp/reports", "title": "报表中心", "icon": "BarChart3", "perms": ["erp:reports:list", "erp:reports:export"], "order": 140 }
+  ],
+  "routes": [
+    { "path": "/dashboard/ecommerce", "component": "pages/EcommercePage", "legacySource": "pages/dashboard/EcommercePage" },
+    { "path": "/orders", "component": "pages/OrderPage", "legacySource": "pages/OrderPage" },
+    { "path": "/erp/products", "component": "pages/ProductsPage" },
+    { "path": "/erp/orders", "component": "pages/OrdersPage" },
+    { "path": "/erp/purchase", "component": "pages/PurchasePage" },
+    { "path": "/erp/inventory", "component": "pages/InventoryPage" },
+    { "path": "/erp/customers", "component": "pages/CustomersPage" },
+    { "path": "/erp/finance", "component": "pages/FinancePage" },
+    { "path": "/erp/reports", "component": "pages/ReportsPage" }
+  ],
+  "permissions": ["erp:products:list", "erp:products:create", "erp:products:update", "erp:products:delete", "erp:products:export", "erp:orders:list", "erp:orders:create", "erp:orders:update", "erp:orders:delete", "erp:orders:export", "erp:purchases:list", "erp:purchases:create", "erp:purchases:update", "erp:purchases:delete", "erp:suppliers:list", "erp:inventory:list", "erp:inventory:update", "erp:customers:list", "erp:customers:create", "erp:customers:update", "erp:customers:delete", "erp:customers:export", "erp:finance:list", "erp:finance:create", "erp:finance:update", "erp:finance:delete", "erp:finance:export", "erp:reports:list", "erp:reports:export", "erp:product:list", "erp:product:create", "erp:product:update", "erp:product:delete", "erp:product:export", "erp:order:list", "erp:order:create", "erp:order:update", "erp:order:delete", "erp:order:export", "erp:purchase:list", "erp:purchase:create", "erp:purchase:update", "erp:purchase:delete", "erp:purchase:export", "erp:customer:list", "erp:customer:create", "erp:customer:update", "erp:customer:delete", "erp:customer:export", "erp:supplier:list", "erp:supplier:create", "erp:supplier:update", "erp:supplier:delete", "erp:supplier:export"],
+  "dicts": ["product_category", "order_status", "purchase_status", "finance_category"], "npmDeps": [], "backendTables": ["erp_product", "erp_customer", "erp_supplier", "erp_order", "erp_order_item", "erp_purchase", "erp_purchase_item", "erp_purchase_approval", "erp_inventory", "erp_inventory_flow", "erp_finance_record"]
+}

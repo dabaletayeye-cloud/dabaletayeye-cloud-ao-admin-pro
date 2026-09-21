@@ -60,12 +60,15 @@ export interface ThemeState {
   sidebarAccordion: boolean;
   showSidebarToggle: boolean;
   showQuickEntry: boolean;
+  showEditionSwitch: boolean;
   showReloadButton: boolean;
   showBreadcrumb: boolean;
   showLanguageSelector: boolean;
   showTopProgress: boolean;
   colorWeakMode: boolean;
   globalWatermark: boolean;
+  particleEffects: boolean;
+  particleSize: 'small' | 'medium' | 'large';
   sidebarWidth: number;
   tabsStyle: TabsStyle;
   pageTransition: PageTransition;
@@ -86,12 +89,15 @@ export const DEFAULT_THEME: ThemeState = {
   sidebarAccordion: true,
   showSidebarToggle: true,
   showQuickEntry: true,
+  showEditionSwitch: true,
   showReloadButton: true,
   showBreadcrumb: true,
   showLanguageSelector: true,
   showTopProgress: false,
   colorWeakMode: false,
   globalWatermark: false,
+  particleEffects: true,
+  particleSize: 'medium',
   sidebarWidth: 230,
   tabsStyle: 'default',
   pageTransition: 'slide-left',

@@ -1,4 +1,5 @@
 export * from './auth';
+export * from './profile';
 export * from './user';
 export * from './role';
 export * from './menu';

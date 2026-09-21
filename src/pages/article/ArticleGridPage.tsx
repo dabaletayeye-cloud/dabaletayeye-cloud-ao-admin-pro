@@ -1,3 +1,4 @@
+import ViewportPortal from '../../components/ViewportPortal';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
@@ -258,7 +259,7 @@ export default function ArticleGridPage() {
         )}
 
         {/* ─── Detail Drawer Overlay ─── */}
-        <div
+        <ViewportPortal><div
           style={{
             position: 'fixed', inset: 0, zIndex: 200,
             background: 'rgba(0,0,0,0.4)',
@@ -266,9 +267,9 @@ export default function ArticleGridPage() {
             pointerEvents: drawerOpen ? 'auto' : 'none',
             transition: 'opacity 0.25s',
           }}
-        />
+        /></ViewportPortal>
         {/* Drawer Panel */}
-        <div
+        <ViewportPortal><div
           ref={drawerRef}
           style={{
             position: 'fixed', top: 0, right: 0, bottom: 0,
@@ -283,7 +284,7 @@ export default function ArticleGridPage() {
           }}
         >
           {d && <DrawerContent article={d} primary={primary} onClose={closeDetail} onEdit={() => navigate(`/article/publish?edit=${d.id}`)} />}
-        </div>
+        </div></ViewportPortal>
       </div>
     </AdminLayout>
   );

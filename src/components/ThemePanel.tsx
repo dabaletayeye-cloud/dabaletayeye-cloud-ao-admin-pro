@@ -751,6 +751,20 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
           {/* Divider */}
           <div style={{ height: '1px', background: p.divider, margin: '0 0 22px' }} />
 
+          <PanelSection title="粒子特效" palette={p}>
+            <SettingSwitch label="开启粒子特效" checked={themeState.particleEffects} onChange={() => setTheme({ particleEffects: !themeState.particleEffects })} palette={p} />
+            <p style={{ fontSize: 11, color: p.configLabelText, margin: '8px 0 12px', lineHeight: 1.6 }}>漫剧工坊主题：白天飘落樱花，夜间闪烁萤火。</p>
+            <fieldset disabled={!themeState.particleEffects} style={{ border: 0, padding: 0, margin: 0, opacity: themeState.particleEffects ? 1 : 0.45 }}>
+              <legend style={{ fontSize: 12, color: p.configLabelText, marginBottom: 8 }}>粒子大小</legend>
+              <OptionGroup
+                options={[{ label: '小', value: 'small' as const }, { label: '中', value: 'medium' as const }, { label: '大', value: 'large' as const }]}
+                value={themeState.particleSize}
+                onChange={particleSize => setTheme({ particleSize })}
+                palette={p}
+              />
+            </fieldset>
+          </PanelSection>
+
           {/* 3. 菜单布局 */}
           <PanelSection title={t('theme.menuLayout')} palette={p}>
             <OptionGroup
@@ -881,6 +895,7 @@ export default function ThemePanel({ open = false, onClose = () => {} }: ThemePa
               <SettingSwitch label={t('theme.sidebarAccordion')} checked={themeState.sidebarAccordion} onChange={() => setTheme({ sidebarAccordion: !themeState.sidebarAccordion })} palette={p} />
               <SettingSwitch label={t('theme.showSidebarToggle')} checked={themeState.showSidebarToggle} onChange={() => setTheme({ showSidebarToggle: !themeState.showSidebarToggle })} palette={p} />
               <SettingSwitch label={t('theme.showQuickEntry')} checked={themeState.showQuickEntry} onChange={() => setTheme({ showQuickEntry: !themeState.showQuickEntry })} palette={p} />
+              <SettingSwitch label={t('theme.showEditionSwitch')} checked={themeState.showEditionSwitch} onChange={() => setTheme({ showEditionSwitch: !themeState.showEditionSwitch })} palette={p} />
               <SettingSwitch label={t('theme.showReload')} checked={themeState.showReloadButton} onChange={() => setTheme({ showReloadButton: !themeState.showReloadButton })} palette={p} />
               <SettingSwitch label={t('theme.showBreadcrumb')} checked={themeState.showBreadcrumb} onChange={() => setTheme({ showBreadcrumb: !themeState.showBreadcrumb })} palette={p} />
               <SettingSwitch label={t('theme.showLanguage')} checked={themeState.showLanguageSelector} onChange={() => setTheme({ showLanguageSelector: !themeState.showLanguageSelector })} palette={p} />

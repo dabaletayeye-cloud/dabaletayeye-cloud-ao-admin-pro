@@ -1,3 +1,4 @@
+import { useChartPalette, colorWithAlpha } from '../../hooks/useChartPalette';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { toast } from '../../lib/localizedToast';
 import ReactECharts from 'echarts-for-react';
@@ -170,8 +171,9 @@ export default function DashboardAnalyticsPage() {
   const { t, i18n } = useTranslation();
   const isManga    = themeState.themeId === 'manga';
   const isDark     = themeState.mode === 'dark';
-  const primaryHex = isManga ? '#E91E8C' : '#6366f1';
-  const primaryAlpha = isManga ? 'rgba(233,30,140,0.12)' : 'rgba(99,102,241,0.12)';
+  const palette = useChartPalette();
+  const primaryHex = palette.primary;
+  const primaryAlpha = colorWithAlpha(primaryHex, 0.12);
   const [range, setRange] = useState<DashboardAnalyticsRange>(7);
   const [analytics, setAnalytics] = useState<DashboardAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -193,9 +195,9 @@ export default function DashboardAnalyticsPage() {
   // ── Shared chart style tokens ──────────────────────────────────────────────
   const gridLine    = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
   const axisLabel   = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)';
-  const tipBg       = isDark ? '#1e2130' : '#ffffff';
+  const tipBg       = palette.card;
   const tipBorder   = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
-  const tipText     = isDark ? '#e2e8f0' : '#1e293b';
+  const tipText     = palette.foreground;
   const barRadius   = [6, 6, 0, 0] as [number, number, number, number];
   const periodLabels = analyticsData.labels;
 
@@ -233,9 +235,9 @@ export default function DashboardAnalyticsPage() {
   // ── Stat items ─────────────────────────────────────────────────────────────
   const STATS: StatItem[] = [
     { key: 'revenue',    label: t('analytics.todayRevenue'), value: analyticsData.metrics.revenue, prefix: '¥', suffix: '', change: analyticsData.metrics.revenueChange, icon: <DollarSignIcon size={20} />, iconBg: primaryAlpha, iconColor: primaryHex },
-    { key: 'orders',     label: t('analytics.todayOrders'), value: analyticsData.metrics.orders, prefix: '', suffix: i18n.language.startsWith('zh') ? '单' : '', change: analyticsData.metrics.ordersChange, icon: <ShoppingBagIcon size={20} />, iconBg: 'rgba(16,185,129,0.12)', iconColor: '#10b981' },
-    { key: 'conversion', label: t('analytics.conversion'), value: analyticsData.metrics.conversion, prefix: '', suffix: '%', change: analyticsData.metrics.conversionChange, icon: <TargetIcon size={20} />, iconBg: 'rgba(245,158,11,0.12)', iconColor: '#f59e0b' },
-    { key: 'newUsers',   label: t('analytics.newCustomers'), value: analyticsData.metrics.newUsers, prefix: '', suffix: i18n.language.startsWith('zh') ? '人' : '', change: analyticsData.metrics.newUsersChange, icon: <UserPlusIcon size={20} />, iconBg: 'rgba(59,130,246,0.12)', iconColor: '#3b82f6' },
+    { key: 'orders',     label: t('analytics.todayOrders'), value: analyticsData.metrics.orders, prefix: '', suffix: i18n.language.startsWith('zh') ? '单' : '', change: analyticsData.metrics.ordersChange, icon: <ShoppingBagIcon size={20} />, iconBg: colorWithAlpha(palette.colors[1], 0.12), iconColor: palette.colors[1] },
+    { key: 'conversion', label: t('analytics.conversion'), value: analyticsData.metrics.conversion, prefix: '', suffix: '%', change: analyticsData.metrics.conversionChange, icon: <TargetIcon size={20} />, iconBg: colorWithAlpha(palette.colors[2], 0.12), iconColor: palette.colors[2] },
+    { key: 'newUsers',   label: t('analytics.newCustomers'), value: analyticsData.metrics.newUsers, prefix: '', suffix: i18n.language.startsWith('zh') ? '人' : '', change: analyticsData.metrics.newUsersChange, icon: <UserPlusIcon size={20} />, iconBg: colorWithAlpha(palette.colors[0], 0.12), iconColor: palette.colors[0] },
   ];
 
   // ── Chart 1: 访客洞察 双折线 ───────────────────────────────────────────────
@@ -250,15 +252,15 @@ export default function DashboardAnalyticsPage() {
       {
         name: t('analytics.returningCustomers'), type: 'line', data: analyticsData.visitor.returningCustomers, smooth: true, symbol: 'none',
         lineStyle: { color: primaryHex, width: 2.5 }, itemStyle: { color: primaryHex },
-        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: isManga ? 'rgba(233,30,140,0.22)' : 'rgba(99,102,241,0.22)' }, { offset: 1, color: 'rgba(0,0,0,0)' }] } },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: colorWithAlpha(primaryHex, 0.22) }, { offset: 1, color: 'rgba(0,0,0,0)' }] } },
       },
       {
         name: t('analytics.newCustomers'), type: 'line', data: analyticsData.visitor.newCustomers, smooth: true, symbol: 'none',
-        lineStyle: { color: '#10b981', width: 2.5 }, itemStyle: { color: '#10b981' },
-        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(16,185,129,0.18)' }, { offset: 1, color: 'rgba(0,0,0,0)' }] } },
+        lineStyle: { color: palette.colors[1], width: 2.5 }, itemStyle: { color: palette.colors[1] },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: colorWithAlpha(palette.colors[1], 0.18) }, { offset: 1, color: 'rgba(0,0,0,0)' }] } },
       },
     ],
-  }), [analyticsData, isManga, isDark, primaryHex, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
+  }), [palette, analyticsData, isManga, isDark, primaryHex, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
 
   // ── Chart 2: 总收入 分组柱 ─────────────────────────────────────────────────
   const revenueOption = useMemo(() => ({
@@ -276,12 +278,12 @@ export default function DashboardAnalyticsPage() {
       {
         name: t('analytics.offlineSales'), type: 'bar', data: analyticsData.revenue.offline, barMaxWidth: 14,
         itemStyle: {
-          color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: '#38bdf8' }, { offset: 1, color: '#0ea5e9' }] },
+          color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: palette.colors[2] }, { offset: 1, color: palette.colors[1] }] },
           borderRadius: barRadius,
         },
       },
     ],
-  }), [analyticsData, isManga, isDark, primaryHex, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
+  }), [palette, analyticsData, isManga, isDark, primaryHex, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
 
   // ── Chart 3: 客户满意度 双折线面积 ────────────────────────────────────────
   const satOption = useMemo(() => ({
@@ -294,16 +296,16 @@ export default function DashboardAnalyticsPage() {
     series: [
       {
         name: '上一日', type: 'line', data: analyticsData.completion.previous, smooth: true, symbol: 'none',
-        lineStyle: { color: '#f59e0b', width: 2 }, itemStyle: { color: '#f59e0b' },
-        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(245,158,11,0.18)' }, { offset: 1, color: 'rgba(245,158,11,0)' }] } },
+        lineStyle: { color: palette.colors[2], width: 2 }, itemStyle: { color: palette.colors[2] },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: colorWithAlpha(palette.colors[2], 0.18) }, { offset: 1, color: colorWithAlpha(palette.colors[2], 0) }] } },
       },
       {
         name: '当日', type: 'line', data: analyticsData.completion.current, smooth: true, symbol: 'none',
-        lineStyle: { color: '#3b82f6', width: 2.5 }, itemStyle: { color: '#3b82f6' },
-        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(59,130,246,0.22)' }, { offset: 1, color: 'rgba(59,130,246,0)' }] } },
+        lineStyle: { color: palette.colors[0], width: 2.5 }, itemStyle: { color: palette.colors[0] },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: colorWithAlpha(palette.colors[0], 0.22) }, { offset: 1, color: colorWithAlpha(palette.colors[0], 0) }] } },
       },
     ],
-  }), [analyticsData, isDark, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
+  }), [palette, analyticsData, isDark, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
 
   // ── Chart 4: 目标与实际 单柱 ───────────────────────────────────────────────
   const targetOption = useMemo(() => ({
@@ -320,15 +322,15 @@ export default function DashboardAnalyticsPage() {
           color: {
             type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              { offset: 0, color: isManga ? '#E91E8C' : '#818cf8' },
-              { offset: 1, color: isManga ? 'rgba(233,30,140,0.35)' : 'rgba(99,102,241,0.35)' },
+              { offset: 0, color: primaryHex },
+              { offset: 1, color: colorWithAlpha(primaryHex, 0.35) },
             ],
           },
         },
       },
-      { name: t('analytics.targetSales'), type: 'line', data: analyticsData.target.target, smooth: true, symbol: 'none', lineStyle: { color: '#3b82f6', type: 'dashed', width: 2 } },
+      { name: t('analytics.targetSales'), type: 'line', data: analyticsData.target.target, smooth: true, symbol: 'none', lineStyle: { color: palette.colors[0], type: 'dashed', width: 2 } },
     ],
-  }), [analyticsData, isManga, isDark, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
+  }), [palette, analyticsData, isManga, isDark, tipBg, tipBorder, tipText, axisLabel, gridLine, i18n.language, t]);
 
   // ── Local states ───────────────────────────────────────────────────────────
   const [exportHover, setExportHover] = useState(false);
@@ -366,7 +368,7 @@ export default function DashboardAnalyticsPage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <div style={{ display: 'flex', padding: 3, border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)' }}>
-              {([7, 30, 90] as DashboardAnalyticsRange[]).map(days => <button key={days} type="button" onClick={() => setRange(days)} disabled={loading && range === days} style={{ height: 28, padding: '0 10px', border: 0, borderRadius: 7, background: range === days ? primaryHex : 'transparent', color: range === days ? '#fff' : 'var(--muted-foreground)', fontSize: 12, fontWeight: 650, cursor: 'pointer' }}>近{days}天</button>)}
+              {([7, 30, 90] as DashboardAnalyticsRange[]).map(days => <button key={days} type="button" onClick={() => setRange(days)} disabled={loading && range === days} style={{ height: 28, padding: '0 10px', border: 0, borderRadius: 7, background: range === days ? primaryHex : 'transparent', color: range === days ? 'var(--primary-foreground)' : 'var(--muted-foreground)', fontSize: 12, fontWeight: 650, cursor: 'pointer' }}>近{days}天</button>)}
             </div>
             <button type="button" onClick={() => setReloadKey(value => value + 1)} disabled={loading} title="刷新分析数据" style={{ width: 36, height: 36, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--card)', color: 'var(--muted-foreground)', cursor: loading ? 'wait' : 'pointer' }}>
               <RefreshCwIcon size={15} className={loading ? 'animate-spin' : undefined} />
@@ -394,7 +396,7 @@ export default function DashboardAnalyticsPage() {
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '7px 15px', borderRadius: 10, cursor: 'pointer', flexShrink: 0,
                   border: `1.5px solid ${exportHover ? primaryHex : 'var(--border)'}`,
-                  background: exportHover ? (isManga ? 'rgba(233,30,140,0.06)' : 'rgba(99,102,241,0.06)') : 'transparent',
+                  background: exportHover ? (colorWithAlpha(primaryHex, 0.06)) : 'transparent',
                   color: exportHover ? primaryHex : 'var(--foreground)',
                   fontSize: 12, fontWeight: 600,
                   transition: 'border-color 0.18s, background 0.18s, color 0.18s',
@@ -470,7 +472,7 @@ export default function DashboardAnalyticsPage() {
               {/* 目标销售额 */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(59,130,246,0.12)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: colorWithAlpha(palette.colors[0], 0.12), color: palette.colors[0], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <FlagIcon size={16} />
                   </div>
                   <div>
@@ -493,7 +495,7 @@ export default function DashboardAnalyticsPage() {
                   <div
                     style={{
                       height: '100%', width: `${Math.min(100, analyticsData.target.progress)}%`, borderRadius: 99,
-                      background: `linear-gradient(90deg, ${primaryHex}, ${isManga ? '#ff6eb4' : '#818cf8'})`,
+                      background: `linear-gradient(90deg, ${primaryHex}, ${palette.colors[1]})`,
                     }}
                   />
                 </div>

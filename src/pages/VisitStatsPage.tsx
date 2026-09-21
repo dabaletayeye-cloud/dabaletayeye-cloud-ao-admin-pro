@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { BarChartSvg, DonutChartSvg, LineChartSvg } from '../components/AnalyticsSvgCharts';
-import { useTheme } from '../hooks/useTheme';
+
 import {
   UsersIcon, EyeIcon, MousePointerClickIcon, TrendingUpIcon,
   ArrowUpIcon, ArrowDownIcon, MonitorIcon, SmartphoneIcon, TabletIcon,
 } from 'lucide-react';
 
-const PINK = '#E91E8C';
+
 
 // ─── mock data ───────────────────────────────────────────────────────────────
 
@@ -32,11 +32,11 @@ const HOURLY = Array.from({ length: 24 }, (_, i) => {
 });
 
 const SOURCE_DATA = [
-  { name: '直接访问', value: 38, color: '#6366f1' },
-  { name: '搜索引擎', value: 27, color: '#f59e0b' },
-  { name: '社交媒体', value: 18, color: '#22c55e' },
-  { name: '外部链接', value: 11, color: '#ec4899' },
-  { name: '邮件推广', value: 6,  color: '#14b8a6' },
+  { name: '直接访问', value: 38, color: 'var(--chart-1)' },
+  { name: '搜索引擎', value: 27, color: 'var(--chart-4)' },
+  { name: '社交媒体', value: 18, color: 'var(--chart-2)' },
+  { name: '外部链接', value: 11, color: 'var(--chart-3)' },
+  { name: '邮件推广', value: 6,  color: 'var(--chart-5)' },
 ];
 
 const DEVICE_DATA = [
@@ -70,10 +70,10 @@ const REGION_DATA = [
 type Range = '7d' | '30d' | '90d';
 
 export default function VisitStatsPage() {
-  const { themeState } = useTheme();
-  const isManga = themeState.themeId === 'manga';
-  const primary = isManga ? PINK : 'var(--primary)';
-  const primaryHex = isManga ? PINK : '#6366f1';
+
+
+  const primary = 'var(--primary)';
+  const primaryHex = 'var(--primary)';
   const [range, setRange] = useState<Range>('30d');
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
 
@@ -98,7 +98,7 @@ export default function VisitStatsPage() {
     padding: '20px 24px',
   };
 
-  const CHART_COLORS = [primaryHex, '#22c55e', '#f59e0b', '#ec4899', '#14b8a6'];
+  const CHART_COLORS = [primaryHex, 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
 
   return (
     <AdminLayout>
@@ -119,7 +119,7 @@ export default function VisitStatsPage() {
                   padding: '6px 16px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer',
                   border: range === r ? 'none' : '1px solid var(--border)',
                   background: range === r ? primary : 'var(--card)',
-                  color: range === r ? '#fff' : 'var(--foreground)',
+                  color: range === r ? 'var(--primary-foreground)' : 'var(--foreground)',
                   transition: 'all 0.15s',
                 }}
               >
@@ -150,14 +150,14 @@ export default function VisitStatsPage() {
         {/* PV/UV Trend */}
         <div style={{ ...card }}>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 20 }}>PV / UV 趋势</div>
-          <LineChartSvg height={280} data={chartData} xKey="date" series={[{ key: 'pv', name: 'PV', color: primaryHex }, { key: 'uv', name: 'UV', color: '#22c55e' }]} />
+          <LineChartSvg height={280} data={chartData} xKey="date" series={[{ key: 'pv', name: 'PV', color: primaryHex }, { key: 'uv', name: 'UV', color: 'var(--chart-2)' }]} />
         </div>
 
         {/* Hourly + Source */}
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ ...card, flex: '2 1 400px', minWidth: 300 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 20 }}>今日小时分布</div>
-            <BarChartSvg height={220} data={HOURLY} xKey="hour" series={[{ key: 'pv', name: 'PV', color: primaryHex }, { key: 'uv', name: 'UV', color: '#22c55e' }]} />
+            <BarChartSvg height={220} data={HOURLY} xKey="hour" series={[{ key: 'pv', name: 'PV', color: primaryHex }, { key: 'uv', name: 'UV', color: 'var(--chart-2)' }]} />
           </div>
 
           <div style={{ ...card, flex: '1 1 260px', minWidth: 240 }}>
@@ -187,8 +187,8 @@ export default function VisitStatsPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {[
                 { icon: <MonitorIcon size={18} />, label: '桌面端', value: 51, color: primaryHex },
-                { icon: <SmartphoneIcon size={18} />, label: '移动端', value: 38, color: '#f59e0b' },
-                { icon: <TabletIcon size={18} />, label: '平板端', value: 11, color: '#22c55e' },
+                { icon: <SmartphoneIcon size={18} />, label: '移动端', value: 38, color: 'var(--chart-4)' },
+                { icon: <TabletIcon size={18} />, label: '平板端', value: 11, color: 'var(--chart-2)' },
               ].map((d, i) => (
                 <div key={i}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>

@@ -1,3 +1,4 @@
+import ViewportPortal from '../components/ViewportPortal';
 import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
@@ -325,7 +326,7 @@ export default function DictPage() {
         </div>
 
         {/* Type Modal */}
-        <div
+        <ViewportPortal><div
           style={{
             position: 'fixed', inset: 0, zIndex: 100,
             background: 'rgba(0,0,0,0.4)',
@@ -367,10 +368,10 @@ export default function DictPage() {
               <button onClick={saveType} className="px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90" style={{ background: primary }}>保存</button>
             </div>
           </div>
-        </div>
+        </div></ViewportPortal>
 
         {/* Item Modal */}
-        <div
+        <ViewportPortal><div
           style={{
             position: 'fixed', inset: 0, zIndex: 100,
             background: 'rgba(0,0,0,0.4)',
@@ -418,7 +419,7 @@ export default function DictPage() {
               <button onClick={saveItem} className="px-4 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90" style={{ background: primary }}>保存</button>
             </div>
           </div>
-        </div>
+        </div></ViewportPortal>
       </div>
     </AdminLayout>
   );

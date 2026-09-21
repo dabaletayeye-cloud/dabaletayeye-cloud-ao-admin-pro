@@ -1,8 +1,10 @@
-.lowcode-page {
-  --lc-primary: #165DFF;
+:root {
+  --lc-primary: var(--primary);
   --lc-success: #00B42A;
   --lc-warning: #FF7D00;
   --lc-danger: #F53F3F;
+}
+.lowcode-page {
   color: var(--foreground);
   min-height: calc(100vh - 150px);
 }
@@ -28,14 +30,14 @@
 }
 .lc-btn:hover:not(:disabled), .lc-icon-btn:hover:not(:disabled) { border-color: var(--lc-primary); color: var(--lc-primary); background: color-mix(in srgb, var(--lc-primary) 7%, var(--card)); }
 .lc-btn:disabled, .lc-icon-btn:disabled { cursor: not-allowed; opacity: .45; }
-.lc-btn.primary { color: #fff; border-color: var(--lc-primary); background: var(--lc-primary); }
-.lc-btn.primary:hover:not(:disabled) { color: #fff; background: #0e4fdf; }
+.lc-btn.primary { color: var(--primary-foreground); border-color: var(--lc-primary); background: var(--lc-primary); }
+.lc-btn.primary:hover:not(:disabled) { color: var(--primary-foreground); background: color-mix(in srgb, var(--lc-primary) 88%, var(--foreground)); }
 .lc-btn.danger { color: var(--lc-danger); }
 .lc-icon-btn { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--muted-foreground); cursor: pointer; }
 .lc-input, .lc-select, .lc-textarea { width: 100%; color: var(--foreground); background: var(--card); border: 1px solid var(--border); border-radius: 6px; outline: none; }
 .lc-input, .lc-select { height: 32px; padding: 0 9px; font-size: 12px; }
 .lc-textarea { min-height: 72px; padding: 8px 9px; font-size: 12px; line-height: 1.55; resize: vertical; }
-.lc-input:focus, .lc-select:focus, .lc-textarea:focus { border-color: var(--lc-primary); box-shadow: 0 0 0 2px rgba(22,93,255,.12); }
+.lc-input:focus, .lc-select:focus, .lc-textarea:focus { border-color: var(--lc-primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--lc-primary) 12%, transparent); }
 .lc-label { display: block; margin: 0 0 6px; color: var(--muted-foreground); font-size: 12px; }
 .lc-field { margin-bottom: 14px; }
 .lc-tip { color: var(--muted-foreground); font-size: 12px; line-height: 1.5; }
@@ -68,7 +70,7 @@
 .lc-flow-edge { fill: none; stroke: var(--lc-primary); stroke-width: 2; opacity: .8; pointer-events: stroke; cursor: pointer; }
 .lc-flow-edge:hover { stroke: var(--lc-danger); stroke-width: 3; }
 .lc-flow-node { position: absolute; width: 154px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); box-shadow: 0 4px 12px rgba(0,0,0,.08); cursor: move; user-select: none; overflow: visible; }
-.lc-flow-node.selected { border-color: var(--lc-primary); box-shadow: 0 0 0 3px rgba(22,93,255,.16), 0 5px 15px rgba(0,0,0,.1); }
+.lc-flow-node.selected { border-color: var(--lc-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lc-primary) 16%, transparent), 0 5px 15px rgba(0,0,0,.1); }
 .lc-node-bar { display: flex; height: 30px; align-items: center; gap: 6px; padding: 0 9px; color: #fff; border-radius: 7px 7px 0 0; font-size: 11px; font-weight: 700; }
 .lc-node-body { padding: 8px 9px; font-size: 11px; line-height: 1.4; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lc-port { position: absolute; top: 50%; width: 12px; height: 12px; margin-top: -6px; border: 2px solid var(--card); border-radius: 50%; background: var(--lc-primary); cursor: crosshair; z-index: 2; }
@@ -95,12 +97,12 @@
 .lc-library-item { display: flex; align-items: center; gap: 5px; height: 31px; padding: 0 7px; border: 1px solid var(--border); border-radius: 5px; color: var(--foreground); background: var(--card); cursor: grab; font-size: 11px; }
 .lc-library-item:hover { color: var(--lc-primary); border-color: var(--lc-primary); background: color-mix(in srgb, var(--lc-primary) 5%, var(--card)); }
 .lc-device-wrap { display: flex; flex: 1; align-items: flex-start; justify-content: center; min-width: 0; padding: 20px; overflow: auto; background-color: color-mix(in srgb, var(--muted) 52%, var(--background)); background-image: linear-gradient(color-mix(in srgb, var(--muted-foreground) 13%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--muted-foreground) 13%, transparent) 1px, transparent 1px); background-size: 16px 16px; }
-.lc-device { position: relative; flex: none; min-height: 510px; overflow: hidden; background: #fff; border: 1px solid #d9e2f0; box-shadow: 0 8px 24px rgba(0,0,0,.12); color: #1d2939; background-image: linear-gradient(rgba(22,93,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(22,93,255,.045) 1px, transparent 1px); background-size: 10px 10px; }
+.lc-device { position: relative; flex: none; min-height: 510px; overflow: hidden; background: #fff; border: 1px solid #d9e2f0; box-shadow: 0 8px 24px rgba(0,0,0,.12); color: #1d2939; background-image: linear-gradient(color-mix(in srgb, var(--lc-primary) 4.5%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--lc-primary) 4.5%, transparent) 1px, transparent 1px); background-size: 10px 10px; }
 .lc-device.pc { width: 860px; }.lc-device.tablet { width: 600px; }.lc-device.mobile { width: 375px; }
 .lc-device-component { position: absolute; min-width: 36px; min-height: 26px; cursor: move; outline: 1px solid transparent; user-select: none; }
 .lc-device-component.selected { outline: 2px solid var(--lc-primary); }
-.lc-device-component.multi-selected { outline-color: rgba(22,93,255,.65); }
-.lc-device-component:hover { outline-color: rgba(22,93,255,.55); }
+.lc-device-component.multi-selected { outline-color: color-mix(in srgb, var(--lc-primary) 65%, transparent); }
+.lc-device-component:hover { outline-color: color-mix(in srgb, var(--lc-primary) 55.00000000000001%, transparent); }
 .lc-component-handle { position: absolute; right: -5px; bottom: -5px; width: 9px; height: 9px; border-radius: 2px; background: var(--lc-primary); }
 .lc-preview-component { pointer-events: none; }
 .lc-event-row { display: flex; justify-content: space-between; align-items: center; min-height: 40px; border-bottom: 1px solid var(--border); font-size: 12px; }

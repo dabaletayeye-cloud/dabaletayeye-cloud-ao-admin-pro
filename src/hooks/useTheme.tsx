@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { primaryForeground, updateThemeAppearance } from '../lib/themeAppearance';
 import {
   ThemeState,
   DEFAULT_THEME,
@@ -40,7 +41,7 @@ function loadTheme(): ThemeState {
       if (!raw.includes('"menuStyle"')) {
         merged.menuStyle = 'system';
       }
-      return merged;
+      return updateThemeAppearance(merged, {});
     }
   } catch {
     // ignore
@@ -107,6 +108,9 @@ function applyThemeToDom(state: ThemeState): void {
 
   const defaultPrimary = getThemeConfig(themeId, mode).primary;
   const accentDiffers = accentColor.toLowerCase() !== defaultPrimary.toLowerCase();
+  const foreground = primaryForeground(accentDiffers ? accentColor : defaultPrimary);
+  root.style.setProperty('--primary-foreground', foreground);
+  root.style.setProperty('--sidebar-primary-foreground', foreground);
 
   if (accentDiffers) {
     root.style.setProperty('--primary', accentColor);
@@ -171,19 +175,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setThemeId = useCallback((id: ThemeId) => {
-    setThemeState(prev => ({ ...prev, themeId: id }));
+    setThemeState(prev => updateThemeAppearance(prev, { themeId: id }));
   }, [setThemeState]);
 
   const setMode = useCallback((mode: ThemeMode) => {
-    setThemeState(prev => ({ ...prev, mode }));
+    setThemeState(prev => updateThemeAppearance(prev, { mode }));
   }, [setThemeState]);
 
   const toggleMode = useCallback(() => {
-    setThemeState(prev => ({ ...prev, mode: prev.mode === 'light' ? 'dark' : 'light' }));
+    setThemeState(prev => updateThemeAppearance(prev, { mode: prev.mode === 'light' ? 'dark' : 'light' }));
   }, [setThemeState]);
 
   const setTheme = useCallback((partial: Partial<ThemeState>) => {
-    setThemeState(prev => ({ ...prev, ...partial }));
+    setThemeState(prev => updateThemeAppearance(prev, partial));
   }, [setThemeState]);
 
   const resetTheme = useCallback(() => {

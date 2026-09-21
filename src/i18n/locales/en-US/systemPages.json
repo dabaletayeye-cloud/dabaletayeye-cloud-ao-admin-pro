@@ -1,1 +1,50 @@
-{"fallback":{"supplemental":{"服务器管理":"Server management","实时监控服务器 CPU / RAM / SWAP / DISK 资源使用情况，支持开机 · 关机 · 重启操作":"Monitor CPU, RAM, SWAP and DISK usage in real time; start, shut down or restart servers","总服务器":"Total servers","运行中":"Running","已关机":"Offline","重启中":"Restarting","开发服务器":"Development server","测试服务器":"Test server","预发布服务器":"Staging server","线上服务器":"Production server","在线":"Uptime","确认":"Confirm","关机":"Shut down","重启":"Restart","确认关机？":"Confirm shutdown?","确认重启？":"Confirm restart?","关机后服务将中断，请确认操作。":"Services will be interrupted after shutdown. Continue?","重启期间服务短暂中断，请确认操作。":"Services will be briefly interrupted while restarting. Continue?","取消":"Cancel","开机":"Start","进度条颜色说明：":"Progress bar colors:","正常 (0–59%)":"Normal (0–59%)","警告 (60–79%)":"Warning (60–79%)","危险 (≥80%)":"Critical (≥80%)"}}}
+{
+  "fallback": {
+    "supplemental": {
+      "服务器管理": "Server management",
+      "实时监控服务器 CPU / RAM / SWAP / DISK 资源使用情况，支持开机 · 关机 · 重启操作": "Monitor CPU, RAM, SWAP and DISK usage in real time; start, shut down or restart servers",
+      "总服务器": "Total servers",
+      "运行中": "Running",
+      "已关机": "Offline",
+      "重启中": "Restarting",
+      "开发服务器": "Development server",
+      "测试服务器": "Test server",
+      "预发布服务器": "Staging server",
+      "线上服务器": "Production server",
+      "在线": "Uptime",
+      "确认": "Confirm",
+      "关机": "Shut down",
+      "重启": "Restart",
+      "确认关机？": "Confirm shutdown?",
+      "确认重启？": "Confirm restart?",
+      "关机后服务将中断，请确认操作。": "Services will be interrupted after shutdown. Continue?",
+      "重启期间服务短暂中断，请确认操作。": "Services will be briefly interrupted while restarting. Continue?",
+      "取消": "Cancel",
+      "开机": "Start",
+      "进度条颜色说明：": "Progress bar colors:",
+      "正常 (0–59%)": "Normal (0–59%)",
+      "警告 (60–79%)": "Warning (60–79%)",
+      "危险 (≥80%)": "Critical (≥80%)"
+    },
+    "terms": {
+      "版本切换": "Edition switching",
+      "极简版": "Minimal edition",
+      "ERP 版": "ERP edition",
+      "ERP版": "ERP edition",
+      "全部版": "Full edition",
+      "仅影响菜单与功能入口显示，不会删除任何业务数据。": "Only navigation and feature entries are affected; no business data will be deleted.",
+      "仅工作台与系统管理": "Workspace and system administration only",
+      "核心功能与ERP业务": "Core capabilities and ERP operations",
+      "启用全部已安装模块": "Enable every installed module",
+      "当前选择": "Currently selected",
+      "保存中…": "Saving…",
+      "保存版本": "Save edition",
+      "当前已经是": "Already using ",
+      "，无需切换": "; no switch is needed",
+      "确定切换到": "Switch to ",
+      "吗？": "?",
+      "切换后侧边栏和路由入口会立即更新，业务数据不会删除。": "The sidebar and route entries will update immediately. No business data will be deleted.",
+      "版本已切换为": "Switched to "
+    }
+  }
+}

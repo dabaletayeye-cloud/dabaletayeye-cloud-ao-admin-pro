@@ -1,0 +1,15 @@
+{
+  "name":"oa","title":"OA 办公中心","icon":"Briefcase","dependencies":[],"apiPrefixes":["/api/oa"],
+  "menus":[
+    {"path":"/oa/approval","title":"审批中心","icon":"ClipboardCheck","perms":["oa:approval:list","oa:approval:create","oa:approval:update","oa:approval:delete"]},
+    {"path":"/oa/attendance","title":"考勤管理","icon":"Clock3","perms":["oa:attendance:list","oa:attendance:create","oa:attendance:update"]},
+    {"path":"/oa/notices","title":"公告管理","icon":"Megaphone","perms":["oa:notices:list","oa:notices:create","oa:notices:update","oa:notices:delete"]},
+    {"path":"/oa/schedule","title":"日程管理","icon":"CalendarDays","perms":["oa:schedule:list","oa:schedule:create","oa:schedule:update","oa:schedule:delete"]},
+    {"path":"/oa/org","title":"组织架构","icon":"Network","perms":["oa:org:list","oa:org:create","oa:org:update","oa:org:delete"]}
+  ],
+  "routes":[
+    {"path":"/oa/approval","component":"pages/ApprovalPage"},{"path":"/oa/attendance","component":"pages/AttendancePage"},{"path":"/oa/notices","component":"pages/NoticesPage"},{"path":"/oa/schedule","component":"pages/SchedulePage"},{"path":"/oa/org","component":"pages/OrgPage"}
+  ],
+  "permissions":["oa:approval:list","oa:approval:create","oa:approval:update","oa:approval:delete","oa:approval:audit","oa:approval:cancel","oa:attendance:list","oa:attendance:create","oa:attendance:update","oa:attendance:all","oa:attendance:punch","oa:notices:list","oa:notices:create","oa:notices:update","oa:notices:delete","oa:schedule:list","oa:schedule:create","oa:schedule:update","oa:schedule:delete","oa:org:list","oa:org:create","oa:org:update","oa:org:delete"],
+  "dicts":["oa_approval_type","oa_approval_status","oa_notice_type","oa_schedule_type"],"npmDeps":[],"backendTables":["oa_approval","oa_approval_record","oa_approval_config","oa_attendance","oa_notice","oa_notice_read","oa_schedule","oa_schedule_member","oa_dept","oa_dept_user"]
+}

@@ -1,3 +1,4 @@
+import ViewportPortal from './ViewportPortal';
 import { useEffect, useState } from 'react';
 import { toast } from '../lib/localizedToast';
 import { useTheme } from '../hooks/useTheme';
@@ -37,7 +38,7 @@ function ViewModal({ open, user, onClose }: ModalProps) {
   if (!user) return null;
   const statusCfg = STATUS_CONFIG[user.status];
   return (
-    <div
+    <ViewportPortal><div
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ display: open ? 'flex' : 'none', background: 'rgba(0,0,0,0.5)' }}
       onClick={onClose}
@@ -85,7 +86,7 @@ function ViewModal({ open, user, onClose }: ModalProps) {
           </div>
         </div>
       </div>
-    </div>
+    </div></ViewportPortal>
   );
 }
 
@@ -111,7 +112,7 @@ function AddUserModal({ open, onClose, onSave }: AddModalProps) {
   };
 
   return (
-    <div
+    <ViewportPortal><div
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ display: open ? 'flex' : 'none', background: 'rgba(0,0,0,0.5)' }}
       onClick={onClose}
@@ -200,7 +201,7 @@ function AddUserModal({ open, onClose, onSave }: AddModalProps) {
           </button>
         </div>
       </div>
-    </div>
+    </div></ViewportPortal>
   );
 }
 

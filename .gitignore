@@ -5,6 +5,8 @@ node_modules/
 dist/
 .vite/
 coverage/
+.edition-backups/
+.edition-test-*/
 *.tsbuildinfo
 
 # Environment files

@@ -1,32 +1,32 @@
 import { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { BarChartSvg, FunnelChartSvg, LineChartSvg } from '../components/AnalyticsSvgCharts';
-import { useTheme } from '../hooks/useTheme';
+
 import {
   ArrowDownIcon, ArrowUpIcon, TrendingUpIcon, UsersIcon,
   ShoppingCartIcon, CreditCardIcon, CheckCircle2Icon, MousePointerClickIcon,
 } from 'lucide-react';
 
-const PINK = '#E91E8C';
+
 
 // ─── mock data ────────────────────────────────────────────────────────────────
 
 const FUNNEL_MAIN = [
-  { name: '访问首页',  value: 86420, fill: '#6366f1' },
-  { name: '浏览内容',  value: 62340, fill: '#8b5cf6' },
-  { name: '注册/登录', value: 28750, fill: '#a855f7' },
-  { name: '加入收藏',  value: 14230, fill: '#ec4899' },
-  { name: '分享传播',  value: 6870,  fill: '#f43f5e' },
-  { name: '付费转化',  value: 2140,  fill: '#ef4444' },
+  { name: '访问首页',  value: 86420, fill: 'color-mix(in srgb, var(--primary) 95%, var(--card))' },
+  { name: '浏览内容',  value: 62340, fill: 'color-mix(in srgb, var(--primary) 89%, var(--card))' },
+  { name: '注册/登录', value: 28750, fill: 'color-mix(in srgb, var(--primary) 83%, var(--card))' },
+  { name: '加入收藏',  value: 14230, fill: 'color-mix(in srgb, var(--primary) 77%, var(--card))' },
+  { name: '分享传播',  value: 6870,  fill: 'color-mix(in srgb, var(--primary) 71%, var(--card))' },
+  { name: '付费转化',  value: 2140,  fill: 'color-mix(in srgb, var(--primary) 65%, var(--card))' },
 ];
 
 const FUNNEL_MOBILE = [
-  { name: '访问首页',  value: 42810, fill: '#22c55e' },
-  { name: '浏览内容',  value: 29460, fill: '#16a34a' },
-  { name: '注册/登录', value: 11830, fill: '#15803d' },
-  { name: '加入收藏',  value: 5210,  fill: '#166534' },
-  { name: '分享传播',  value: 2380,  fill: '#14532d' },
-  { name: '付费转化',  value: 640,   fill: '#052e16' },
+  { name: '访问首页',  value: 42810, fill: 'color-mix(in srgb, var(--primary) 95%, var(--card))' },
+  { name: '浏览内容',  value: 29460, fill: 'color-mix(in srgb, var(--primary) 89%, var(--card))' },
+  { name: '注册/登录', value: 11830, fill: 'color-mix(in srgb, var(--primary) 83%, var(--card))' },
+  { name: '加入收藏',  value: 5210,  fill: 'color-mix(in srgb, var(--primary) 77%, var(--card))' },
+  { name: '分享传播',  value: 2380,  fill: 'color-mix(in srgb, var(--primary) 71%, var(--card))' },
+  { name: '付费转化',  value: 640,   fill: 'color-mix(in srgb, var(--primary) 65%, var(--card))' },
 ];
 
 const STEP_DETAILS = FUNNEL_MAIN.map((step, i) => {
@@ -70,10 +70,10 @@ const DROP_REASONS = [
 type FunnelView = 'pc' | 'mobile';
 
 export default function FunnelPage() {
-  const { themeState } = useTheme();
-  const isManga = themeState.themeId === 'manga';
-  const primary = isManga ? PINK : 'var(--primary)';
-  const primaryHex = isManga ? PINK : '#6366f1';
+
+
+  const primary = 'var(--primary)';
+  const primaryHex = 'var(--primary)';
 
   const [view, setView] = useState<FunnelView>('pc');
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
@@ -117,7 +117,7 @@ export default function FunnelPage() {
                   padding: '6px 16px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer',
                   border: view === v ? 'none' : '1px solid var(--border)',
                   background: view === v ? primary : 'var(--card)',
-                  color: view === v ? '#fff' : 'var(--foreground)',
+                  color: view === v ? 'var(--primary-foreground)' : 'var(--foreground)',
                   transition: 'all 0.15s',
                 }}
               >
@@ -166,7 +166,7 @@ export default function FunnelPage() {
                       <div style={{
                         width: 28, height: 28, borderRadius: '50%', background: s.fill,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0,
+                        color: 'var(--primary-foreground)', fontSize: 13, fontWeight: 700, flexShrink: 0,
                       }}>{i + 1}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
@@ -174,7 +174,7 @@ export default function FunnelPage() {
                           <div style={{ display: 'flex', gap: 16, flexShrink: 0 }}>
                             <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>总转化 <b style={{ color: 'var(--foreground)' }}>{s.overallRate}</b></span>
                             {i > 0 && (
-                              <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>步骤转化 <b style={{ color: '#22c55e' }}>{s.convRate}</b></span>
+                              <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>步骤转化 <b style={{ color: 'var(--chart-2)' }}>{s.convRate}</b></span>
                             )}
                             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--foreground)' }}>{s.value.toLocaleString()}</span>
                           </div>
@@ -204,7 +204,7 @@ export default function FunnelPage() {
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ ...card, flex: '2 1 380px', minWidth: 300 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>转化率趋势（近12周）</div>
-            <LineChartSvg height={220} data={WEEKLY_TREND} xKey="week" series={[{ key: 'convRate', name: '付费转化率', color: primaryHex }, { key: 'visitConv', name: '访问→内容率', color: '#f59e0b' }]} />
+            <LineChartSvg height={220} data={WEEKLY_TREND} xKey="week" series={[{ key: 'convRate', name: '付费转化率', color: primaryHex }, { key: 'visitConv', name: '访问→内容率', color: 'var(--chart-4)' }]} />
           </div>
 
           <div style={{ ...card, flex: '1 1 240px', minWidth: 220 }}>
@@ -222,7 +222,7 @@ export default function FunnelPage() {
                     <span style={{ fontWeight: 700, color: 'var(--foreground)' }}>{r.pct}%</span>
                   </div>
                   <div style={{ height: 6, background: 'var(--muted)', borderRadius: 999 }}>
-                    <div style={{ width: `${r.pct * 3}%`, height: '100%', background: ['#ef4444','#f97316','#eab308','#22c55e','#6366f1','#9ca3af'][i], borderRadius: 999 }} />
+                    <div style={{ width: `${r.pct * 3}%`, height: '100%', background: `color-mix(in srgb, var(--primary) ${95 - i * 6}%, var(--card))`, borderRadius: 999 }} />
                   </div>
                 </div>
               ))}
@@ -235,7 +235,7 @@ export default function FunnelPage() {
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>各渠道漏斗对比</div>
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             <div style={{ flex: '2 1 400px', minWidth: 300 }}>
-              <BarChartSvg height={220} data={CHANNEL_FUNNEL} xKey="channel" series={[{ key: 'visit', name: '访问', color: primaryHex }, { key: 'register', name: '注册', color: '#f59e0b' }, { key: 'pay', name: '付费', color: '#22c55e' }]} />
+              <BarChartSvg height={220} data={CHANNEL_FUNNEL} xKey="channel" series={[{ key: 'visit', name: '访问', color: primaryHex }, { key: 'register', name: '注册', color: 'var(--chart-4)' }, { key: 'pay', name: '付费', color: 'var(--chart-2)' }]} />
             </div>
             <div style={{ flex: '1 1 220px', minWidth: 200 }}>
               <div style={{ overflowX: 'auto' }}>

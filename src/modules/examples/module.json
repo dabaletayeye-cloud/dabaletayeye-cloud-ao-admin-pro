@@ -1,0 +1,21 @@
+{
+  "name": "examples",
+  "title": "功能示例",
+  "icon": "Sparkles",
+  "dependencies": [],
+  "menus": [
+    { "path": "/examples/permissions", "title": "前端权限", "icon": "ShieldCheck", "perms": ["examples:permissions:view"], "order": 240 },
+    { "path": "/examples/basic-table", "title": "基础表格", "icon": "Table", "perms": ["examples:basic-table:view"], "order": 240 },
+    { "path": "/examples/search-form", "title": "搜索表单", "icon": "Search", "perms": ["examples:search-form:view"], "order": 240 },
+    { "path": "/examples/split-table", "title": "左右布局表格", "icon": "PanelTop", "perms": ["examples:split-table:view"], "order": 240 },
+    { "path": "/examples/socket", "title": "Socket 连接", "icon": "Server", "perms": ["examples:socket:view"], "order": 240 }
+  ],
+  "routes": [
+    { "path": "/examples/permissions", "component": "pages/FrontendPermissionExamplePage", "legacySource": "pages/examples/FrontendPermissionExamplePage" },
+    { "path": "/examples/basic-table", "component": "pages/BasicTableExamplePage", "legacySource": "pages/examples/BasicTableExamplePage" },
+    { "path": "/examples/search-form", "component": "pages/SearchFormExamplePage", "legacySource": "pages/examples/SearchFormExamplePage" },
+    { "path": "/examples/split-table", "component": "pages/SplitTableExamplePage", "legacySource": "pages/examples/SplitTableExamplePage" },
+    { "path": "/examples/socket", "component": "pages/SocketExamplePage", "legacySource": "pages/examples/SocketExamplePage" }
+  ],
+  "permissions": [], "dicts": [], "npmDeps": [], "backendTables": []
+}

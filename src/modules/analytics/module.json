@@ -1,0 +1,20 @@
+{
+  "name": "analytics",
+  "title": "数据分析",
+  "icon": "BarChart2",
+  "dependencies": [],
+  "menus": [
+    { "path": "/dashboard/analytics", "title": "分析看板", "icon": "LineChart", "perms": ["analytics:dashboard:view"], "order": 20 },
+    { "path": "/analytics/traffic", "title": "访问统计", "icon": "TrendingUp", "perms": ["analytics:traffic", "analytics:traffic:export"], "order": 90 },
+    { "path": "/analytics/portrait", "title": "用户画像", "icon": "Users", "perms": ["analytics:portrait", "analytics:portrait:export"], "order": 90 },
+    { "path": "/analytics/funnel", "title": "转化漏斗", "icon": "Funnel", "perms": ["analytics:funnel", "analytics:funnel:export"], "order": 90 }
+  ],
+  "routes": [
+    { "path": "/dashboard/analytics", "component": "pages/DashboardAnalyticsPage", "legacySource": "pages/dashboard/DashboardAnalyticsPage" },
+    { "path": "/analytics/traffic", "component": "pages/VisitStatsPage", "legacySource": "pages/VisitStatsPage" },
+    { "path": "/analytics/portrait", "component": "pages/UserPortraitPage", "legacySource": "pages/UserPortraitPage" },
+    { "path": "/analytics/funnel", "component": "pages/FunnelPage", "legacySource": "pages/FunnelPage" }
+  ],
+  "permissions": ["analytics:dashboard:view", "analytics:traffic", "analytics:traffic:export", "analytics:portrait", "analytics:portrait:export", "analytics:funnel", "analytics:funnel:export"],
+  "dicts": [], "npmDeps": ["echarts", "echarts-for-react", "recharts"], "backendTables": []
+}

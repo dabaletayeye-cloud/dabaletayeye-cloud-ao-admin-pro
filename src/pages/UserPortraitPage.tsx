@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { BarChartSvg, DonutChartSvg, RadarChartSvg } from '../components/AnalyticsSvgCharts';
-import { useTheme } from '../hooks/useTheme';
+
 import {
   UsersIcon, UserCheckIcon, UserXIcon, TrendingUpIcon,
   ArrowUpIcon, ArrowDownIcon,
 } from 'lucide-react';
 
-const PINK = '#E91E8C';
+
 
 // ─── mock data ────────────────────────────────────────────────────────────────
 
 const GENDER_DATA = [
-  { name: '男性', value: 54, color: '#6366f1' },
-  { name: '女性', value: 46, color: '#ec4899' },
+  { name: '男性', value: 54, color: 'var(--chart-1)' },
+  { name: '女性', value: 46, color: 'var(--chart-3)' },
 ];
 
 const AGE_DATA = [
@@ -57,10 +57,10 @@ const ACTIVE_HOUR = Array.from({ length: 24 }, (_, i) => {
 });
 
 const LOYALTY_DATA = [
-  { name: '新用户',   value: 32, color: '#6366f1' },
-  { name: '回访用户', value: 41, color: '#22c55e' },
-  { name: '忠实用户', value: 18, color: '#f59e0b' },
-  { name: '沉睡用户', value: 9,  color: '#9ca3af' },
+  { name: '新用户',   value: 32, color: 'var(--chart-1)' },
+  { name: '回访用户', value: 41, color: 'var(--chart-2)' },
+  { name: '忠实用户', value: 18, color: 'var(--chart-4)' },
+  { name: '沉睡用户', value: 9,  color: 'var(--chart-5)' },
 ];
 
 const DEVICE_PREF = [
@@ -79,17 +79,17 @@ const CHANNEL_DATA = [
 ];
 
 const USER_SEGMENTS = [
-  { name: '高活跃创作者', count: 1240, pct: 8.4,  avgVisit: '18.3', retention: '91%', badge: '#6366f1' },
-  { name: '中度阅读用户', count: 4870, pct: 33.1, avgVisit: '6.7',  retention: '72%', badge: '#22c55e' },
-  { name: '轻度浏览用户', count: 5630, pct: 38.3, avgVisit: '2.1',  retention: '41%', badge: '#f59e0b' },
-  { name: '沉睡流失用户', count: 2970, pct: 20.2, avgVisit: '0.3',  retention: '8%',  badge: '#9ca3af' },
+  { name: '高活跃创作者', count: 1240, pct: 8.4,  avgVisit: '18.3', retention: '91%', badge: 'var(--chart-1)' },
+  { name: '中度阅读用户', count: 4870, pct: 33.1, avgVisit: '6.7',  retention: '72%', badge: 'var(--chart-2)' },
+  { name: '轻度浏览用户', count: 5630, pct: 38.3, avgVisit: '2.1',  retention: '41%', badge: 'var(--chart-3)' },
+  { name: '沉睡流失用户', count: 2970, pct: 20.2, avgVisit: '0.3',  retention: '8%',  badge: 'var(--chart-4)' },
 ];
 
 export default function UserPortraitPage() {
-  const { themeState } = useTheme();
-  const isManga = themeState.themeId === 'manga';
-  const primary = isManga ? PINK : 'var(--primary)';
-  const primaryHex = isManga ? PINK : '#6366f1';
+
+
+  const primary = 'var(--primary)';
+  const primaryHex = 'var(--primary)';
 
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
 
@@ -155,7 +155,7 @@ export default function UserPortraitPage() {
           {/* Age */}
           <div style={{ ...card, flex: '2 1 380px', minWidth: 300 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>年龄分布（男 / 女）</div>
-            <BarChartSvg height={220} data={AGE_DATA} xKey="group" series={[{ key: 'male', name: '男性', color: '#6366f1' }, { key: 'female', name: '女性', color: '#ec4899' }]} />
+            <BarChartSvg height={220} data={AGE_DATA} xKey="group" series={[{ key: 'male', name: '男性', color: 'var(--chart-1)' }, { key: 'female', name: '女性', color: 'var(--chart-3)' }]} />
           </div>
         </div>
 
@@ -200,13 +200,13 @@ export default function UserPortraitPage() {
           {/* Device Pref */}
           <div style={{ ...card, flex: '1 1 220px', minWidth: 200 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>设备偏好</div>
-            <DonutChartSvg height={200} data={DEVICE_PREF.map((item, index) => ({ ...item, color: ['#6366f1', '#f59e0b', '#22c55e', '#9ca3af'][index] }))} />
+            <DonutChartSvg height={200} data={DEVICE_PREF.map((item, index) => ({ ...item, color: ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)'][index] }))} />
           </div>
 
           {/* Channel */}
           <div style={{ ...card, flex: '2 1 340px', minWidth: 280 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>获客渠道对比</div>
-            <BarChartSvg height={220} data={CHANNEL_DATA} xKey="channel" series={[{ key: 'new', name: '新用户', color: primaryHex }, { key: 'returning', name: '回访用户', color: '#22c55e' }]} />
+            <BarChartSvg height={220} data={CHANNEL_DATA} xKey="channel" series={[{ key: 'new', name: '新用户', color: primaryHex }, { key: 'returning', name: '回访用户', color: 'var(--chart-2)' }]} />
           </div>
         </div>
 

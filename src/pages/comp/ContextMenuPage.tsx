@@ -1,3 +1,4 @@
+import ViewportPortal from '../../components/ViewportPortal';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import {
@@ -118,7 +119,7 @@ function ContextMenu({ menu, onClose, onAction }: ContextMenuProps) {
   };
 
   return (
-    <div
+    <ViewportPortal><div
       ref={menuRef}
       data-cmp="ContextMenu"
       style={{
@@ -203,7 +204,7 @@ function ContextMenu({ menu, onClose, onAction }: ContextMenuProps) {
           </div>
         </React.Fragment>
       ))}
-    </div>
+    </div></ViewportPortal>
   );
 }
 
@@ -465,7 +466,7 @@ function DemoZone() {
       <ContextMenu menu={menu} onClose={closeMenu} onAction={handleAction} />
 
       {/* Toast stack */}
-      <div
+      <ViewportPortal><div
         style={{
           position: 'fixed',
           bottom: 28,
@@ -525,7 +526,7 @@ function DemoZone() {
             </span>
           </div>
         ))}
-      </div>
+      </div></ViewportPortal>
     </div>
   );
 }

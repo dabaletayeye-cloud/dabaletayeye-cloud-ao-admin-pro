@@ -91,5 +91,13 @@
   "lowcodeForm": "表单引擎",
   "lowcodeReport": "报表引擎",
   "lowcodePrint": "打印模板",
-  "lowcodeGenerator": "代码生成器"
+  "lowcodeGenerator": "代码生成器",
+  "erpCenter": "ERP 中心",
+  "erpProducts": "商品管理",
+  "erpOrders": "订单管理",
+  "erpPurchase": "采购管理",
+  "erpInventory": "库存管理",
+  "erpCustomers": "客户管理",
+  "erpFinance": "财务管理",
+  "erpReports": "报表中心"
 }

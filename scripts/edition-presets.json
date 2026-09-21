@@ -1,0 +1,14 @@
+{
+  "minimal": { "label": "极简版", "modules": [] },
+  "erp": { "label": "ERP 版", "modules": ["erp"] },
+  "oa": { "label": "OA 版", "modules": ["oa"] },
+  "saas": { "label": "SaaS 版", "modules": ["content", "media", "marketing", "analytics", "operations", "ai"] },
+  "ecommerce": { "label": "电商版", "modules": ["commerce", "erp", "marketing", "media", "analytics"] },
+  "devplatform": { "label": "开发者平台版", "modules": ["lowcode", "server"] },
+  "bi": { "label": "数据/BI 版", "modules": ["analytics", "operations", "lowcode"] },
+  "demo": { "label": "演示版", "modules": ["examples", "components", "templates"] },
+  "ai": { "label": "AI 智能版", "modules": ["ai", "lowcode", "media"] },
+  "cms": { "label": "CMS 内容版", "modules": ["content", "media", "marketing"] },
+  "crm": { "label": "CRM 营销版", "modules": ["erp", "marketing", "analytics", "operations", "media"] },
+  "full": { "label": "全部版", "modules": "*" }
+}

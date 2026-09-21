@@ -1,0 +1,26 @@
+{
+  "name": "ai",
+  "title": "AI 中心",
+  "icon": "Bot",
+  "dependencies": [],
+  "menus": [
+    { "path": "/ai/chat", "title": "AI 对话", "icon": "MessageCircle", "perms": ["ai:chat:view"], "order": 40 },
+    { "path": "/ai/agent", "title": "AI 助手", "icon": "Bot", "perms": ["ai:agent:view"], "order": 40 },
+    { "path": "/ai/customer-service", "title": "AI 客服", "icon": "MessageSquare", "perms": ["ai:customer-service:view"], "order": 40 },
+    { "path": "/ai/knowledge", "title": "知识库", "icon": "Database", "perms": ["ai:knowledge:view"], "order": 40 },
+    { "path": "/ai/prompt", "title": "提示词模板", "icon": "FileText", "perms": ["ai:prompt:view"], "order": 40 },
+    { "path": "/ai/model", "title": "模型管理", "icon": "Settings2", "perms": ["ai:model:view"], "order": 40 },
+    { "path": "/ai/workflow", "title": "AI 工作流", "icon": "Workflow", "perms": ["ai:workflow:view"], "order": 40 }
+  ],
+  "routes": [
+    { "path": "/ai/chat", "component": "pages/AiChatPage", "legacySource": "pages/ai/AiChatPage" },
+    { "path": "/ai/agent", "component": "pages/AiAgentPage", "legacySource": "pages/ai/AiAgentPage" },
+    { "path": "/ai/customer-service", "component": "pages/AiCustomerServicePage", "legacySource": "pages/ai/AiOtherPages", "exportName": "AiCustomerServicePage" },
+    { "path": "/ai/knowledge", "component": "pages/AiKnowledgePage", "legacySource": "pages/ai/AiOtherPages", "exportName": "AiKnowledgePage" },
+    { "path": "/ai/prompt", "component": "pages/AiPromptPage", "legacySource": "pages/ai/AiOtherPages", "exportName": "AiPromptPage" },
+    { "path": "/ai/model", "component": "pages/AiModelPage", "legacySource": "pages/ai/AiOtherPages", "exportName": "AiModelPage" },
+    { "path": "/ai/workflow", "component": "pages/AiWorkflowPage", "legacySource": "pages/ai/AiOtherPages", "exportName": "AiWorkflowPage" }
+  ],
+  "permissions": ["ai:chat:view", "ai:agent:view", "ai:customer-service:view", "ai:knowledge:view", "ai:prompt:view", "ai:model:view", "ai:workflow:view"],
+  "dicts": [], "npmDeps": [], "backendTables": []
+}

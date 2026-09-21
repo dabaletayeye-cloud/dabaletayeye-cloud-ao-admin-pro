@@ -46,21 +46,31 @@ type Resource = {
   };
 };
 
+function mergeFallback(localFallback: Fallback | undefined, englishFallback: Fallback | undefined): Fallback | undefined {
+  if (!localFallback && !englishFallback) return undefined;
+  return {
+    terms: { ...englishFallback?.terms, ...localFallback?.terms },
+    phrases: { ...englishFallback?.phrases, ...localFallback?.phrases },
+    traditional: { ...englishFallback?.traditional, ...localFallback?.traditional },
+    supplemental: { ...englishFallback?.supplemental, ...localFallback?.supplemental },
+  };
+}
+
 function getEntries(language: string) {
   const resource = i18n.getResourceBundle(language, 'translation') as Resource | undefined;
   const englishResource = i18n.getResourceBundle('en-US', 'translation') as Resource | undefined;
-  const componentFallback = resource?.components?.fallback ?? englishResource?.components?.fallback;
-  const templateFallback = resource?.templates?.fallback ?? englishResource?.templates?.fallback;
-  const contentFallback = resource?.content?.fallback ?? englishResource?.content?.fallback;
-  const feedbackFallback = resource?.feedback?.fallback ?? englishResource?.feedback?.fallback;
-  const analyticsPagesFallback = resource?.analyticsPages?.fallback ?? englishResource?.analyticsPages?.fallback;
-  const mediaFallback = resource?.media?.fallback ?? englishResource?.media?.fallback;
-  const marketingFallback = resource?.marketing?.fallback ?? englishResource?.marketing?.fallback;
-  const pageExtrasFallback = resource?.pageExtras?.fallback ?? englishResource?.pageExtras?.fallback;
-  const businessFallback = resource?.business?.fallback ?? englishResource?.business?.fallback;
-  const systemPagesFallback = resource?.systemPages?.fallback ?? englishResource?.systemPages?.fallback;
-  const lowcodeFallback = resource?.lowcode?.fallback ?? englishResource?.lowcode?.fallback;
-  const aiFallback = resource?.ai?.fallback ?? englishResource?.ai?.fallback;
+  const componentFallback = mergeFallback(resource?.components?.fallback, englishResource?.components?.fallback);
+  const templateFallback = mergeFallback(resource?.templates?.fallback, englishResource?.templates?.fallback);
+  const contentFallback = mergeFallback(resource?.content?.fallback, englishResource?.content?.fallback);
+  const feedbackFallback = mergeFallback(resource?.feedback?.fallback, englishResource?.feedback?.fallback);
+  const analyticsPagesFallback = mergeFallback(resource?.analyticsPages?.fallback, englishResource?.analyticsPages?.fallback);
+  const mediaFallback = mergeFallback(resource?.media?.fallback, englishResource?.media?.fallback);
+  const marketingFallback = mergeFallback(resource?.marketing?.fallback, englishResource?.marketing?.fallback);
+  const pageExtrasFallback = mergeFallback(resource?.pageExtras?.fallback, englishResource?.pageExtras?.fallback);
+  const businessFallback = mergeFallback(resource?.business?.fallback, englishResource?.business?.fallback);
+  const systemPagesFallback = mergeFallback(resource?.systemPages?.fallback, englishResource?.systemPages?.fallback);
+  const lowcodeFallback = mergeFallback(resource?.lowcode?.fallback, englishResource?.lowcode?.fallback);
+  const aiFallback = mergeFallback(resource?.ai?.fallback, englishResource?.ai?.fallback);
   const dictionary = language === 'zh-TW'
     ? {
         ...(componentFallback?.traditional ?? {}),

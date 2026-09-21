@@ -24,6 +24,7 @@ import { useTheme } from '../hooks/useTheme';
 import { LANGUAGE_OPTIONS, useLocale } from '../hooks/useLocale';
 import ThemePanel from '../components/ThemePanel';
 import { login } from '../api';
+import { useEdition } from '../core/EditionProvider';
 import LocalizedText from '../components/LocalizedText';
 import { getCurrentAccount, saveCurrentAccount } from '../lib/currentAccount';
 import appConfig from '../config/app.json';
@@ -118,6 +119,7 @@ function AuthVisual() {
 }
 
 export default function LoginPage() {
+  const { refreshEdition } = useEdition();
   const navigate = useNavigate();
   const location = useLocation();
   const { themeState, toggleMode } = useTheme();
@@ -234,6 +236,7 @@ export default function LoginPage() {
       const otherStorage = remember ? window.sessionStorage : window.localStorage;
       tokenStorage.setItem('manga_workshop_tokens', JSON.stringify({ accessToken, refreshToken }));
       otherStorage.removeItem('manga_workshop_tokens');
+      await refreshEdition();
     } catch (error) {
       setSubmitting(false);
       toast.error(error instanceof Error ? error.message : '登录失败');

@@ -12,7 +12,7 @@ import { toast } from '../lib/localizedToast';
 const PINK = '#E91E8C';
 
 function metricColor(value: number) {
-  return value >= 80 ? '#ef4444' : value >= 60 ? '#f59e0b' : value > 0 ? '#3b82f6' : '#22c55e';
+  return value >= 80 ? '#ef4444' : value >= 60 ? '#f59e0b' : value > 0 ? 'var(--primary)' : '#22c55e';
 }
 
 function ProgressBar({ value, label, icon }: { value: number; label: string; icon: ReactNode }) {

@@ -1,3 +1,4 @@
+import ViewportPortal from '../../components/ViewportPortal';
 import React, { useState, useRef, useCallback } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
@@ -998,7 +999,7 @@ function ToastMsg({ msg, success, onClose }: { msg: string; success: boolean; on
     return () => clearTimeout(t);
   }, [onClose]);
   return (
-    <div style={{
+    <ViewportPortal><div style={{
       position: 'fixed', top: 80, right: 24, zIndex: 9999,
       background: success ? '#22c55e' : '#ef4444',
       color: 'white', borderRadius: 10, padding: '12px 20px',
@@ -1009,7 +1010,7 @@ function ToastMsg({ msg, success, onClose }: { msg: string; success: boolean; on
     }}>
       {success ? <CheckIcon size={16} /> : <XIcon size={16} />}
       {msg}
-    </div>
+    </div></ViewportPortal>
   );
 }
 

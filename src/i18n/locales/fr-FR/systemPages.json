@@ -1,1 +1,24 @@
-{}
+{
+  "fallback": {
+    "terms": {
+      "版本切换": "Changement d’édition",
+      "极简版": "Édition minimale",
+      "ERP 版": "Édition ERP",
+      "ERP版": "Édition ERP",
+      "全部版": "Édition complète",
+      "仅影响菜单与功能入口显示，不会删除任何业务数据。": "Seuls le menu et les entrées de fonctionnalité sont affectés ; aucune donnée métier ne sera supprimée.",
+      "仅工作台与系统管理": "Espace de travail et administration système uniquement",
+      "核心功能与ERP业务": "Fonctionnalités essentielles et opérations ERP",
+      "启用全部已安装模块": "Activer tous les modules installés",
+      "当前选择": "Sélection actuelle",
+      "保存中…": "Enregistrement…",
+      "保存版本": "Enregistrer l’édition",
+      "当前已经是": "Vous utilisez déjà ",
+      "，无需切换": " ; aucun changement n’est requis",
+      "确定切换到": "Passer à ",
+      "吗？": " ?",
+      "切换后侧边栏和路由入口会立即更新，业务数据不会删除。": "La barre latérale et les entrées de route seront mises à jour immédiatement. Aucune donnée métier ne sera supprimée.",
+      "版本已切换为": "Édition remplacée par "
+    }
+  }
+}

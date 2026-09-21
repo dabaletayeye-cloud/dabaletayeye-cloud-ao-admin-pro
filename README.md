@@ -266,6 +266,20 @@ VITE_API_BASE_URL=http://localhost:8989
 4. 按业务需求将个人资料、主题偏好等 `localStorage` 状态迁移至服务端。
 5. 每次改动后运行 `npm run lint` 和 `npm run build`，确保代码质量与生产构建正常。
 
+## 模块化与一键裁剪
+
+可选业务模块位于 `src/modules/<module>`，每个模块必须提供 `module.json`（路由、菜单、权限、依赖和资源清单）。运行 `npm run generate:registry` 会扫描清单并生成 `src/generated/registry.ts`；开发和构建命令会自动执行此步骤。
+
+```bash
+npm run prune -- --dry-run              # 预览裁剪计划
+npm run prune -- --only-core --dry-run  # 预览仅保留核心
+npm run prune -- --keep erp --allow-dirty
+```
+
+`prune` 默认要求工作区干净；实际裁剪前请提交或备份修改。`--only-core` 和 `--keep` 会删除未保留的 `src/modules` 目录并重新生成注册表。Spring Boot 后端继续使用 `APP_ENABLED_MODULES`（例如 `APP_ENABLED_MODULES=erp`）控制服务端模块，依赖关系由 `BackendModuleRegistry` 校验。
+
+ERP 模块位于 `src/modules/erp`，页面路由为 `/erp/products`、`/erp/orders`、`/erp/purchase`、`/erp/inventory`、`/erp/customers`、`/erp/finance`、`/erp/reports`。启用 Spring Boot 后端的 `erp` 模块后，页面通过 `/api/erp/**` 访问真实数据库；首次迁移会创建 `erp_*` 表并写入演示数据。库存出入库使用事务和库存流水表，后端会拒绝超库存出库。
+
 ## 浏览器支持
 
 建议使用最新版 Chrome、Edge、Firefox 或 Safari。为获得完整体验，请确保浏览器允许 `localStorage`、剪贴板与文件选择等基础能力。
@@ -273,3 +287,14 @@ VITE_API_BASE_URL=http://localhost:8989
 ## 许可证
 
 仓库当前未附带许可证文件。用于公开发布或商业项目之前，请根据团队规范补充合适的许可证与版权信息。
+# 按产品版本裁剪与回退
+
+支持按 SaaS、ERP、OA、电商等版本自动备份并裁剪模块，随后按次回退：
+
+```bash
+npm run clean:edition -- --edition=saas --dry-run
+npm run clean:edition -- --edition=saas --yes --allow-dirty
+npm run restore:edition -- --yes
+```
+
+详见 [按版本裁剪与回退](scripts/README-edition.md)。首次使用先预览；当前源码不会因为安装这些脚本而自动裁剪。

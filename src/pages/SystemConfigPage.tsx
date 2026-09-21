@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   BellIcon, CheckCircle2Icon, Globe2Icon, HardDriveIcon, LoaderCircleIcon,
-  MailIcon, PaletteIcon, RefreshCwIcon, SaveIcon, ShieldCheckIcon,
+  MailIcon, PaletteIcon, RefreshCwIcon, SaveIcon, ShieldCheckIcon, LayersIcon,
 } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { getSystemConfig, updateSystemConfig } from '../api/systemConfig';
 import type { SystemConfig } from '../api/types';
 import { useTheme } from '../hooks/useTheme';
+import { useEdition } from '../core/EditionProvider';
+import { moduleMenus } from '../generated/registry';
+import { availableEditions, filterModuleMenus, type Edition } from '../core/edition';
+import { toast } from '../lib/localizedToast';
+import { THEMES } from '../types';
 
-type ConfigTab = 'site' | 'mail' | 'storage' | 'security' | 'notification' | 'theme';
+type ConfigTab = 'site' | 'mail' | 'storage' | 'security' | 'notification' | 'theme' | 'edition';
+const configTabFromSearch = (value: string | null): ConfigTab =>
+  ['site', 'mail', 'storage', 'security', 'notification', 'theme', 'edition'].includes(value ?? '') ? value as ConfigTab : 'site';
 
 const INITIAL_CONFIG: SystemConfig = {
   site: {
@@ -24,22 +32,63 @@ const INITIAL_CONFIG: SystemConfig = {
 };
 
 const MANGA_PINK = '#E91E8C';
+const EDITION_LABELS: Record<Edition, string> = {
+  minimal: '极简版', erp: 'ERP 版', oa: 'OA 版', saas: 'SaaS 版',
+  ecommerce: '电商版', devplatform: '开发者平台版', bi: '数据/BI 版', demo: '演示版',
+  ai: 'AI 智能版', cms: 'CMS 内容版', crm: 'CRM 营销版', full: '全部版',
+};
+const EDITION_DESCRIPTIONS: Record<Edition, string> = {
+  minimal: '仅工作台与系统管理', erp: '核心功能与 ERP 业务', oa: '核心功能与 OA 办公',
+  saas: '内容、营销与数据运营，面向对外服务', ecommerce: '商品、订单、营销与经营数据一体',
+  devplatform: '低代码扩展与服务器运维', bi: '看板、报表与数据洞察，包含全部低代码功能',
+  demo: '组件与页面能力展示，供演示使用', ai: '对话、知识库与 AI 工作流',
+  cms: '文章、媒体与内容分发的轻量后台', crm: '客户、营销与转化分析，包含采购、库存、财务等全部 ERP 功能',
+  full: '启用全部已安装模块',
+};
 
 export default function SystemConfigPage() {
-  const { themeState, setMode, setThemeId } = useTheme();
+  const { themeState, setMode, setThemeId, setTheme: applyTheme } = useTheme();
+  const { config: editionConfig, setEdition, refreshEdition, loading: editionLoading } = useEdition();
+  const [searchParams, setSearchParams] = useSearchParams();
   const primary = themeState.themeId === 'manga' ? MANGA_PINK : 'var(--primary)';
-  const [activeTab, setActiveTab] = useState<ConfigTab>('site');
+  const [activeTab, setActiveTab] = useState<ConfigTab>(() => configTabFromSearch(searchParams.get('tab')));
   const [config, setConfig] = useState<SystemConfig>(INITIAL_CONFIG);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<ConfigTab | null>(null);
   const [savedTab, setSavedTab] = useState<ConfigTab | null>(null);
   const [error, setError] = useState('');
+  const [edition, setEditionValue] = useState<Edition>(editionConfig.edition);
+  const [editionSaving, setEditionSaving] = useState(false);
+  useEffect(() => {
+    setActiveTab(configTabFromSearch(searchParams.get('tab')));
+  }, [searchParams]);
+  useEffect(() => { setEditionValue(editionConfig.edition); }, [editionConfig.edition]);
+  useEffect(() => {
+    if (activeTab === 'edition') void refreshEdition();
+  }, [activeTab, refreshEdition]);
+  const editions = availableEditions(moduleMenus, editionConfig);
+  const saveEdition = async () => {
+    const targetLabel = EDITION_LABELS[edition];
+    if (edition === editionConfig.edition) {
+      toast.info(`当前已经是${targetLabel}，无需切换`);
+      return;
+    }
+    if (!window.confirm(`确定切换到${targetLabel}吗？\n\n切换后侧边栏和路由入口会立即更新，业务数据不会删除。`)) return;
+    setEditionSaving(true);
+    setError('');
+    try {
+      await setEdition(edition);
+      toast.success(`版本已切换为${targetLabel}`);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : '保存失败'); }
+    finally { setEditionSaving(false); }
+  };
 
   const loadConfig = async () => {
     setLoading(true);
     setError('');
     try {
-      setConfig(await getSystemConfig());
+      const [nextConfig] = await Promise.all([getSystemConfig(), refreshEdition()]);
+      setConfig(nextConfig);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : '加载系统配置失败，请稍后重试。');
     } finally {
@@ -83,6 +132,8 @@ export default function SystemConfigPage() {
     { key: 'notification', label: '通知设置', icon: <BellIcon size={16} /> },
     { key: 'theme', label: '主题外观', icon: <PaletteIcon size={16} /> },
   ];
+
+  tabs.push({ key: 'edition', label: '版本切换', icon: <LayersIcon size={16} /> });
 
   const FormRow = ({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) => (
     <div className="flex items-start gap-4 mb-5" style={{ maxWidth: '880px' }}>
@@ -149,7 +200,7 @@ export default function SystemConfigPage() {
           <aside style={{ ...cardStyle, width: 208, flexShrink: 0, padding: 8 }}>
             {tabs.map(tab => {
               const active = activeTab === tab.key;
-              return <button key={tab.key} type="button" onClick={() => setActiveTab(tab.key)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-1 last:mb-0 transition-all text-left" style={{ background: active ? primary : 'transparent', color: active ? '#fff' : 'var(--muted-foreground)', cursor: 'pointer' }}>{tab.icon}{tab.label}</button>;
+              return <button key={tab.key} type="button" onClick={() => { setActiveTab(tab.key); setSearchParams(previous => { const next = new URLSearchParams(previous); next.set('tab', tab.key); return next; }, { replace: true }); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-1 last:mb-0 transition-all text-left" style={{ background: active ? primary : 'transparent', color: active ? '#fff' : 'var(--muted-foreground)', cursor: 'pointer' }}>{tab.icon}{tab.label}</button>;
             })}
           </aside>
 
@@ -225,14 +276,29 @@ export default function SystemConfigPage() {
             {activeTab === 'theme' && <>
               <SectionTitle>主题外观</SectionTitle>
               <p className="text-sm mb-6" style={{ color: 'var(--muted-foreground)' }}>选择后会立即应用到当前浏览器；保存后将作为系统默认偏好保留。</p>
-              <FormRow label="默认主题"><div className="flex flex-wrap gap-3">{[
-                { id: 'classic', name: '经典蓝', color: '#3B82F6' }, { id: 'mono', name: '极简黑白', color: '#1A1A1A' },
-                { id: 'purple', name: '活力紫', color: '#8B5CF6' }, { id: 'manga', name: '漫画工坊粉', color: '#E91E8C' },
-              ].map(item => <button key={item.id} type="button" onClick={() => { setTheme('defaultTheme', item.id as SystemConfig['theme']['defaultTheme']); setThemeId(item.id as Parameters<typeof setThemeId>[0]); }} className="px-3 py-2 rounded-lg text-sm" style={{ border: `2px solid ${config.theme.defaultTheme === item.id ? item.color : 'var(--border)'}`, background: config.theme.defaultTheme === item.id ? `${item.color}18` : 'var(--card)', color: 'var(--foreground)', cursor: 'pointer' }}><span className="inline-block w-3 h-3 rounded-full mr-2" style={{ background: item.color }} />{item.name}</button>)}</div></FormRow>
+              <FormRow label="默认主题"><div className="flex flex-wrap gap-3">{THEMES.map(item => {
+                const color = config.theme.defaultMode === 'dark' ? item.darkPrimary : item.lightPrimary;
+                const selected = config.theme.defaultTheme === item.id;
+                return <button key={item.id} type="button" aria-pressed={selected} onClick={() => { setTheme('defaultTheme', item.id); setThemeId(item.id); applyTheme({ accentColor: themeState.mode === 'dark' ? item.darkPrimary : item.lightPrimary }); }} className="px-3 py-2 rounded-lg text-sm" style={{ border: `2px solid ${selected ? color : 'var(--border)'}`, background: selected ? `${color}18` : 'var(--card)', color: 'var(--foreground)', cursor: 'pointer' }}><span className="inline-block w-3 h-3 rounded-full mr-2" style={{ background: color }} />{item.name}</button>;
+              })}</div></FormRow>
               <FormRow label="默认模式"><div className="flex gap-4">{(['light', 'dark'] as const).map(mode => <label key={mode} className="flex items-center gap-2 text-sm" style={{ color: 'var(--foreground)', cursor: 'pointer' }}><input type="radio" name="mode" checked={config.theme.defaultMode === mode} onChange={() => { setTheme('defaultMode', mode); setMode(mode); }} style={{ accentColor: primary }} />{mode === 'light' ? '浅色模式' : '深色模式'}</label>)}</div></FormRow>
-              <FormRow label="侧边栏宽度" hint="展开状态，单位 px"><input type="number" min="180" max="360" value={config.theme.sidebarWidth} onChange={event => setTheme('sidebarWidth', event.target.value)} style={{ ...inputStyle, maxWidth: 160 }} /></FormRow>
-              <FormRow label="全局圆角" hint="单位 rem"><select value={config.theme.cornerRadius} onChange={event => setTheme('cornerRadius', event.target.value)} style={{ ...inputStyle, maxWidth: 180 }}><option value="0">直角（0）</option><option value="0.375">小圆角</option><option value="0.75">中圆角</option><option value="1">大圆角</option></select></FormRow>
+              <FormRow label="侧边栏宽度" hint="展开状态，单位 px"><input type="number" min="180" max="320" value={config.theme.sidebarWidth} onChange={event => { const value = event.target.value; setTheme('sidebarWidth', value); if (value && Number(value) >= 180 && Number(value) <= 320) applyTheme({ sidebarWidth: Number(value) }); }} onBlur={() => { const width = Math.max(180, Math.min(320, Number(config.theme.sidebarWidth) || 230)); setTheme('sidebarWidth', String(width)); applyTheme({ sidebarWidth: width }); }} style={{ ...inputStyle, maxWidth: 160 }} /></FormRow>
+              <FormRow label="全局圆角" hint="单位 rem"><select value={config.theme.cornerRadius} onChange={event => { setTheme('cornerRadius', event.target.value); applyTheme({ cornerRadius: Number(event.target.value) }); }} style={{ ...inputStyle, maxWidth: 180 }}><option value="0">直角（0）</option><option value="0.375">小圆角</option><option value="0.75">中圆角</option><option value="1">大圆角</option></select></FormRow>
               <SaveBar tab="theme" label="保存主题设置" />
+            </>}
+            {activeTab === 'edition' && <>
+              <SectionTitle>版本切换</SectionTitle>
+              {!editionLoading && !editionConfig.presets && <p role="status" className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>尚未获取到版本预设。若刚更新了版本切换功能，请先重启后端服务，再点击本页“刷新”；若仍未显示，请检查版本配置接口是否请求成功。</p>}
+              <p className="text-sm mb-5" style={{ color: 'var(--muted-foreground)' }}>仅影响菜单与功能入口显示，不会删除任何业务数据。</p>
+              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))' }}>
+                {editions.map(item => {
+                  const included = [...new Set(filterModuleMenus(moduleMenus, { edition: item, enabledModules: editionConfig.presets?.[item] ?? [] })
+                    .map(menu => item === 'devplatform' && menu.path === '/system/servers' ? menu.label : menu.group))];
+                  if (item === 'demo') included.push('结果页面', '异常页面');
+                  return <button key={item} type="button" onClick={() => setEditionValue(item)} className="text-left p-4 rounded-xl" style={{ border: `2px solid ${edition === item ? primary : 'var(--border)'}`, background: edition === item ? `${primary}12` : 'var(--card)', color: 'var(--foreground)', cursor: 'pointer' }}><div className="font-semibold">{EDITION_LABELS[item]}</div><div className="text-xs mt-2" style={{ color: 'var(--muted-foreground)' }}>{EDITION_DESCRIPTIONS[item]}</div><div className="text-xs mt-2" style={{ color: 'var(--muted-foreground)' }}>包含：工作台、系统管理{included.length > 0 ? `、${included.join('、')}` : ''}</div>{editionConfig.edition === item && <div className="text-xs mt-3" style={{ color: primary }}>当前生效</div>}{edition === item && editionConfig.edition !== item && <div className="text-xs mt-3" style={{ color: primary }}>当前选择</div>}</button>;
+                })}
+              </div>
+              <div className="flex justify-end mt-6"><button type="button" onClick={() => void saveEdition()} disabled={editionSaving} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-60" style={{ background: primary, cursor: editionSaving ? 'not-allowed' : 'pointer' }}>{editionSaving ? '保存中…' : '保存版本'}</button></div>
             </>}
           </section>
         </div>

@@ -1,3 +1,4 @@
+import { resolveNavigationGroup } from '../core/navigationGroup';
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
@@ -77,10 +78,24 @@ import {
   ChartNoAxesCombinedIcon,
   PrinterIcon,
   FileCode2Icon,
+  PackageIcon,
+  TruckIcon,
+  BoxesIcon,
+  WalletCardsIcon,
+  BarChart3Icon,
+  BriefcaseIcon,
+  ClipboardCheckIcon,
+  Clock3Icon,
+  MegaphoneIcon,
+  CalendarDaysIcon,
+  NetworkIcon,
 } from 'lucide-react';
 import type { CollapseButtonPosition } from '../types';
 import { localizeNavLabel, useLocale } from '../hooks/useLocale';
 import appConfig from '../config/app.json';
+import { moduleMenus } from '../generated/registry';
+import { useEdition } from '../core/EditionProvider';
+import { filterModuleMenus, showDemoPages, type EditionConfig } from '../core/edition';
 
 interface NavChild { label: string; path: string; icon: React.ReactNode; }
 interface NavGroup { type: 'group'; icon: React.ReactNode; label: string; children: NavChild[]; }
@@ -96,7 +111,7 @@ interface SidebarProps {
   sidebarWidth?: number;
 }
 
-export const NAV_ITEMS: NavItem[] = [
+const LEGACY_NAV_ITEMS: NavItem[] = [
   { type: 'link', icon: <LayoutGridIcon size={16} />, label: '工作台', path: '/' },
   /* CLEAN_DEMO_START: extras:dashboard-navigation */
   {
@@ -285,6 +300,99 @@ export const NAV_ITEMS: NavItem[] = [
   }
 ];
 
+const moduleIconMap: Record<string, React.ComponentType<{ size?: number }>> = {
+  BarChart2: BarChart2Icon, LineChart: LineChartIcon, TrendingUp: TrendingUpIcon, Users: UsersIcon,
+  Funnel: FunnelIcon, FileText: FileTextIcon, LayoutGrid: LayoutGridIcon, Sparkles: SparklesIcon,
+  Folder: FolderIcon, Tag: TagIcon, Ticket: TicketIcon, Zap: ZapIcon, Bell: BellIcon,
+  ShoppingCart: ShoppingCartIcon, Image: ImageIcon, FolderOpen: FolderOpenIcon, MessageSquare: MessageSquareIcon,
+  Workflow: WorkflowIcon, PanelsTopLeft: PanelsTopLeftIcon, ClipboardList: ClipboardListIcon,
+  ChartNoAxesCombined: ChartNoAxesCombinedIcon, Printer: PrinterIcon, FileCode2: FileCode2Icon,
+  Database: DatabaseIcon, Send: SendIcon, Bot: BotIcon, MessageCircle: MessageCircleIcon,
+  Settings2: Settings2Icon, Server: ServerIcon,
+  Puzzle: PuzzleIcon, Layers: LayersIcon, MousePointerClick: MousePointerClickIcon, FormInput: FormInputIcon,
+  Table: TableIcon, MessageSquareWarning: MessageSquareWarningIcon, Navigation: NavigationIcon, Smile: SmileIcon,
+  Hash: HashIcon, Type: TypeIcon, Crop: CropIcon, QrCode: QrCodeIcon, PlayCircle: PlayCircleIcon,
+  GripVertical: GripVerticalIcon, MousePointer2: MousePointer2Icon, Droplets: DropletsIcon,
+  GalleryVertical: GalleryVerticalIcon, PartyPopper: PartyPopperIcon, FileSpreadsheet: FileSpreadsheetIcon,
+  Cloud: CloudIcon, LayoutTemplate: LayoutTemplateIcon, CreditCard: CreditCardIcon, PanelTop: PanelTopIcon,
+  BadgeDollarSign: BadgeDollarSignIcon, Search: SearchIcon, ShieldCheck: ShieldCheckIcon,
+  Package: PackageIcon, Truck: TruckIcon, Boxes: BoxesIcon, WalletCards: WalletCardsIcon, BarChart3: BarChart3Icon,
+  Briefcase: BriefcaseIcon, ClipboardCheck: ClipboardCheckIcon, Clock3: Clock3Icon,
+  Megaphone: MegaphoneIcon, CalendarDays: CalendarDaysIcon, Network: NetworkIcon,
+};
+
+function icon(name: string, size: number) {
+  const Icon = moduleIconMap[name] ?? PuzzleIcon;
+  return <Icon size={size} />;
+}
+
+const buildNavItems = (editionConfig?: EditionConfig): NavItem[] => {
+const enabledMenus = editionConfig ? filterModuleMenus(moduleMenus, editionConfig) : moduleMenus;
+const modulePaths = new Set(enabledMenus.map((menu) => menu.path));
+const OPTIONAL_ROUTE_PREFIXES = ['/analytics', '/content', '/article', '/media', '/marketing', '/orders', '/messages', '/generation-quotas', '/system/files', '/system/servers', '/dashboard/analytics', '/dashboard/ecommerce', '/lowcode', '/ai', '/comp', '/tmpl', '/examples'];
+const isOptionalPath = (path: string) => OPTIONAL_ROUTE_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+const coreNavItems = LEGACY_NAV_ITEMS.map((item): NavItem | null => {
+  if (item.type === 'link') return modulePaths.has(item.path) || isOptionalPath(item.path) ? null : item;
+  const children = item.children.filter((child) => !modulePaths.has(child.path) && !isOptionalPath(child.path));
+  return children.length ? { ...item, children } : null;
+}).filter((item): item is NavItem => Boolean(item));
+const moduleGroups = new Map<string, NavGroup>();
+for (const menu of enabledMenus) {
+  const current = moduleGroups.get(menu.group) ?? {
+    type: 'group', label: menu.group, icon: icon(menu.groupIcon, 16), children: [],
+  };
+  current.children.push({ label: menu.label, path: menu.path, icon: icon(menu.icon, 13) });
+  moduleGroups.set(menu.group, current);
+}
+// Focused editions show their functional entries at the first navigation level.
+const moduleItems: NavItem[] = editionConfig && editionConfig.edition !== 'full' && editionConfig.edition !== 'minimal'
+  ? [...moduleGroups.values()].flatMap(group => group.children.map(child => ({ type: 'link' as const, ...child })))
+  : [...moduleGroups.values()];
+// Keep platform/utility sections at the bottom in every edition. This makes
+// the sidebar order consistent for both the full catalog and the focused ERP
+// edition (where ERP entries are promoted to the first level).
+const workspace = coreNavItems.find(item => item.type === 'link' && item.path === '/');
+const remainingCore = coreNavItems.filter(item => !(item.type === 'link' && item.path === '/'));
+const platformTail = new Set(['结果页面', '异常页面', '系统管理']);
+const tail = remainingCore.filter(item => item.type === 'group' && platformTail.has(item.label)
+  && (!editionConfig || showDemoPages(editionConfig) || item.label === '系统管理'));
+const orderedTail: NavItem[] = editionConfig?.edition === 'demo'
+  ? tail.flatMap(item => item.type === 'group' && item.label !== '系统管理'
+      ? item.children.map(child => ({ type: 'link' as const, ...child })) : [item])
+  : tail;
+const otherCore = remainingCore.filter(item => item.type !== 'group' || !platformTail.has(item.label));
+if (editionConfig?.edition === 'full' && editionConfig.presets) {
+  const categories: Record<string, [string, string]> = {
+    erp: ['ERP', 'Package'], oa: ['OA', 'Briefcase'], saas: ['SaaS', 'Layers'],
+    ecommerce: ['电商', 'ShoppingCart'], devplatform: ['开发者平台', 'FileCode2'],
+    bi: ['数据/BI', 'BarChart2'], demo: ['演示', 'Puzzle'], ai: ['AI 智能', 'Bot'],
+    cms: ['CMS 内容', 'FileText'], crm: ['CRM 营销', 'Users'],
+  };
+  const covered = new Set<string>();
+  const editions: NavItem[] = [];
+  for (const [edition, included] of Object.entries(editionConfig.presets)) {
+    if (!categories[edition] || !included) continue;
+    const menus = enabledMenus.filter(menu => included.includes(menu.module)
+      || included.includes('server') && menu.path === '/system/servers');
+    if (!menus.length) continue;
+    menus.forEach(menu => covered.add(menu.path));
+    const [label, groupIcon] = categories[edition];
+    const children: NavChild[] = menus.map(menu => ({ label: menu.label, path: menu.path, icon: icon(menu.icon, 13) }));
+    if (edition === 'demo') {
+      for (const item of tail) if (item.type === 'group' && item.label !== '系统管理') children.push(...item.children);
+    }
+    editions.push({ type: 'group', label, icon: icon(groupIcon, 16), children });
+  }
+  // Modules outside every preset remain reachable in the full edition.
+  const remaining = [...moduleGroups.values()].map(group => ({ ...group, children: group.children.filter(child => !covered.has(child.path)) })).filter(group => group.children.length);
+  const end = editions.some(item => item.label === '演示') ? tail.filter(item => item.label === '系统管理') : tail;
+  return [...(workspace ? [workspace] : []), ...editions, ...remaining, ...otherCore, ...end];
+}
+return workspace ? [workspace, ...moduleItems, ...otherCore, ...orderedTail] : [...moduleItems, ...otherCore, ...orderedTail];
+};
+export const NAV_ITEMS: NavItem[] = buildNavItems();
+let ACTIVE_NAV_ITEMS: NavItem[] = NAV_ITEMS;
+
 /** Resolve sidebar CSS inline styles based on menuStyle + mode */
 function resolveSidebarStyles(menuStyle: string, mode: string): React.CSSProperties {
   if (menuStyle === 'light' && mode === 'light') {
@@ -336,7 +444,7 @@ function IconColumn({
 
   const isGroupActive = (item: NavItem) => {
     if (item.type === 'group') {
-      return item.children.some(c => location.pathname === c.path);
+      return item.label === resolveNavigationGroup(ACTIVE_NAV_ITEMS, location.pathname, location.state?.sidebarGroup);
     }
     return false;
   };
@@ -349,7 +457,7 @@ function IconColumn({
         </div>
       </div>
       <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '8px 6px' }}>
-        {NAV_ITEMS.map(item => {
+        {ACTIVE_NAV_ITEMS.map(item => {
           if (item.type === 'link') {
             return (
               <NavLink
@@ -396,7 +504,7 @@ function SubMenuColumn({
 }) {
   const location = useLocation();
   const { locale } = useLocale();
-  const activeItem = NAV_ITEMS.find(
+  const activeItem = ACTIVE_NAV_ITEMS.find(
     item => item.type === 'group' && item.label === selectedGroup,
   ) as NavGroup | undefined;
 
@@ -425,11 +533,12 @@ function SubMenuColumn({
       </div>
       <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 8px' }}>
         {(activeItem?.children ?? []).map(child => {
-          const isActive = location.pathname === child.path;
+          const isActive = location.pathname === child.path && activeItem?.label === resolveNavigationGroup(ACTIVE_NAV_ITEMS, location.pathname, location.state?.sidebarGroup);
           return (
             <NavLink
               key={child.path}
               to={child.path}
+                      state={{ sidebarGroup: activeItem?.label }}
               className={'sidebar-l2 ' + (isActive ? 'is-active' : '')}
               style={{ marginBottom: 2 }}
             >
@@ -574,43 +683,39 @@ export default function Sidebar({
   sidebarWidth = 230,
 }: SidebarProps) {
   const { themeState } = useTheme();
+  const { config } = useEdition();
+  ACTIVE_NAV_ITEMS = buildNavItems(config);
   const { locale } = useLocale();
   const { menuStyle, mode, sidebarAccordion } = themeState;
   const location = useLocation();
 
   // Compute which group label contains the current path
-  const activeGroupLabel = (() => {
-    for (const item of NAV_ITEMS) {
-      if (item.type === 'group' && item.children.some(c => c.path === location.pathname)) {
-        return item.label;
-      }
-    }
-    return null;
-  })();
-
-  // Initialize openGroups: only the group containing the current route is open
+  const activeGroupLabel = resolveNavigationGroup(ACTIVE_NAV_ITEMS, location.pathname, location.state?.sidebarGroup);
+  // Initialize only the selected category, even when multiple categories share a URL.
   const buildInitialOpen = () => {
     const state: Record<string, boolean> = {};
-    for (const item of NAV_ITEMS) {
+    for (const item of ACTIVE_NAV_ITEMS) {
       if (item.type === 'group') {
-        state[item.label] = item.children.some(c => c.path === location.pathname);
+        state[item.label] = item.label === activeGroupLabel;
       }
     }
     return state;
   };
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(buildInitialOpen);
-  const [lastPathname, setLastPathname] = useState(location.pathname);
+  const [lastPathname, setLastPathname] = useState(location.key);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(activeGroupLabel);
 
   // Keep the active section open when navigation changes routes. The guard makes
   // this a one-time state adjustment for each new path and preserves manual
   // expand/collapse choices while remaining on the current page.
-  if (lastPathname !== location.pathname) {
-    setLastPathname(location.pathname);
+  if (lastPathname !== location.key) {
+    setLastPathname(location.key);
+    setSelectedGroup(activeGroupLabel);
     if (activeGroupLabel) {
       setOpenGroups(prev => {
-        if (prev[activeGroupLabel]) return prev; // already open, no update needed
-        return { ...prev, [activeGroupLabel]: true };
+        if (prev[activeGroupLabel] && !sidebarAccordion) return prev;
+        return sidebarAccordion ? { [activeGroupLabel]: true } : { ...prev, [activeGroupLabel]: true };
       });
     }
   }
@@ -630,10 +735,8 @@ export default function Sidebar({
     });
   };
 
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(activeGroupLabel);
 
-  const groupHasActive = (children: NavChild[]) =>
-    children.some(c => location.pathname === c.path);
+
 
   const sidebarInlineStyles = resolveSidebarStyles(menuStyle, mode);
 
@@ -689,7 +792,7 @@ export default function Sidebar({
           )}
 
           <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '8px 6px' }}>
-            {NAV_ITEMS.map(item => {
+            {ACTIVE_NAV_ITEMS.map(item => {
               if (item.type === 'link') {
                 return (
                   <div key={item.path} style={{ marginBottom: 4 }}>
@@ -711,8 +814,9 @@ export default function Sidebar({
                     <NavLink
                       key={child.path}
                       to={child.path}
+                      state={{ sidebarGroup: item.label }}
                       title={localizeNavLabel(child.label, locale)}
-                      className={({ isActive }) => 'sidebar-l2-icon ' + (isActive ? 'is-active' : '')}
+                      className={({ isActive }) => 'sidebar-l2-icon ' + (isActive && item.label === activeGroupLabel ? 'is-active' : '')}
                       style={{ width: '100%', justifyContent: 'center', marginBottom: 2 }}
                     >
                       {child.icon}
@@ -764,7 +868,7 @@ export default function Sidebar({
 
         {/* Nav */}
         <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '8px 10px' }}>
-          {NAV_ITEMS.map(item => {
+          {ACTIVE_NAV_ITEMS.map(item => {
             if (item.type === 'link') {
               return (
                 <NavLink
@@ -781,7 +885,7 @@ export default function Sidebar({
             }
 
             const isOpen = openGroups[item.label] ?? false;
-            const hasActive = groupHasActive(item.children);
+            const hasActive = item.label === activeGroupLabel;
 
             return (
               <div key={item.label} style={{ marginBottom: 2 }}>
@@ -808,7 +912,8 @@ export default function Sidebar({
                     <NavLink
                       key={child.path}
                       to={child.path}
-                      className={({ isActive }) => 'sidebar-l2 ' + (isActive ? 'is-active' : '')}
+                      state={{ sidebarGroup: item.label }}
+                      className={({ isActive }) => 'sidebar-l2 ' + (isActive && item.label === activeGroupLabel ? 'is-active' : '')}
                     >
                       <span style={{ flexShrink: 0 }}>{child.icon}</span>
                       <span style={{ flex: 1 }}>{localizeNavLabel(child.label, locale)}</span>

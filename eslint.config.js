@@ -23,4 +23,20 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    files: ["src/core/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{ group: ["../modules/*", "../../modules/*", "@/modules/*"], message: "core must not depend on optional modules" }],
+      }],
+    },
+  },
+  {
+    files: ["src/modules/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{ group: ["@/modules/*/*", "../*/modules/*"], message: "modules must communicate through core APIs, not sibling modules" }],
+      }],
+    },
+  },
 );

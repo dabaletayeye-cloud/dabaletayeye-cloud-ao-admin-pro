@@ -1,0 +1,22 @@
+{
+  "name": "content",
+  "title": "内容管理",
+  "icon": "FileText",
+  "dependencies": [],
+  "menus": [
+    { "path": "/article/list", "title": "文章卡片", "icon": "LayoutGrid", "perms": ["article:list"], "order": 50 },
+    { "path": "/article/publish", "title": "文章发布", "icon": "Sparkles", "perms": ["article:create", "article:publish"], "order": 50 },
+    { "path": "/content/articles", "title": "文章列表", "icon": "FileText", "perms": ["article:list", "article:search", "article:add", "article:edit", "article:publish", "article:delete"], "order": 50 },
+    { "path": "/content/categories", "title": "分类管理", "icon": "Folder", "perms": ["category:list", "category:search", "category:add", "category:edit", "category:delete"], "order": 50 },
+    { "path": "/content/tags", "title": "标签管理", "icon": "Tag", "perms": ["tag:list", "tag:search", "tag:add", "tag:edit", "tag:delete"], "order": 50 }
+  ],
+  "routes": [
+    { "path": "/article/list", "component": "pages/ArticleGridPage", "legacySource": "pages/article/ArticleGridPage" },
+    { "path": "/article/publish", "component": "pages/ArticlePublishPage", "legacySource": "pages/article/ArticlePublishPage" },
+    { "path": "/content/articles", "component": "pages/ArticleListPage", "legacySource": "pages/ArticleListPage" },
+    { "path": "/content/categories", "component": "pages/CategoryPage", "legacySource": "pages/CategoryPage" },
+    { "path": "/content/tags", "component": "pages/TagPage", "legacySource": "pages/TagPage" }
+  ],
+  "permissions": ["article:list", "article:search", "article:add", "article:create", "article:edit", "article:publish", "article:delete", "category:list", "category:search", "category:add", "category:edit", "category:delete", "tag:list", "tag:search", "tag:add", "tag:edit", "tag:delete"],
+  "dicts": [], "npmDeps": [], "backendTables": ["admin_article", "admin_category", "admin_tag", "admin_article_tag"]
+}

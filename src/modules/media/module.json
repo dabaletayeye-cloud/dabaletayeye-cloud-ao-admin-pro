@@ -1,0 +1,16 @@
+{
+  "name": "media",
+  "title": "媒体库",
+  "icon": "Image",
+  "dependencies": [],
+  "menus": [
+    { "path": "/media", "title": "媒体库", "icon": "Image", "perms": ["media:list", "media:upload", "media:download", "media:delete"], "order": 120 },
+    { "path": "/system/files", "title": "文件管理", "icon": "FolderOpen", "perms": ["file:list", "file:upload", "file:download", "file:delete"], "order": 120 }
+  ],
+  "routes": [
+    { "path": "/media", "component": "pages/MediaPage", "legacySource": "pages/MediaPage" },
+    { "path": "/system/files", "component": "pages/FileManagementPage", "legacySource": "pages/FileManagementPage" }
+  ],
+  "permissions": ["media:list", "media:upload", "media:download", "media:delete", "file:list", "file:upload", "file:download", "file:delete"],
+  "dicts": [], "npmDeps": [], "backendTables": ["admin_file"]
+}

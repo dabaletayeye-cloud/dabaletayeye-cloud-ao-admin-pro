@@ -1,0 +1,18 @@
+{
+  "name": "operations",
+  "title": "运营中心",
+  "icon": "MessageSquare",
+  "dependencies": [],
+  "menus": [
+    { "path": "/messages", "title": "消息中心", "icon": "MessageSquare", "perms": ["message:list", "message:search", "message:reply", "message:delete"], "order": 150 },
+    { "path": "/generation-quotas", "title": "生成配额", "icon": "Sparkles", "perms": ["generation:manage"], "order": 150 },
+    { "path": "/system/servers", "title": "服务器管理", "icon": "Server", "perms": ["server:list", "server:manage"], "order": 150 }
+  ],
+  "routes": [
+    { "path": "/messages", "component": "pages/MessagePage", "legacySource": "pages/MessagePage" },
+    { "path": "/generation-quotas", "component": "pages/GenerationQuotaPage", "legacySource": "pages/GenerationQuotaPage" },
+    { "path": "/system/servers", "component": "pages/ServerPage", "legacySource": "pages/ServerPage" }
+  ],
+  "permissions": ["message:list", "message:search", "message:reply", "message:delete", "generation:manage", "server:list", "server:manage"],
+  "dicts": [], "npmDeps": [], "backendTables": ["admin_generation_quota", "admin_server"]
+}

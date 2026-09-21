@@ -1,0 +1,28 @@
+{
+  "name": "lowcode",
+  "title": "低代码中心",
+  "icon": "Workflow",
+  "dependencies": [],
+  "menus": [
+    { "path": "/lowcode/api", "title": "接口编排", "icon": "Workflow", "perms": ["lowcode:api:view"], "order": 30 },
+    { "path": "/lowcode/page", "title": "页面设计器", "icon": "PanelsTopLeft", "perms": ["lowcode:page:view"], "order": 30 },
+    { "path": "/lowcode/form", "title": "表单引擎", "icon": "ClipboardList", "perms": ["lowcode:form:view"], "order": 30 },
+    { "path": "/lowcode/report", "title": "报表引擎", "icon": "ChartNoAxesCombined", "perms": ["lowcode:report:view"], "order": 30 },
+    { "path": "/lowcode/print", "title": "打印模板", "icon": "Printer", "perms": ["lowcode:print:view"], "order": 30 },
+    { "path": "/lowcode/generator", "title": "代码生成器", "icon": "FileCode2", "perms": ["lowcode:generator:view"], "order": 30 },
+    { "path": "/lowcode/datasource", "title": "数据源管理", "icon": "Database", "perms": ["lowcode:datasource:view"], "order": 30 },
+    { "path": "/lowcode/release", "title": "发布管理", "icon": "Send", "perms": ["lowcode:release:view"], "order": 30 }
+  ],
+  "routes": [
+    { "path": "/lowcode/api", "component": "pages/ApiOrchestrationPage", "legacySource": "pages/lowcode/ApiOrchestrationPage" },
+    { "path": "/lowcode/page", "component": "pages/PageDesignerPage", "legacySource": "pages/lowcode/PageDesignerPage" },
+    { "path": "/lowcode/form", "component": "pages/FormEnginePage", "legacySource": "pages/lowcode/FormEnginePage" },
+    { "path": "/lowcode/report", "component": "pages/ReportEnginePage", "legacySource": "pages/lowcode/ReportEnginePage" },
+    { "path": "/lowcode/print", "component": "pages/PrintTemplatePage", "legacySource": "pages/lowcode/LowcodeToolPages", "exportName": "PrintTemplatePage" },
+    { "path": "/lowcode/generator", "component": "pages/CodeGeneratorPage", "legacySource": "pages/lowcode/LowcodeToolPages", "exportName": "CodeGeneratorPage" },
+    { "path": "/lowcode/datasource", "component": "pages/DataSourcePage", "legacySource": "pages/lowcode/DataSourcePage" },
+    { "path": "/lowcode/release", "component": "pages/ReleasePage", "legacySource": "pages/lowcode/ReleasePage" }
+  ],
+  "permissions": ["lowcode:api:view", "lowcode:page:view", "lowcode:form:view", "lowcode:report:view", "lowcode:print:view", "lowcode:generator:view", "lowcode:datasource:view", "lowcode:release:view"],
+  "dicts": [], "npmDeps": [], "backendTables": ["admin_lowcode_data_source", "admin_lowcode_api_flow", "admin_lowcode_page", "admin_lowcode_release"]
+}

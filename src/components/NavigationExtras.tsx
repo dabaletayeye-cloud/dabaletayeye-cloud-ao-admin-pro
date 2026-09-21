@@ -3,10 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeftIcon, ChevronRightIcon, CircleXIcon, HomeIcon, LayersIcon, XIcon } from 'lucide-react';
 import type { TabsStyle } from '../types';
 import { localizeNavLabel, useLocale } from '../hooks/useLocale';
+import { moduleMenus } from '../generated/registry';
 
 interface PageTab {
   path: string;
   label: string;
+  sidebarGroup?: string;
 }
 
 interface TabContextMenu {
@@ -32,6 +34,13 @@ const ROUTE_LABELS: Record<string, string> = {
   '/account-security': '账号安全',
   '/messages': '消息中心',
   '/orders': '订单管理',
+  '/erp/products': '商品管理',
+  '/erp/orders': '订单管理',
+  '/erp/purchase': '采购管理',
+  '/erp/inventory': '库存管理',
+  '/erp/customers': '客户管理',
+  '/erp/finance': '财务管理',
+  '/erp/reports': '报表中心',
   '/media': '媒体库',
   '/analytics/traffic': '访问统计',
   '/analytics/portrait': '用户画像',
@@ -115,8 +124,10 @@ const ROUTE_LABELS: Record<string, string> = {
   '/ai/workflow': 'AI工作流',
 };
 
+const MODULE_ROUTE_LABELS = new Map(moduleMenus.map(menu => [menu.path, menu.label]));
+
 function labelFor(path: string) {
-  return ROUTE_LABELS[path] ?? path.split('/').filter(Boolean).pop() ?? '页面';
+  return ROUTE_LABELS[path] ?? MODULE_ROUTE_LABELS.get(path) ?? path.split('/').filter(Boolean).pop() ?? '页面';
 }
 
 function loadTabs(current: PageTab): PageTab[] {
@@ -125,7 +136,8 @@ function loadTabs(current: PageTab): PageTab[] {
     const saved = raw
       ? (JSON.parse(raw) as PageTab[]).map(tab => ({ ...tab, label: labelFor(tab.path) }))
       : [{ path: '/', label: '工作台' }];
-    const tabs = saved.some(tab => tab.path === current.path) ? saved : [...saved, current];
+    const tabs = saved.some(tab => tab.path === current.path)
+      ? saved.map(tab => tab.path === current.path ? { ...tab, ...current } : tab) : [...saved, current];
     sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(tabs.slice(-10)));
     return tabs.slice(-10);
   } catch {
@@ -150,7 +162,7 @@ export function PageTabs({ style }: { style: TabsStyle }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { locale, t } = useLocale();
-  const current = { path: location.pathname, label: labelFor(location.pathname) };
+  const current = { path: location.pathname, label: labelFor(location.pathname), sidebarGroup: location.state?.sidebarGroup };
   const [tabs, setTabs] = useState<PageTab[]>(() => loadTabs(current));
   const [contextMenu, setContextMenu] = useState<TabContextMenu | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
@@ -170,7 +182,10 @@ export function PageTabs({ style }: { style: TabsStyle }) {
     const pathSet = new Set(paths.filter(path => path !== '/'));
     const nextTabs = tabs.filter(tab => !pathSet.has(tab.path));
     persist(nextTabs);
-    if (!nextTabs.some(tab => tab.path === location.pathname)) navigate(nextTabs[nextTabs.length - 1]?.path ?? '/');
+    if (!nextTabs.some(tab => tab.path === location.pathname)) {
+      const next = nextTabs[nextTabs.length - 1];
+      navigate(next?.path ?? '/', { state: { sidebarGroup: next?.sidebarGroup } });
+    }
   };
 
   const showContextMenu = (event: MouseEvent<HTMLButtonElement>, tab: PageTab) => {
@@ -213,7 +228,7 @@ export function PageTabs({ style }: { style: TabsStyle }) {
           <button
             key={tab.path}
             type="button"
-            onClick={() => navigate(tab.path)}
+            onClick={() => navigate(tab.path, { state: { sidebarGroup: tab.sidebarGroup } })}
             onContextMenu={event => showContextMenu(event, tab)}
             className="group flex h-8 shrink-0 items-center gap-1.5 px-3 text-xs transition-colors"
             style={{
@@ -225,7 +240,7 @@ export function PageTabs({ style }: { style: TabsStyle }) {
               fontWeight: active ? 700 : 500,
             }}
           >
-            <span>{localizeNavLabel(tab.label, locale)}</span>
+            <span>{localizeNavLabel(labelFor(tab.path), locale)}</span>
             {tab.path !== '/' && <XIcon size={12} className="opacity-55 transition-opacity group-hover:opacity-100" onClick={event => closeTab(event, tab)} />}
           </button>
         );

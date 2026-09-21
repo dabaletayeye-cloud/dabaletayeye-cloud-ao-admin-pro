@@ -2,7 +2,8 @@ import { MOCK_ACTIVITIES, MOCK_NEW_USERS, MOCK_TODOS, MONTHLY_DATA, MOCK_USERS, 
 import { MOCK_ARTICLES, MOCK_CATEGORIES_FLAT, MOCK_TAGS } from '../../data/contentData';
 import { MOCK_EVENTS } from '../../data/calendarData';
 import { CHINA_DATA, WORLD_DATA } from '../../data/mapData';
-import type { ApiAdapter, LowcodeDataSource, LowcodeDataSourceInput, LowcodeRelease, LowcodeResource, LowcodeResourceInput } from './types';
+import type { ApiAdapter, CurrentProfile, LowcodeDataSource, LowcodeDataSourceInput, LowcodeRelease, LowcodeResource, LowcodeResourceInput } from './types';
+import type { EditionConfig } from '../../core/edition';
 import type { Article, Category, DashboardAnalyticsData, DashboardAnalyticsRange, DictItem, DictType, EcommerceDashboardData, ExceptionLog, FileStorageInfo, LoginLog, ManagedFile, MenuItem, OperationLog, OrderInfo, OrderStats, Role, ServerInfo, SystemConfig, Tag } from '../types';
 
 const wait = (ms = 300) => new Promise<void>(resolve => setTimeout(resolve, ms));
@@ -25,6 +26,7 @@ let systemConfig: SystemConfig = {
   theme: { defaultTheme: 'classic', defaultMode: 'light', sidebarWidth: '220', cornerRadius: '0.75' },
   storage: { provider: 'local', maxFileSizeMb: 50, localDirectory: './data/uploads', region: '', bucket: '', prefix: 'ao-admin-pro', cosConfigured: false },
 };
+let systemEdition: EditionConfig = { edition: 'full', enabledModules: [] };
 let managedServers: ServerInfo[] = [
   { id: 1, key: 's1', name: '开发服务器', ip: '192.168.1.100', cpu: 40, ram: 69, swap: 18, disk: 69, status: 'online', os: 'CentOS 8.4', uptime: '12d 6h 24m' },
   { id: 2, key: 's2', name: '测试服务器', ip: '192.168.1.101', cpu: 33, ram: 18, swap: 37, disk: 13, status: 'online', os: 'Ubuntu 22.04', uptime: '5d 11h 02m' },
@@ -190,6 +192,9 @@ export const mockAdapter: ApiAdapter = {
   async login() { await wait(); return { token: 'mock-token', accessToken: 'mock-token', refreshToken: 'mock-refresh-token', user: clone(users[0]) }; },
   async logout() { await wait(); },
   async getCurrentUser() { await wait(); return clone(users[0] ?? null); },
+  async getCurrentProfile() { await wait(); return clone({ ...users[0], username: 'admin', phone: '', department: '', position: '', bio: '' } as CurrentProfile); },
+  async updateCurrentProfile(input) { await wait(); users[0] = { ...users[0], ...input } as typeof users[0]; return clone({ ...users[0], username: 'admin' } as CurrentProfile); },
+  async changeCurrentPassword() { await wait(); },
   async listUsers(query = {}) { await wait(); const filtered = users.filter(item => (!query.keyword || `${item.name}${item.email}${item.region}`.includes(query.keyword)) && (!query.status || item.status === query.status)); return page(filtered, query); },
   async createUser(input) { await wait(); const user = { id: Date.now(), name: input.name ?? '', email: input.email ?? '', avatar: input.avatar ?? (input.name ?? '?')[0], region: input.region ?? '', gender: input.gender ?? '鐢?', role: input.role ?? '鐢ㄦ埛', roles: input.roles, status: input.status ?? 'active', joinDate: input.joinDate ?? new Date().toISOString().slice(0, 10), progress: input.progress ?? 0 } as User; users = [...users, user]; return clone(user); },
   async updateUser(id, input) { await wait(); const index = users.findIndex(item => item.id === id); if (index < 0) throw new Error('User not found'); users[index] = { ...users[index], ...input, id }; return clone(users[index]); },
@@ -259,11 +264,13 @@ export const mockAdapter: ApiAdapter = {
   async deleteFile(id) { await wait(); managedFiles = managedFiles.filter(item => item.id !== id); },
   async getFileStorageInfo() { await wait(); return { provider: 'local', maxFileSize: 50 * 1024 * 1024 } satisfies FileStorageInfo; },
   async getSystemConfig() { await wait(); return clone(systemConfig); },
-  async updateSystemConfig(input) {
+    async updateSystemConfig(input) {
     await wait();
     systemConfig = { ...systemConfig, ...clone(input), storage: systemConfig.storage };
-    return clone(systemConfig);
-  },
+      return clone(systemConfig);
+    },
+    async getSystemEdition() { await wait(120); return clone(systemEdition); },
+    async updateSystemEdition(input) { await wait(180); systemEdition = { edition: input.edition, enabledModules: [...(input.enabledModules || [])] }; return clone(systemEdition); },
   async listServers() {
     await wait(220);
     managedServers = managedServers.map(server => server.status === 'online' ? {
@@ -316,4 +323,15 @@ export const mockAdapter: ApiAdapter = {
   async listLowcodeReleases(query = {}) { await wait(); const resources = new Map(lowcodeResources.map(resource => [resource.id, resource])); return clone(lowcodeReleases.filter(item => (!query.type || item.resourceType === query.type) && (!query.resourceId || item.resourceId === query.resourceId)).map(item => ({ ...item, resourceName: resources.get(item.resourceId)?.name ?? item.resourceName }))); },
   async publishLowcodeResource(id, releaseNote) { await wait(); const resource = lowcodeResources.find(item => item.id === id); if (!resource) throw new Error('低代码资源不存在'); const version = `v1.0.${lowcodeReleases.filter(item => item.resourceId === id).length}`; lowcodeReleases = lowcodeReleases.map(item => item.resourceId === id ? { ...item, active: false } : item); const release: LowcodeRelease = { id: `release-${Date.now()}`, resourceId: id, resourceName: resource.name, resourceType: resource.resourceType, version, publisher: '当前管理员', releaseNote, snapshotJson: JSON.stringify(resource.definition, null, 2), active: true, createdAt: lowcodeNow() }; lowcodeReleases = [release, ...lowcodeReleases]; resource.status = 'published'; resource.currentVersion = version; resource.updatedAt = lowcodeNow(); return clone(release); },
   async rollbackLowcodeRelease(id) { await wait(); const release = lowcodeReleases.find(item => item.id === id); if (!release) throw new Error('低代码发布版本不存在'); lowcodeReleases = lowcodeReleases.map(item => item.resourceId === release.resourceId ? { ...item, active: item.id === id } : item); const resource = lowcodeResources.find(item => item.id === release.resourceId); if (resource) { resource.definition = JSON.parse(release.snapshotJson) as Record<string, unknown>; resource.status = 'published'; resource.currentVersion = release.version; resource.updatedAt = lowcodeNow(); } return clone({ ...release, active: true }); },
+  async listErp(resource, query = {}) { await wait(); const rows = (resource === 'orders' ? managedOrders.map(order => ({ ...order, order_date: order.date, customer: order.customer, amount: order.amount })) : []) as Record<string, unknown>[]; const keyword = query.keyword?.toLowerCase() ?? ''; return clone(rows.filter(row => !keyword || JSON.stringify(row).toLowerCase().includes(keyword)).filter(row => !query.status || row.status === query.status)); },
+  async getErp(resource, id) { const rows = await this.listErp(resource); const row = rows.find(item => Number(item.id) === id); if (!row) throw new Error('ERP 记录不存在'); return row; },
+  async createErp(resource, input) { await wait(); if (resource !== 'orders') return { id: Date.now(), ...clone(input) }; const order = { id: Date.now(), orderNo: `SO${new Date().toISOString().slice(0,10).replaceAll('-','')}001`, customer: String(input.customer ?? ''), avatar: '', product: String(input.product ?? ''), channel: '在线支付', amount: Number(input.amount ?? 0), status: (input.status ?? 'pending') as OrderInfo['status'], date: String(input.order_date ?? new Date().toISOString().slice(0,10)) }; managedOrders = [order, ...managedOrders]; return clone(order); },
+  async updateErp(resource, id, input) { if (resource === 'orders') { const index = managedOrders.findIndex(order => order.id === id); if (index >= 0) { managedOrders[index] = { ...managedOrders[index], ...clone(input) as Partial<OrderInfo> }; return clone(managedOrders[index]) as unknown as Record<string, unknown>; } } return { id, ...clone(input) }; },
+  async deleteErp(resource, id) { if (resource === 'orders') managedOrders = managedOrders.filter(order => order.id !== id); await wait(); },
+  async moveErpInventory(productId, input) { await wait(); return { id: productId, product_id: productId, ...clone(input) }; },
+  async listErpInventoryFlows(productId) { await wait(); return [{ id: 1, product_id: productId, flow_type: 'in', quantity: 0, created_at: new Date().toISOString() }]; },
+  async getErpReports() { await wait(); return { salesTrend: [], orderStatus: [], topProducts: [], metrics: { totalAmount: 0, totalOrders: managedOrders.length } }; },
+  async approveErpPurchase(id, input) { await wait(); return { id, ...clone(input), status: 'received' }; },
+  async listErpInventoryAlerts() { await wait(); return []; },
+  async getErpStats(resource) { await wait(); return { total: resource === 'orders' ? managedOrders.length : 0 }; },
 };

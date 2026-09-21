@@ -1,0 +1,18 @@
+{
+  "name": "marketing",
+  "title": "营销工具",
+  "icon": "Sparkles",
+  "dependencies": [],
+  "menus": [
+    { "path": "/marketing/coupons", "title": "优惠券", "icon": "Ticket", "perms": ["coupon:list", "coupon:search", "coupon:add", "coupon:edit", "coupon:delete"], "order": 130 },
+    { "path": "/marketing/events", "title": "活动管理", "icon": "Zap", "perms": ["event:list", "event:search", "event:add", "event:edit", "event:delete"], "order": 130 },
+    { "path": "/marketing/push", "title": "推送通知", "icon": "Bell", "perms": ["push:send", "push:create", "push:delete"], "order": 130 }
+  ],
+  "routes": [
+    { "path": "/marketing/coupons", "component": "pages/CouponPage", "legacySource": "pages/CouponPage" },
+    { "path": "/marketing/events", "component": "pages/ActivityPage", "legacySource": "pages/ActivityPage" },
+    { "path": "/marketing/push", "component": "pages/PushPage", "legacySource": "pages/PushPage" }
+  ],
+  "permissions": ["coupon:list", "coupon:search", "coupon:add", "coupon:edit", "coupon:delete", "event:list", "event:search", "event:add", "event:edit", "event:delete", "push:send", "push:create", "push:delete"],
+  "dicts": [], "npmDeps": [], "backendTables": []
+}

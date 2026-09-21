@@ -91,5 +91,13 @@
   "lowcodeForm": "Form builder",
   "lowcodeReport": "Report builder",
   "lowcodePrint": "Print templates",
-  "lowcodeGenerator": "Code generator"
+  "lowcodeGenerator": "Code generator",
+  "erpCenter": "ERP center",
+  "erpProducts": "Product management",
+  "erpOrders": "Order management",
+  "erpPurchase": "Purchasing management",
+  "erpInventory": "Inventory management",
+  "erpCustomers": "Customer management",
+  "erpFinance": "Finance management",
+  "erpReports": "Reports center"
 }

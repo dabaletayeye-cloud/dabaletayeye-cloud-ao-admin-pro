@@ -91,5 +91,13 @@
   "lowcodeForm": "フォームエンジン",
   "lowcodeReport": "レポートエンジン",
   "lowcodePrint": "印刷テンプレート",
-  "lowcodeGenerator": "コードジェネレーター"
+  "lowcodeGenerator": "コードジェネレーター",
+  "erpCenter": "ERPセンター",
+  "erpProducts": "商品管理",
+  "erpOrders": "注文管理",
+  "erpPurchase": "購買管理",
+  "erpInventory": "在庫管理",
+  "erpCustomers": "顧客管理",
+  "erpFinance": "財務管理",
+  "erpReports": "レポートセンター"
 }

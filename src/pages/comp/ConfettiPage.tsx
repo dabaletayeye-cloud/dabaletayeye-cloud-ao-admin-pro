@@ -1,3 +1,4 @@
+import ViewportPortal from '../../components/ViewportPortal';
 import { useRef, useCallback, useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import {
@@ -246,7 +247,7 @@ interface CelebrationModalProps {
 }
 function CelebrationModal({ open, onClose }: CelebrationModalProps) {
   return (
-    <div
+    <ViewportPortal><div
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'rgba(0,0,0,0.5)',
@@ -329,7 +330,7 @@ function CelebrationModal({ open, onClose }: CelebrationModalProps) {
           </button>
         </div>
       </div>
-    </div>
+    </div></ViewportPortal>
   );
 }
 
@@ -428,13 +429,13 @@ export default function ConfettiPage() {
   return (
     <AdminLayout>
       {/* Full-screen canvas overlay (pointer-events: none so it doesn't block clicks) */}
-      <canvas
+      <ViewportPortal><canvas
         ref={canvasRef}
         style={{
           position: 'fixed', top: 0, left: 0, zIndex: 8888,
           pointerEvents: 'none',
         }}
-      />
+      /></ViewportPortal>
 
       <CelebrationModal open={modalOpen} onClose={() => setModalOpen(false)} />
 

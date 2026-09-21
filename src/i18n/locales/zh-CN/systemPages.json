@@ -38,5 +38,27 @@
     "downloadStarted": "开始下载 {{name}}",
     "fileDeleted": "文件已删除",
     "filesDeleted": "已删除 {{count}} 个文件"
+  },
+  "fallback": {
+    "terms": {
+      "版本切换": "Edition switching",
+      "极简版": "Minimal edition",
+      "ERP 版": "ERP edition",
+      "ERP版": "ERP版",
+      "全部版": "Full edition",
+      "仅影响菜单与功能入口显示，不会删除任何业务数据。": "Only navigation and feature entries are affected; no business data will be deleted.",
+      "仅工作台与系统管理": "Workspace and system administration only",
+      "核心功能与ERP业务": "Core capabilities and ERP operations",
+      "启用全部已安装模块": "Enable every installed module",
+      "当前选择": "Currently selected",
+      "保存中…": "Saving…",
+      "保存版本": "Save edition",
+      "当前已经是": "Already using ",
+      "，无需切换": "; no switch is needed",
+      "确定切换到": "Switch to ",
+      "吗？": "?",
+      "切换后侧边栏和路由入口会立即更新，业务数据不会删除。": "The sidebar and route entries will update immediately. No business data will be deleted.",
+      "版本已切换为": "Switched to "
+    }
   }
 }

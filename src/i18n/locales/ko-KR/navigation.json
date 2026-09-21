@@ -91,5 +91,13 @@
   "lowcodeForm": "폼 엔진",
   "lowcodeReport": "리포트 엔진",
   "lowcodePrint": "인쇄 템플릿",
-  "lowcodeGenerator": "코드 생성기"
+  "lowcodeGenerator": "코드 생성기",
+  "erpCenter": "ERP 센터",
+  "erpProducts": "상품 관리",
+  "erpOrders": "주문 관리",
+  "erpPurchase": "구매 관리",
+  "erpInventory": "재고 관리",
+  "erpCustomers": "고객 관리",
+  "erpFinance": "재무 관리",
+  "erpReports": "보고서 센터"
 }

@@ -3,8 +3,8 @@ type Datum = Record<string, string | number>;
 export type ChartSeries = { key: string; name: string; color: string };
 export type DonutSegment = { name: string; value: number; color: string };
 
-const TEXT = '#64748b';
-const GRID = '#e2e8f0';
+const TEXT = 'var(--muted-foreground)';
+const GRID = 'var(--border)';
 
 function numeric(value: string | number | undefined) {
   return typeof value === 'number' ? value : Number(value ?? 0);
@@ -40,7 +40,7 @@ export function LineChartSvg({ data, xKey, series, height = 240 }: { data: Datum
       const points = data.map((row, index) => point(numeric(row[seriesItem.key]), index));
       const path = points.map((item, index) => `${index === 0 ? 'M' : 'L'} ${item.x} ${item.y}`).join(' ');
       const area = `${path} L ${points[points.length - 1]?.x ?? left} ${top + plotHeight} L ${points[0]?.x ?? left} ${top + plotHeight} Z`;
-      return <g key={seriesItem.key}><path d={area} fill={seriesItem.color} opacity="0.09" /><path d={path} fill="none" stroke={seriesItem.color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />{points.length <= 12 && points.map((pointItem, index) => <circle key={index} cx={pointItem.x} cy={pointItem.y} r="3" fill="#fff" stroke={seriesItem.color} />)}</g>;
+      return <g key={seriesItem.key}><path d={area} fill={seriesItem.color} opacity="0.09" /><path d={path} fill="none" stroke={seriesItem.color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />{points.length <= 12 && points.map((pointItem, index) => <circle key={index} cx={pointItem.x} cy={pointItem.y} r="3" fill="var(--card)" stroke={seriesItem.color} />)}</g>;
     })}
     {data.map((row, index) => index % every === 0 || index === data.length - 1 ? <text key={index} x={point(0, index).x} y={height - 12} textAnchor="middle" fill={TEXT} fontSize="11">{String(row[xKey] ?? '')}</text> : null)}
     <g transform={`translate(${left}, ${top - 2})`}>{series.map((item, index) => <g key={item.key} transform={`translate(${index * 92}, 0)`}><circle cx="4" cy="5" r="4" fill={item.color} /><text x="13" y="9" fill={TEXT} fontSize="11">{item.name}</text></g>)}</g>
@@ -86,19 +86,19 @@ export function DonutChartSvg({ data, height = 180 }: { data: DonutSegment[]; he
   const total = Math.max(1, data.reduce((sum, item) => sum + item.value, 0));
   let offset = 0;
   return <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height, display: 'block' }} role="img" aria-label="环形图">
-    <circle cx="110" cy="110" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="24" />
+    <circle cx="110" cy="110" r={radius} fill="none" stroke="var(--border)" strokeWidth="24" />
     {data.map((item) => {
       const length = (item.value / total) * circumference;
       const node = <circle key={item.name} cx="110" cy="110" r={radius} fill="none" stroke={item.color} strokeWidth="24" strokeLinecap="butt" strokeDasharray={`${Math.max(0, length - 3)} ${circumference - length + 3}`} strokeDashoffset={-offset} transform="rotate(-90 110 110)" />;
       offset += length;
       return node;
     })}
-    <text x="110" y="104" textAnchor="middle" fill="#1e293b" fontSize="22" fontWeight="700">{total}</text>
+    <text x="110" y="104" textAnchor="middle" fill="var(--foreground)" fontSize="22" fontWeight="700">{total}</text>
     <text x="110" y="126" textAnchor="middle" fill={TEXT} fontSize="12">总占比</text>
   </svg>;
 }
 
-export function RadarChartSvg({ data, height = 260, color = '#6366f1' }: { data: { label: string; value: number }[]; height?: number; color?: string }) {
+export function RadarChartSvg({ data, height = 260, color = 'var(--primary)' }: { data: { label: string; value: number }[]; height?: number; color?: string }) {
   const width = 360;
   const cx = width / 2;
   const cy = height / 2 + 4;
@@ -131,7 +131,7 @@ export function FunnelChartSvg({ data, height = 330 }: { data: DonutSegment[]; h
       const y = top + index * rowHeight;
       const x1 = (width - currentWidth) / 2;
       const x2 = (width - nextWidth) / 2;
-      return <g key={item.name}><polygon points={`${x1},${y} ${x1 + currentWidth},${y} ${x2 + nextWidth},${y + rowHeight - 6} ${x2},${y + rowHeight - 6}`} fill={item.color} opacity="0.9" /><text x={width / 2} y={y + rowHeight / 2 + 4} textAnchor="middle" fill="#fff" fontSize="13" fontWeight="700">{item.name} · {item.value.toLocaleString()}</text></g>;
+      return <g key={item.name}><polygon points={`${x1},${y} ${x1 + currentWidth},${y} ${x2 + nextWidth},${y + rowHeight - 6} ${x2},${y + rowHeight - 6}`} fill={item.color} opacity="0.9" /><text x={width / 2} y={y + rowHeight / 2 + 4} textAnchor="middle" fill="var(--primary-foreground)" fontSize="13" fontWeight="700">{item.name} · {item.value.toLocaleString()}</text></g>;
     })}
   </svg>;
 }

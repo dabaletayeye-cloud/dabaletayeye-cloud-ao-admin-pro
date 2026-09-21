@@ -1,3 +1,4 @@
+import ViewportPortal from '../../components/ViewportPortal';
 import React, { useState, useCallback, useMemo } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { useTheme } from '../../hooks/useTheme';
@@ -667,7 +668,7 @@ export default function DataTablePage() {
       </div>
 
       {/* ── Edit Modal ──────────────────────────────────────────────────────── */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      <ViewportPortal><div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'rgba(0,0,0,.45)', backdropFilter: 'blur(2px)',
         opacity: editModal.open ? 1 : 0, pointerEvents: editModal.open ? 'auto' : 'none', transition: 'opacity .2s' }}>
         <div style={{ background: 'var(--card)', borderRadius: 14, padding: 24, width: 460, maxWidth: '90vw',
@@ -719,10 +720,10 @@ export default function DataTablePage() {
             </div>
           </>)}
         </div>
-      </div>
+      </div></ViewportPortal>
 
       {/* ── Delete Confirm Modal ────────────────────────────────────────────── */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      <ViewportPortal><div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'rgba(0,0,0,.45)', backdropFilter: 'blur(2px)',
         opacity: deleteModal.open ? 1 : 0, pointerEvents: deleteModal.open ? 'auto' : 'none', transition: 'opacity .2s' }}>
         <div style={{ background: 'var(--card)', borderRadius: 14, padding: 24, width: 360, maxWidth: '90vw',
@@ -744,10 +745,10 @@ export default function DataTablePage() {
             </button>
           </div>
         </div>
-      </div>
+      </div></ViewportPortal>
 
       {/* ── Toast ───────────────────────────────────────────────────────────── */}
-      <div style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 300,
+      <ViewportPortal><div style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 300,
         opacity: toast.show ? 1 : 0, pointerEvents: 'none',
         transform: toast.show ? 'translateX(0)' : 'translateX(40px)', transition: 'all .25s ease',
         background: toast.type === 'success' ? '#16a34a' : '#dc2626',
@@ -756,7 +757,7 @@ export default function DataTablePage() {
         boxShadow: '0 4px 20px rgba(0,0,0,.18)' }}>
         {toast.type === 'success' ? <CheckIcon size={15} /> : <XIcon size={15} />}
         {toast.msg}
-      </div>
+      </div></ViewportPortal>
 
       {/* Overlay to close col panel */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 98, display: colPanelOpen ? 'block' : 'none' }}

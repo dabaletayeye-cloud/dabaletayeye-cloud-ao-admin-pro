@@ -1,8 +1,12 @@
 import { apiAdapter } from './adapter';
 import type { SystemConfig } from './types';
+import type { EditionConfig, Edition } from '../core/edition';
 
 export const getSystemConfig = () => apiAdapter.getSystemConfig();
 export const updateSystemConfig = (input: Omit<SystemConfig, 'storage'>) => apiAdapter.updateSystemConfig(input);
+export const getSystemEdition = (): Promise<EditionConfig> => apiAdapter.getSystemEdition();
+export const updateSystemEdition = (input: EditionConfig): Promise<EditionConfig> => apiAdapter.updateSystemEdition(input);
+export type { Edition };
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 const apiBaseUrl = (configuredApiBaseUrl || 'http://localhost:8989').replace(/\/+$/, '');

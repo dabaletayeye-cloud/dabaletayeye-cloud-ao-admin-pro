@@ -1,4 +1,5 @@
 export interface CurrentAccount {
+  id?: number;
   name: string;
   account: string;
   email: string;
@@ -9,6 +10,7 @@ export interface CurrentAccount {
   location: string;
   bio: string;
   avatar: string;
+  gender?: string;
 }
 
 const STORAGE_KEY = 'ao-admin-pro.current-account';

@@ -1,3 +1,4 @@
+import ViewportPortal from '../../components/ViewportPortal';
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../components/AdminLayout';
@@ -129,7 +130,7 @@ function DayEventModal({
   return (
     <>
       {/* backdrop */}
-      <div
+      <ViewportPortal><div
         onClick={onClose}
         style={{
           position: 'fixed',
@@ -138,9 +139,9 @@ function DayEventModal({
           zIndex: 1000,
           backdropFilter: 'blur(2px)',
         }}
-      />
+      /></ViewportPortal>
       {/* panel */}
-      <div
+      <ViewportPortal><div
         style={{
           position: 'fixed',
           top: '50%',
@@ -284,7 +285,7 @@ function DayEventModal({
             </div>
           )}
         </div>
-      </div>
+      </div></ViewportPortal>
     </>
   );
 }
