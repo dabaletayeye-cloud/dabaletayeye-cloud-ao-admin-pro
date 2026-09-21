@@ -14,5 +14,7 @@ export * from './files';
 export * from './systemConfig';
 export * from './servers';
 export * from './orders';
+export * from './erp';
+export * from './oa';
 export * from './lowcode';
 export type * from './types';

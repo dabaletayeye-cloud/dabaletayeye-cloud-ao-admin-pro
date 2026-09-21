@@ -33,6 +33,10 @@
     "clean:basic": "node scripts/clean-demo.mjs --preset=basic --yes",
     "clean:basic:dry": "node scripts/clean-demo.mjs --preset=basic --dry-run",
     "dev": "vite",
+    "predev:mock": "node scripts/gen-registry.mjs",
+    "dev:mock": "vite --mode mock",
+    "prebuild:mock": "node scripts/gen-registry.mjs",
+    "build:mock": "vite build --mode mock",
     "lint": "eslint .",
     "preview": "vite preview"
   },

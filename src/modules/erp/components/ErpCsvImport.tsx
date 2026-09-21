@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { erpApi } from '../api';
+import { erpApi } from '../../../api/erp';
 import { downloadCsv, importFields, prepareCsv, type ImportRow } from './erpCsv';
 
 type Result = { row: number; success: boolean; message: string };

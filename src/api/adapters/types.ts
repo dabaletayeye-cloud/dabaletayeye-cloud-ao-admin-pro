@@ -86,11 +86,11 @@ export interface LowcodeResourceInput { resourceType: LowcodeResourceType; resou
 export interface LowcodeDataSourceInput { name: string; sourceType: string; host?: string; port?: number; username?: string; secretRef?: string; databaseName?: string; baseUrl?: string; headersJson?: string; }
 
 export interface ApiAdapter {
-  oaList?(resource: string, query?: Record<string, string>): Promise<Record<string, unknown>[]>;
-  oaGet?(resource: string, id: number): Promise<Record<string, unknown>>;
-  oaCreate?(resource: string, input: Record<string, unknown>): Promise<Record<string, unknown>>;
-  oaUpdate?(resource: string, id: number, input: Record<string, unknown>): Promise<Record<string, unknown>>;
-  oaDelete?(resource: string, id: number): Promise<void>;
+  oaList(resource: string, query?: Record<string, string>): Promise<Record<string, unknown>[]>;
+  oaGet(resource: string, id: number): Promise<Record<string, unknown>>;
+  oaCreate(resource: string, input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  oaUpdate(resource: string, id: number, input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  oaDelete(resource: string, id: number): Promise<void>;
   login(input: { username: string; password: string }): Promise<{
     token: string;
     accessToken?: string;

@@ -24,6 +24,8 @@ import { useTheme } from '../hooks/useTheme';
 import { LANGUAGE_OPTIONS, useLocale } from '../hooks/useLocale';
 import ThemePanel from '../components/ThemePanel';
 import { login } from '../api';
+import { apiMode } from '../api/adapter';
+import mockAuth from '../config/mock-auth.json';
 import { useEdition } from '../core/EditionProvider';
 import LocalizedText from '../components/LocalizedText';
 import { getCurrentAccount, saveCurrentAccount } from '../lib/currentAccount';
@@ -44,6 +46,7 @@ const ROLE_OPTIONS = [
 const REMEMBERED_ACCOUNT_KEY = 'ao-admin-pro.remembered-account';
 
 function getRememberedAccount() {
+  if (apiMode === 'mock') return mockAuth.username.trim();
   const configuredAccount = import.meta.env.VITE_DEFAULT_LOGIN_ACCOUNT?.trim() || '';
   if (typeof window === 'undefined') return configuredAccount;
   return window.localStorage.getItem(REMEMBERED_ACCOUNT_KEY) || configuredAccount;
