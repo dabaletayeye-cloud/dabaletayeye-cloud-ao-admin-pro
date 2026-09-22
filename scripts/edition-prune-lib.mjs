@@ -1,7 +1,15 @@
+import { resolveEditionModules, isExplicitlyExcluded, validateEditionRules } from '../src/core/editionRules.mjs';
 import { access, cp, mkdir, readFile, readdir, lstat, realpath, rm, rmdir, writeFile, rename } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 
+const defaultRules = JSON.parse(await readFile(new URL('../src/config/edition-rules.json', import.meta.url), 'utf8'));
+async function readRules(root) {
+  const file=path.join(root,'src/config/edition-rules.json');
+  await rejectLinks(root,file);
+  const raw=await exists(file)?await readFile(file,'utf8'):null;
+  return {rules:validateEditionRules(raw===null?defaultRules:JSON.parse(raw)),fingerprint:raw===null?'absent':createHash('sha256').update(raw).digest('hex')};
+}
 const backupFolder = '.edition-backups';
 const validId = /^[a-z][a-z0-9_-]*$/;
 const exists = async file => { try { await access(file); return true; } catch (e) { if (e.code === 'ENOENT') return false; throw e; } };
@@ -67,7 +75,10 @@ export async function planEdition(projectRoot, edition, presets) {
     if (manifest.name !== entry.name) throw new Error(`模块名称与目录不一致：${entry.name}`);
     modules.set(entry.name, manifest);
   }
-  const wanted = preset.modules === '*' ? [...modules.keys()] : preset.modules;
+  const policy = await readRules(root);
+  const installed=[...modules.keys()];
+  if ([...modules.values()].some(module=>module.routes?.some(route=>route.path==='/system/servers'))) installed.push('server');
+  const wanted = resolveEditionModules(edition,preset.modules,installed,policy.rules);
   const keep = new Set(wanted.filter(id => modules.has(id)));
   // Server is an entry inside operations in the current project. Keep its owner;
   // runtime edition filtering exposes only the server entry for devplatform.
@@ -76,8 +87,10 @@ export async function planEdition(projectRoot, edition, presets) {
   }
   const requested = [...keep];
   const visit = id => {
+    if(isExplicitlyExcluded(id,edition,policy.rules))throw new Error(`Required module is excluded: ${id}`);
     for (const dependency of modules.get(id)?.dependencies ?? []) {
       if (dependency === 'core') continue;
+      if(isExplicitlyExcluded(dependency,edition,policy.rules))throw new Error(`Module ${id} requires excluded module ${dependency}`);
       if (!modules.has(dependency)) throw new Error(`模块 ${id} 缺少依赖 ${dependency}`);
       if (!keep.has(dependency)) { keep.add(dependency); visit(dependency); }
     }
@@ -87,7 +100,7 @@ export async function planEdition(projectRoot, edition, presets) {
   const remove = [...modules.keys()].filter(id => !keep.has(id)).sort();
   const hashes = {};
   for (const id of remove) hashes[id] = await fingerprints(await checkedModule(root, id));
-  return { root, edition, label: preset.label, enabledModules: edition === 'full' ? [] : wanted.filter(id => keep.has(id) || id === 'server' && keep.has('operations')), keep: [...keep].sort(), autoKept: [...keep].filter(id => !requested.includes(id)), remove, hashes };
+  return { root, edition, label: preset.label, rulesFingerprint: policy.fingerprint, enabledModules: wanted.filter(id => keep.has(id) || id === 'server' && keep.has('operations')), keep: [...keep].sort(), autoKept: [...keep].filter(id => !requested.includes(id)), remove, hashes };
 }
 
 export async function listBackups(projectRoot) {
@@ -116,6 +129,7 @@ async function lock(root, action) {
 
 export async function applyPlan(plan, generate) {
   return lock(plan.root, async () => {
+    if(plan.rulesFingerprint!==undefined && (await readRules(plan.root)).fingerprint!==plan.rulesFingerprint)throw new Error('Edition rules changed after preview; preview again.');
     for (const id of plan.remove) {
       const actual = await fingerprints(await checkedModule(plan.root, id));
       if (JSON.stringify(actual) !== JSON.stringify(plan.hashes[id])) throw new Error(`预览后模块已修改：${id}，请重新执行。`);

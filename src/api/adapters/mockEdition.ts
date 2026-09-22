@@ -1,3 +1,5 @@
+import rulesConfig from '../../config/edition-rules.json';
+import { resolveEditionModules, isCustomModule } from '../../core/editionRules.mjs';
 import definitions from '../../../scripts/edition-presets.json';
 import mockAuth from '../../config/mockAuth';
 import { accountClients } from '../../config/accountClients';
@@ -13,13 +15,12 @@ export function mockEditionConfig(): EditionConfig {
   if (moduleMenus.some(menu => menu.path === '/system/servers')) installed.add('server');
   const presets: Partial<Record<Edition, string[]>> = { minimal: [] };
   for (const [id, definition] of Object.entries(definitions)) {
-    if (id === 'minimal' || id === 'full') continue;
-    const modules = (definition.modules as string[]).filter(module => installed.has(module));
-    if (modules.length) presets[id as Edition] = modules;
+    const modules = resolveEditionModules(id, definition.modules, [...installed], rulesConfig);
+    if (modules.length || id === 'minimal' || id === 'full') presets[id as Edition] = modules;
   }
-  presets.full = [];
+
   if (!presets[edition]) edition = 'full';
-  return { edition, enabledModules: [...(presets[edition] ?? [])], presets,
+  return { moduleSelectionResolved: true, customModules: [...installed].filter(id => isCustomModule(id, rulesConfig)), edition, enabledModules: [...(presets[edition] ?? [])], presets,
     sysUserEnabled: accountClients.enabled ? !!accountClients.userTypes.sysuser?.enabled : mockAuth.sysUserEnabled,
     accountTypes: accountClients.enabled ? Object.entries(accountClients.userTypes).filter(([, value]) => value.enabled).map(([id, value]) => ({ id, ...value })) : [],
   };

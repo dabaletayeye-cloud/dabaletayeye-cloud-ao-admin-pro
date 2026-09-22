@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "enabled": true,
+  "preserveCustomModules": true,
+  "builtInModules": ["core", "ai", "analytics", "components", "content", "erp", "examples", "lowcode", "marketing", "media", "oa", "operations", "templates", "commerce", "server"],
+  "editions": {}
+}

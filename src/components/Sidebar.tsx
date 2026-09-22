@@ -327,7 +327,7 @@ function icon(name: string, size: number) {
   return <Icon size={size} />;
 }
 
-const buildNavItems = (editionConfig?: EditionConfig): NavItem[] => {
+export const buildNavItems = (editionConfig?: EditionConfig): NavItem[] => {
 const enabledMenus = editionConfig ? filterModuleMenus(moduleMenus, editionConfig) : moduleMenus;
 const modulePaths = new Set(enabledMenus.map((menu) => menu.path));
 const OPTIONAL_ROUTE_PREFIXES = ['/analytics', '/content', '/article', '/media', '/marketing', '/orders', '/messages', '/generation-quotas', '/system/files', '/system/servers', '/dashboard/analytics', '/dashboard/ecommerce', '/lowcode', '/ai', '/comp', '/tmpl', '/examples'];
@@ -381,6 +381,7 @@ if (editionConfig?.tenancy?.available) {
     {type: 'link', label: '商户管理', path: '/tenancy/merchants', icon: icon('Users',16)});
 }
 if (editionConfig?.edition === 'full' && editionConfig.presets) {
+  const customModules = new Set(editionConfig.customModules ?? []);
   const categories: Record<string, [string, string]> = {
     erp: ['ERP', 'Package'], oa: ['OA', 'Briefcase'], saas: ['SaaS', 'Layers'],
     ecommerce: ['电商', 'ShoppingCart'], devplatform: ['开发者平台', 'FileCode2'],
@@ -391,8 +392,8 @@ if (editionConfig?.edition === 'full' && editionConfig.presets) {
   const editions: NavItem[] = [];
   for (const [edition, included] of Object.entries(editionConfig.presets)) {
     if (!categories[edition] || !included) continue;
-    const menus = enabledMenus.filter(menu => included.includes(menu.module)
-      || included.includes('server') && menu.path === '/system/servers');
+    const menus = enabledMenus.filter(menu => !customModules.has(menu.module) && (included.includes(menu.module)
+      || included.includes('server') && menu.path === '/system/servers'));
     if (!menus.length) continue;
     menus.forEach(menu => covered.add(menu.path));
     const [label, groupIcon] = categories[edition];

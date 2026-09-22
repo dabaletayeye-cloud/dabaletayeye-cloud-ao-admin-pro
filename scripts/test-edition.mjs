@@ -90,3 +90,12 @@ const separateUsers = buildNavItems({ ...full, sysUserEnabled: true }).find(item
 assert.equal(separateUsers.children.filter(item => item.path === '/system/sys-users').length, 1);
 assert.equal(separateUsers.children.find(item => item.path === '/system/users').label, '业务用户');
 assert(!buildNavItems(full).find(item => item.label === '系统管理').children.some(item => item.path === '/system/sys-users'));
+
+const customMenu = {module:'device',path:'/device/list',group:'Devices',groupIcon:'Package',label:'Device list',icon:'Package',perms:['device:list']};
+assert.equal(filterByEdition([customMenu],{edition:'minimal',enabledModules:[]}).length,1);
+assert.equal(filterByEdition([customMenu],{edition:'erp',enabledModules:['erp'],moduleSelectionResolved:true}).length,0);
+const customBuilder=new Function('moduleMenus','filterModuleMenus','showDemoPages',code)([...menus,customMenu],filterByEdition,showDemoPages);
+const customNav=customBuilder({...full,customModules:['device'],presets:{...full.presets,erp:['erp','device'],saas:[...enabledModules,'device']}});
+assert.equal(customNav.flatMap(item=>item.type==='group'?item.children:[item]).filter(item=>item.path==='/device/list').length,1);
+assert(customNav.some(item=>item.label==='Devices'));
+console.log('Custom modules remain visible, respect resolved exclusions and have one full-edition category.');

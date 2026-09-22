@@ -1,19 +1,20 @@
+import rulesConfig from '../config/edition-rules.json';
+import { moduleMatchesRules, validateEditionRules } from './editionRules.mjs';
+const editionRules = validateEditionRules(rulesConfig);
 import type { ModuleMenuEntry, ModulePermissionGroup, ModuleRoute } from '../generated/registry';
 import { moduleMenus } from '../generated/registry';
 
 export type Edition = 'minimal' | 'erp' | 'oa' | 'saas' | 'ecommerce' | 'devplatform' | 'bi' | 'demo' | 'ai' | 'cms' | 'crm' | 'full';
 export interface AccountTypeInfo { id: string; label: string; store: string; permissionMode: string; }
-export interface EditionConfig { edition: Edition; enabledModules: string[]; presets?: Partial<Record<Edition, string[]>>; sysUserEnabled?: boolean; accountTypes?: AccountTypeInfo[]; tenancy?: import('../api/tenancyTypes').TenancyContext; }
+export interface EditionConfig { moduleSelectionResolved?: boolean; customModules?: string[]; edition: Edition; enabledModules: string[]; presets?: Partial<Record<Edition, string[]>>; sysUserEnabled?: boolean; accountTypes?: AccountTypeInfo[]; tenancy?: import('../api/tenancyTypes').TenancyContext; }
 
 export const DEFAULT_EDITION: EditionConfig = { edition: 'full', enabledModules: [] };
 
 export function isModuleEnabled(module: string, config: EditionConfig): boolean {
   if (!module || module === 'core') return true;
-  if (config.edition === 'minimal') return false;
-  if (config.edition === 'erp') return module === 'erp';
-  if (config.edition === 'oa') return module === 'oa';
-  if (config.edition !== 'full') return config.enabledModules.includes(module);
-  return true;
+  if (config.moduleSelectionResolved) return config.enabledModules.includes(module);
+  const baseEnabled = config.edition === 'full' || (config.edition === 'erp' ? module === 'erp' : config.edition === 'oa' ? module === 'oa' : config.edition !== 'minimal' && config.enabledModules.includes(module));
+  return moduleMatchesRules(module, config.edition, baseEnabled, editionRules);
 }
 
 export function isEntryEnabled(item: { module: string; path?: string }, config: EditionConfig): boolean {
@@ -36,8 +37,8 @@ export function filterPermissionGroups(groups: ModulePermissionGroup[], config: 
 
 export function availableEditions(modules: Array<{ module: string; path?: string }>, config?: EditionConfig): Edition[] {
   const result: Edition[] = ['minimal'];
-  if (modules.some(item => item.module === 'erp')) result.push('erp');
-  if (modules.some(item => item.module === 'oa')) result.push('oa');
+  if (!config?.moduleSelectionResolved && modules.some(item => item.module === 'erp')) result.push('erp');
+  if (!config?.moduleSelectionResolved && modules.some(item => item.module === 'oa')) result.push('oa');
   for (const [edition, included] of Object.entries(config?.presets ?? {})) {
     if (edition === 'minimal' || edition === 'full' || result.includes(edition as Edition)) continue;
     if (included?.some(module => modules.some(item => item.module === module || module === 'server' && item.path === '/system/servers'))) result.push(edition as Edition);

@@ -292,7 +292,7 @@ export default function SystemConfigPage() {
               <p className="text-sm mb-5" style={{ color: 'var(--muted-foreground)' }}>仅影响菜单与功能入口显示，不会删除任何业务数据。</p>
               <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))' }}>
                 {editions.map(item => {
-                  const included = [...new Set(filterModuleMenus(moduleMenus, { edition: item, enabledModules: editionConfig.presets?.[item] ?? [] })
+                  const included = [...new Set(filterModuleMenus(moduleMenus, { ...editionConfig, edition: item, enabledModules: editionConfig.presets?.[item] ?? [] })
                     .map(menu => item === 'devplatform' && menu.path === '/system/servers' ? menu.label : menu.group))];
                   if (item === 'demo') included.push('结果页面', '异常页面');
                   return <button key={item} type="button" onClick={() => setEditionValue(item)} className="text-left p-4 rounded-xl" style={{ border: `2px solid ${edition === item ? primary : 'var(--border)'}`, background: edition === item ? `${primary}12` : 'var(--card)', color: 'var(--foreground)', cursor: 'pointer' }}><div className="font-semibold">{EDITION_LABELS[item]}</div><div className="text-xs mt-2" style={{ color: 'var(--muted-foreground)' }}>{EDITION_DESCRIPTIONS[item]}</div><div className="text-xs mt-2" style={{ color: 'var(--muted-foreground)' }}>包含：工作台、系统管理{included.length > 0 ? `、${included.join('、')}` : ''}</div>{editionConfig.edition === item && <div className="text-xs mt-3" style={{ color: primary }}>当前生效</div>}{edition === item && editionConfig.edition !== item && <div className="text-xs mt-3" style={{ color: primary }}>当前选择</div>}</button>;

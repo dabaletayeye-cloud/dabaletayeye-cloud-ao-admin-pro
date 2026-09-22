@@ -8,9 +8,10 @@ let requests = 0;
 globalThis.fetch = async () => { requests++; throw new Error('Unexpected backend request'); };
 async function load(clientId, type) {
   const result = await build({ stdin: { contents: "export { apiAdapter } from './src/api/adapter';", resolveDir: process.cwd() }, bundle: true, write: false, format: 'esm', define: { 'import.meta.env': JSON.stringify({ VITE_API_MODE: 'mock', VITE_AUTH_CLIENT_ID: clientId, VITE_AUTH_USER_TYPE: type }) }, plugins: [{ name: 'demo-config', setup(plugin) {
+    plugin.onResolve({ filter: /tenancy\.json$/ }, () => ({ path: 'tenancy', namespace: 'fixture' }));
     plugin.onResolve({ filter: /account-clients\.json$/ }, () => ({ path: 'config', namespace: 'fixture' }));
     plugin.onResolve({ filter: /generated\/registry$/ }, () => ({ path: 'registry', namespace: 'fixture' }));
-    plugin.onLoad({ filter: /.*/, namespace: 'fixture' }, args => args.path === 'config' ? { contents: JSON.stringify(settings), loader: 'json' } : { contents: `export const moduleMenus = ${JSON.stringify(menus)};` });
+    plugin.onLoad({ filter: /.*/, namespace: 'fixture' }, args => args.path === 'tenancy' ? { contents: JSON.stringify({ enabled: false, regionMode: 'SINGLE_REGION' }), loader: 'json' } : args.path === 'config' ? { contents: JSON.stringify(settings), loader: 'json' } : { contents: `export const moduleMenus = ${JSON.stringify(menus)};` });
   } }] });
   return (await import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString('base64')}`)).apiAdapter;
 }

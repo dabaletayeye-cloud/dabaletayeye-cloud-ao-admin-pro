@@ -1,3 +1,4 @@
+import demoData from '../../config/tenancy-demo.json';
 import config from '../../config/tenancy.json';
 import { mockEditionConfig } from './mockEdition';
 import { merchantScope } from '../merchantScope';
@@ -5,10 +6,10 @@ import type { ApiAdapter, CurrentProfile } from './types';
 import type { Merchant, Region, MerchantMember, RegionMode, TenancyContext } from '../tenancyTypes';
 
 export function createMockTenancy(profile:()=>Promise<CurrentProfile>, accountExists:(type:string,id:number)=>Promise<boolean>){
-  const regions:Region[]=[{id:1,code:'east',name:'华东地区',enabled:true},{id:2,code:'north',name:'华北地区',enabled:true}];
-  const merchants:Merchant[]=[{id:1,code:'merchant-a',name:'演示商户 A',enabled:true,regionIds:[1]},{id:2,code:'merchant-b',name:'演示商户 B',enabled:true,regionIds:[2]}];
+  const regions:Region[]=demoData.regions.map((row,index)=>({...row,id:index+1,enabled:true}));
+  const merchants:Merchant[]=demoData.merchants.map((row,index)=>({id:index+1,code:row.code,name:row.name,enabled:true,regionIds:row.regionCodes.map(code=>regions.find(region=>region.code===code)!.id)}));
   let members:MerchantMember[]=[{accountType:'merchant',userId:1,merchantId:1}];
-  let regionId=3,merchantId=3;
+  let regionId=regions.length+1,merchantId=merchants.length+1;
   const mode=()=>{if(!['SINGLE_REGION','MULTI_REGION'].includes(config.regionMode))throw new Error('地区模式配置无效');return config.regionMode as RegionMode;};
   async function context():Promise<TenancyContext>{
     const enabled=config.enabled===true, available=enabled&&['saas','ecommerce','crm','full'].includes(mockEditionConfig().edition);

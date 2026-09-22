@@ -1,0 +1,16 @@
+{
+  "regions": [
+    { "code": "east", "name": "华东地区" },
+    { "code": "north", "name": "华北地区" },
+    { "code": "south", "name": "华南地区" },
+    { "code": "west", "name": "西南地区" }
+  ],
+  "merchants": [
+    { "code": "merchant-a", "name": "华东优选商贸（示例）", "regionCodes": ["east"] },
+    { "code": "merchant-b", "name": "华北数码商行（示例）", "regionCodes": ["north"] },
+    { "code": "merchant-c", "name": "华南生活百货（示例）", "regionCodes": ["south"] },
+    { "code": "merchant-d", "name": "西南办公用品（示例）", "regionCodes": ["west"] },
+    { "code": "merchant-e", "name": "华东家居生活（示例）", "regionCodes": ["east"] },
+    { "code": "merchant-f", "name": "华北文创礼品（示例）", "regionCodes": ["north"] }
+  ]
+}
