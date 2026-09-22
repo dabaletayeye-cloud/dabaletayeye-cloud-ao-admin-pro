@@ -35,6 +35,7 @@
   "sidebarAccordion": "사이드바 아코디언 사용",
   "showSidebarToggle": "사이드바 전환 버튼 표시",
   "showQuickEntry": "빠른 진입 표시",
+  "showEditionSwitch": "에디션 전환 표시",
   "showReload": "새로고침 버튼 표시",
   "showBreadcrumb": "이동 경로 표시",
   "showLanguage": "언어 선택기 표시",

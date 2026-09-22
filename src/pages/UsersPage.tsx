@@ -18,7 +18,8 @@ import {
 } from '../components/ui/dropdown-menu';
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { listUsers } from '../api';
+import { listUsers, listRoles, createUser, updateUser, deleteUser as removeUser } from '../api';
+import { useEdition } from '../core/EditionProvider';
 import type { User } from '../api';
 import { ApiState, useApiResource } from '../hooks/useApiResource';
 import {
@@ -51,26 +52,26 @@ const STATUS_FILTERS: Array<{ label: string; value: User['status'] | '__all__' }
 ];
 
 type DialogMode = 'create' | 'view' | 'edit' | null;
-type UserForm = Pick<User, 'name' | 'email' | 'region' | 'gender' | 'role' | 'status' | 'avatar'> & { roles: string[] };
-
-const ROLE_OPTIONS = ['管理员', '编辑', '运营', '设计师', '用户'];
+type UserForm = Pick<User, 'name' | 'email' | 'region' | 'gender' | 'role' | 'status' | 'avatar'> & { roles: string[]; username: string; password: string };
 
 const EMPTY_FORM: UserForm = {
   name: '',
+  username: '',
+  password: '',
   email: '',
   region: '',
   gender: '男',
-  role: '用户',
+  role: '',
   avatar: '',
   status: 'active',
-  roles: ['用户'],
+  roles: [],
 };
 
 const INPUT_CLASS = 'h-9 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-60';
 
 function toUserForm(user: User): UserForm {
   const { name, email, region, gender, role, status, avatar } = user;
-  return { name, email, region, gender, role, status, avatar, roles: user.roles?.length ? user.roles : [role] };
+  return { name, email, region, gender, role, status, avatar, username: user.username ?? '', password: '', roles: [role] };
 }
 
 function getUserRoles(user: User): string[] {
@@ -78,6 +79,7 @@ function getUserRoles(user: User): string[] {
 }
 
 export default function UsersPage() {
+  const { config: editionConfig } = useEdition();
   const { themeState } = useTheme();
   const { i18n } = useTranslation();
   const isManga = themeState.themeId === 'manga';
@@ -89,11 +91,10 @@ export default function UsersPage() {
   };
 
   const usersResource = useApiResource(() => listUsers({ pageSize: 100 }));
+  const rolesResource = useApiResource(() => listRoles({pageSize:100}));
+  const [busy, setBusy] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   useEffect(() => { if (usersResource.data) setUsers(usersResource.data.list); }, [usersResource.data]);
-  /*
-    user.id === 1 ? { ...user, roles: [user.role, '运营'] } : user
-  ))); */
   const [searchText, setSearchText] = useState('');
   const [activeStatus, setActiveStatus] = useState<User['status'] | '__all__'>('__all__');
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
@@ -140,80 +141,39 @@ export default function UsersPage() {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
-  const toggleRole = (role: string) => {
-    setForm((current) => ({
-      ...current,
-      roles: current.roles.includes(role)
-        ? current.roles.filter((item) => item !== role)
-        : [...current.roles, role],
-    }));
-  };
+  const toggleRole = (role: string) => setForm(current => ({...current,role,roles:[role]}));
 
   const uploadAvatar = (file?: File) => {
     if (!file || !file.type.startsWith('image/')) return;
+    if(file.size>256*1024){toast.error('头像请使用 256KB 以内的图片');return;}
     const reader = new FileReader();
     reader.onload = () => updateForm('avatar', String(reader.result));
     reader.readAsDataURL(file);
   };
 
-  const saveUser = () => {
-    const name = form.name.trim();
-    const email = form.email.trim();
-
-    if (!name || !email || !form.region.trim()) {
-      toast.error('请填写姓名、邮箱和地区');
-      return;
-    }
-
-    if (form.roles.length === 0) {
-      toast.error('请至少选择一个角色');
-      return;
-    }
-    const roles = [...form.roles];
-
-    if (dialogMode === 'edit' && selectedUser) {
-      setUsers((current) => current.map((user) => (
-        user.id === selectedUser.id
-          ? { ...user, ...form, role: roles[0], roles, name, email, region: form.region.trim(), avatar: form.avatar || user.avatar || name.charAt(0) }
-          : user
-      )));
-      toast.success(`已更新 ${name} 的资料`);
-    }
-
-    if (dialogMode === 'create') {
-      const nextId = Math.max(0, ...users.map((user) => user.id)) + 1;
-      setUsers((current) => [
-        ...current,
-        {
-          id: nextId,
-          ...form,
-          role: roles[0],
-          roles,
-          name,
-          email,
-          region: form.region.trim(),
-          avatar: form.avatar || name.charAt(0),
-          joinDate: new Date().toISOString().slice(0, 10),
-          progress: 0,
-        },
-      ]);
-      toast.success(`已添加用户 ${name}`);
-    }
-
-    closeDialog();
+  const saveUser = async () => {
+    if(busy)return;
+    const name=form.name.trim(), email=form.email.trim();
+    if(!name||!email||!form.region.trim()){toast.error('请填写姓名、邮箱和地区');return;}
+    if(!form.roles.length){toast.error('请选择角色');return;}
+    if(dialogMode==='create'&&(!form.username.trim()||form.password.length<6)){toast.error('请填写登录账号和至少 6 位密码');return;}
+    setBusy(true);
+    try{
+      const payload={name,email,region:form.region.trim(),gender:form.gender,status:form.status,avatar:form.avatar,role:form.roles[0],roles:[form.roles[0]],...(form.password?{password:form.password}:{})};
+      if(dialogMode==='create')await createUser({...payload,username:form.username.trim()});
+      else if(selectedUser)await updateUser(selectedUser.id,payload);
+      closeDialog();await usersResource.reload();toast.success('用户已保存');
+    }catch(error){toast.error(error instanceof Error?error.message:'保存失败');}finally{setBusy(false);}
   };
-
-  const toggleUserStatus = (user: User) => {
-    const nextStatus: User['status'] = user.status === 'active' ? 'inactive' : 'active';
-    setUsers((current) => current.map((item) => (
-      item.id === user.id ? { ...item, status: nextStatus } : item
-    )));
-    toast.success(nextStatus === 'active' ? `已启用 ${user.name}` : `已停用 ${user.name}`);
+  const toggleUserStatus = async (user:User) => {
+    if(busy)return;setBusy(true);
+    try{await updateUser(user.id,{status:user.status==='active'?'inactive':'active'});await usersResource.reload();toast.success('用户状态已更新');}
+    catch(error){toast.error((error as Error).message);}finally{setBusy(false);}
   };
-
-  const deleteUser = (user: User) => {
-    setUsers((current) => current.filter((item) => item.id !== user.id));
-    toast.success(`已删除用户 ${user.name}`);
+  const deleteUser = async (user:User) => {
+    if(busy||!window.confirm('确认删除用户 '+user.name+'？'))return;setBusy(true);
+    try{await removeUser(user.id);await usersResource.reload();toast.success('用户已删除');}
+    catch(error){toast.error((error as Error).message);}finally{setBusy(false);}
   };
 
   const isDialogOpen = dialogMode !== null;
@@ -225,7 +185,7 @@ export default function UsersPage() {
       <div data-cmp="UsersPage" className="min-h-full p-6" style={{ background: 'var(--background)' }}>
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>用户管理</h1>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>{editionConfig.sysUserEnabled ? '业务用户' : '用户管理'}</h1>
             <p className="mt-0.5 text-sm" style={{ color: 'var(--muted-foreground)' }}>管理所有注册用户</p>
           </div>
           <button
@@ -399,7 +359,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={(open) => !open && closeDialog()}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => !open && !busy && closeDialog()}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>
@@ -420,6 +380,8 @@ export default function UsersPage() {
                 )}
               </div>
             </div>
+            <FormField label="登录账号" required><input className={INPUT_CLASS} value={form.username} disabled={dialogMode!=='create'} onChange={event=>updateForm('username',event.target.value)} /></FormField>
+            {!isReadOnly&&<FormField label={dialogMode==='create'?'初始密码':'重置密码（留空不修改）'} required={dialogMode==='create'}><input className={INPUT_CLASS} type="password" autoComplete="new-password" value={form.password} onChange={event=>updateForm('password',event.target.value)}/></FormField>}
             <FormField label="姓名" required>
               <input value={form.name} disabled={isReadOnly} onChange={(event) => updateForm('name', event.target.value)} className={INPUT_CLASS} placeholder="请输入姓名" />
             </FormField>
@@ -443,13 +405,13 @@ export default function UsersPage() {
               </select>
             </FormField>
           </div>
-          <RoleSelector roles={form.roles} disabled={isReadOnly} onToggle={toggleRole} />
+          <RoleSelector options={[...new Set([...(rolesResource.data?.list??[]).map(role=>role.name),...users.map(user=>user.role)])]} roles={form.roles} disabled={isReadOnly || busy} onToggle={toggleRole} />
           <DialogFooter>
             <button type="button" onClick={closeDialog} className="rounded-lg border px-4 py-2 text-sm" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
               {isReadOnly ? '关闭' : '取消'}
             </button>
             {!isReadOnly && (
-              <button type="button" onClick={saveUser} className="rounded-lg px-4 py-2 text-sm font-medium text-white" style={{ background: primary }}>
+              <button type="button" disabled={busy} onClick={() => void saveUser()} className="rounded-lg px-4 py-2 text-sm font-medium text-white" style={{ background: primary }}>
                 保存
               </button>
             )}
@@ -487,15 +449,15 @@ function UserAvatar({
   );
 }
 
-function RoleSelector({ roles, disabled, onToggle }: { roles: string[]; disabled: boolean; onToggle: (role: string) => void }) {
+function RoleSelector({ options, roles, disabled, onToggle }: { options: string[]; roles: string[]; disabled: boolean; onToggle: (role: string) => void }) {
   return (
     <div className="grid gap-1.5 text-sm sm:col-span-2" style={{ color: 'var(--foreground)' }}>
-      <span>角色（可多选）</span>
+      <span>角色</span>
       <div className="grid grid-cols-2 gap-2 rounded-lg border p-2 sm:grid-cols-3" style={{ borderColor: 'var(--border)' }}>
-        {ROLE_OPTIONS.map((role) => (
+        {options.map((role) => (
           <label key={role} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent">
             <input
-              type="checkbox"
+              type="radio" name="user-role"
               checked={roles.includes(role)}
               disabled={disabled}
               onChange={() => onToggle(role)}

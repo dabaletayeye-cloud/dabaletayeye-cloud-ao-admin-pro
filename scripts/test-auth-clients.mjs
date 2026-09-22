@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { build } from 'esbuild';
+const source = "export { httpAdapter } from './src/api/adapters/http'; export * from './src/api/authConfig';";
+async function client(clientId, userType) {
+  const result = await build({ stdin: { contents: source, resolveDir: process.cwd() }, bundle: true, write: false, format: 'esm', define: { 'import.meta.env': JSON.stringify({ VITE_API_MODE: 'http', VITE_API_BASE_URL: 'http://test.invalid', VITE_AUTH_CLIENT_ID: clientId, VITE_AUTH_USER_TYPE: userType }) } });
+  return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString('base64')}`);
+}
+const values = new Map();
+const localStorage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) };
+globalThis.window = { localStorage, sessionStorage: { getItem: () => null, removeItem() {} }, dispatchEvent() {} };
+const calls = [];
+globalThis.fetch = async (url, init) => {
+  const headers = new Headers(init.headers); const payload = init.body ? JSON.parse(init.body) : {};
+  const id = headers.get('X-Client-Id'); calls.push({ url, id, payload, authorization: headers.get('Authorization') });
+  if (url.endsWith('/auth/me') && headers.get('Authorization') === 'Bearer web-old') return new Response(JSON.stringify({ message: 'expired' }), { status: 401 });
+  const data = url.endsWith('/auth/refresh') ? { accessToken: `${id}-new`, refreshToken: `${id}-refresh` } : { id: 1, token: 'demo', user: { id: 1 } };
+  return new Response(JSON.stringify({ code: 0, data }), { status: 200 });
+};
+const web = await client('user-web', 'member'), mobile = await client('mobile-app', 'member');
+assert.notEqual(web.TOKEN_STORAGE_KEY, mobile.TOKEN_STORAGE_KEY);
+assert.notEqual(web.scopedStorageKey('ao-admin-pro.current-account'), mobile.scopedStorageKey('ao-admin-pro.current-account'));
+assert.notEqual(web.tokenStorageKey('user-web', 'member'), web.tokenStorageKey('user-web', 'merchant'));
+await web.httpAdapter.login({ username: 'member', password: 'pw' });
+assert.equal(calls.at(-1).payload.clientId, 'user-web'); assert.equal(calls.at(-1).payload.userType, 'member');
+localStorage.setItem(web.TOKEN_STORAGE_KEY, JSON.stringify({ accessToken: 'web-old', refreshToken: 'web-refresh' }));
+await mobile.httpAdapter.login({ username: 'member', password: 'pw' }); assert.equal(calls.at(-1).authorization, null);
+localStorage.setItem(mobile.TOKEN_STORAGE_KEY, JSON.stringify({ accessToken: 'mobile-token', refreshToken: 'mobile-refresh' }));
+await web.httpAdapter.getCurrentUser();
+const refresh = calls.find(call => call.url.endsWith('/auth/refresh'));
+assert.equal(refresh.id, 'user-web'); assert.deepEqual(refresh.payload, { refreshToken: 'web-refresh', clientId: 'user-web' });
+assert.equal(JSON.parse(localStorage.getItem(web.TOKEN_STORAGE_KEY)).accessToken, 'user-web-new');
+assert.equal(JSON.parse(localStorage.getItem(mobile.TOKEN_STORAGE_KEY)).accessToken, 'mobile-token');
+await mobile.httpAdapter.getCurrentUser(); assert.equal(calls.at(-1).authorization, 'Bearer mobile-token');
+
+const bundled = await build({ entryPoints: ['src/api/adapters/mockAccountClients.ts'], bundle: true, write: false, format: 'esm' });
+const { createMockAccountClients } = await import(`data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString('base64')}`);
+const config = JSON.parse(await readFile('src/config/account-clients.json', 'utf8')); config.enabled = true;
+config.userTypes.partner = { label: '合作方', enabled: true, store: 'generic', permissionMode: 'none' };
+config.clients['partner-app'] = { enabled: true, userTypes: ['partner'], defaultUserType: 'partner', apiPrefixes: ['/api/auth'] };
+const accounts = createMockAccountClients(config, { id: 1, name: 'Base', email: '', role: '', status: 'active', region: '', gender: '男', avatar: '', joinDate: '', progress: 0 });
+assert.throws(() => accounts.login({ username: 'SysAdmin', password: 'admin123' }, 'mobile-app', 'sysuser'), /不允许/);
+accounts.login({ username: 'SysAdmin', password: 'admin123' }, 'admin-web');
+const memberBefore = await accounts.list('member'), merchantBefore = await accounts.list('merchant');
+assert.equal(memberBefore.list[0].id, merchantBefore.list[0].id);
+await accounts.update('member', 1, { name: '只改会员' }); assert.deepEqual(await accounts.list('merchant'), merchantBefore);
+await accounts.create('partner', { username: 'same', password: 'partner123', name: '合作方账户' });
+accounts.login({ username: 'same', password: 'partner123' }, 'partner-app');
+assert.equal(accounts.current().accountType, 'partner');
+await assert.rejects(accounts.list('sysuser'), /无用户管理权限/);
+await accounts.updateProfile({ name: '合作方个人资料', role: 'super_admin' }); assert.equal(accounts.current().role, 'partner');
+accounts.login({ username: 'member', password: 'member123' }, 'user-web'); assert.equal(accounts.current().clientId, 'user-web');
+assert.throws(() => accounts.login({ username: 'member', password: 'member123' }, 'merchant-web'), /密码不正确/);
+console.log('HTTP login/refresh client binding, isolated token storage, extensible mock types and cross-type account protection passed.');
+accounts.logout();
+assert.equal(accounts.restoreSession('mock-member-user-web-1', 'mobile-app'), false);
+assert.equal(accounts.restoreSession('mock-member-user-web-1', 'user-web'), true);
+assert.equal(accounts.current().accountType, 'member');

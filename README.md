@@ -1,5 +1,7 @@
 # ao-admin-pro
 
+SaaS、电商、CRM 和全部版支持地区管理、商户管理及业务范围切换。HTTP 与 Mock 均可使用，默认关闭，详见 [多地区与多商户](docs/多地区与多商户.md)。
+
 面向中后台场景的 React + TypeScript 前端项目，包含业务页面、组件模板、主题配置和模块化版本预设。支持 **纯前端 Mock 演示**，也支持连接配套 Spring Boot 后端。
 
 ## 环境与技术栈
@@ -35,6 +37,16 @@ npm run dev:mock
 登录页会带出配置的账号，输入密码、拖动滑块完成验证后登录。Mock 模式会校验这两项，不再接受任意账号密码。
 
 修改配置后刷新开发页面；已部署的静态站需要重新构建部署。这是会随前端产物公开的演示配置，不能放真实账号密码。HTTP 模式的账号由后端认证，此文件不会修改后端用户。
+
+### 系统用户与业务用户
+
+支持通过后端账号 JSON 定义更多类型和客户端。前端 HTTP 模式通过 `VITE_AUTH_CLIENT_ID`、`VITE_AUTH_USER_TYPE` 选择登录身份范围；登录、刷新和业务请求自动携带 `X-Client-Id`，令牌按客户端和类型分开存储。新增通用类型由后端下发，在系统管理中生成对应管理入口。
+
+纯前端多类型演示可在 [src/config/account-clients.json](src/config/account-clients.json) 设置 `enabled: true`，维护 `userTypes`、`clients` 和公开的 `demoAccounts`。关闭它时继续使用下面的 `mock-auth.json` 简单配置。新增类型的 API 统一位于 `src/api/accounts.ts`。
+
+后端可通过 `SYSUSER_ENABLED=true` 启用独立 `sys_user` 账号表：后台由系统账号登录，原用户表继续保存业务用户；默认关闭时保持原模式。开启后系统管理菜单分别显示“系统用户”和“业务用户”，系统账号接口统一在 `src/api/sysuser.ts`。
+
+Mock 模式在 `src/config/mock-auth.json` 配置 `sysUserEnabled: true`，并设置 `sysuser.username` / `sysuser.password`（默认 `SysAdmin` / `admin123`）；关闭时仍使用顶层 `username` / `password`。两类模拟账号的数据独立，系统账号修改不会覆盖业务用户。前端开关不改变 HTTP 后端配置。
 
 ### 演示数据范围
 

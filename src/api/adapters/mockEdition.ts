@@ -1,4 +1,6 @@
 import definitions from '../../../scripts/edition-presets.json';
+import mockAuth from '../../config/mockAuth';
+import { accountClients } from '../../config/accountClients';
 import { moduleMenus } from '../../generated/registry';
 import type { Edition, EditionConfig } from '../../core/edition';
 
@@ -17,7 +19,10 @@ export function mockEditionConfig(): EditionConfig {
   }
   presets.full = [];
   if (!presets[edition]) edition = 'full';
-  return { edition, enabledModules: [...(presets[edition] ?? [])], presets };
+  return { edition, enabledModules: [...(presets[edition] ?? [])], presets,
+    sysUserEnabled: accountClients.enabled ? !!accountClients.userTypes.sysuser?.enabled : mockAuth.sysUserEnabled,
+    accountTypes: accountClients.enabled ? Object.entries(accountClients.userTypes).filter(([, value]) => value.enabled).map(([id, value]) => ({ id, ...value })) : [],
+  };
 }
 
 export function setMockEdition(input: EditionConfig): EditionConfig {

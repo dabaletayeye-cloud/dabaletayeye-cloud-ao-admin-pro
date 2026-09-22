@@ -1,3 +1,4 @@
+import { setMerchantScope } from '../api/merchantScope';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { apiAdapter } from '../api/adapter';
 import { moduleMenus, moduleRoutes, modulePermissionGroups } from '../generated/registry';
@@ -32,8 +33,15 @@ export function EditionProvider({ children }: { children: ReactNode }) {
     try {
       const next = await apiAdapter.getSystemEdition();
       if (next?.edition) setConfig(resolveEdition({ ...next, enabledModules: Array.isArray(next.enabledModules) ? next.enabledModules : [] }));
-    } catch { /* unauthenticated pages use the safe full edition */ }
-    finally { setLoading(false); }
+    } catch {
+      // Users without configuration permission can still identify their own account domain.
+      try { const profile = await apiAdapter.getCurrentProfile(); setConfig(current => ({ ...current, sysUserEnabled: profile.accountType === 'sysuser' })); }
+      catch { /* Anonymous pages keep the default state. */ }
+    }
+    finally {
+      try { const tenancy = await apiAdapter.getTenancyContext(); if(!tenancy.available)setMerchantScope(0); setConfig(current => ({...current,...(!tenancy.platform&&tenancy.editionConfig?resolveEdition(tenancy.editionConfig):{}),tenancy:{...tenancy,available:tenancy.available&&['saas','ecommerce','crm','full'].includes(current.edition)}})); } catch { setConfig(current=>({...current,tenancy:undefined})); }
+      setLoading(false);
+    }
   }, []);
   useEffect(() => { void refreshEdition(); }, [refreshEdition]);
   const setEdition = useCallback(async (edition: Edition) => {
@@ -41,7 +49,9 @@ export function EditionProvider({ children }: { children: ReactNode }) {
     if (buildEdition) {
       try { localStorage.setItem(BUILD_OVERRIDE_KEY, buildEdition.revision); } catch { /* Storage is optional. */ }
     }
-    const normalized = { ...next, enabledModules: next.enabledModules || [] };
+    const tenancy = await apiAdapter.getTenancyContext().catch(()=>undefined);
+    if(!tenancy?.available)setMerchantScope(0);
+    const normalized = { ...next, enabledModules: next.enabledModules || [], tenancy: tenancy ? {...tenancy,available:tenancy.available&&['saas','ecommerce','crm','full'].includes(next.edition)} : undefined };
     setConfig(normalized);
     window.dispatchEvent(new CustomEvent('ao-edition-changed', { detail: normalized }));
     return normalized;

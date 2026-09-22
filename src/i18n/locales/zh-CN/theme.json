@@ -35,6 +35,7 @@
   "sidebarAccordion": "侧边栏开启手风琴模式",
   "showSidebarToggle": "显示折叠侧边栏按钮",
   "showQuickEntry": "显示快速入口",
+  "showEditionSwitch": "显示版本切换入口",
   "showReload": "显示重载页面按钮",
   "showBreadcrumb": "显示全局面包屑导航",
   "showLanguage": "显示多语言选择",

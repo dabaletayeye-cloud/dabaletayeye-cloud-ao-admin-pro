@@ -2,7 +2,8 @@ import type { ModuleMenuEntry, ModulePermissionGroup, ModuleRoute } from '../gen
 import { moduleMenus } from '../generated/registry';
 
 export type Edition = 'minimal' | 'erp' | 'oa' | 'saas' | 'ecommerce' | 'devplatform' | 'bi' | 'demo' | 'ai' | 'cms' | 'crm' | 'full';
-export interface EditionConfig { edition: Edition; enabledModules: string[]; presets?: Partial<Record<Edition, string[]>>; }
+export interface AccountTypeInfo { id: string; label: string; store: string; permissionMode: string; }
+export interface EditionConfig { edition: Edition; enabledModules: string[]; presets?: Partial<Record<Edition, string[]>>; sysUserEnabled?: boolean; accountTypes?: AccountTypeInfo[]; tenancy?: import('../api/tenancyTypes').TenancyContext; }
 
 export const DEFAULT_EDITION: EditionConfig = { edition: 'full', enabledModules: [] };
 
@@ -16,6 +17,7 @@ export function isModuleEnabled(module: string, config: EditionConfig): boolean 
 }
 
 export function isEntryEnabled(item: { module: string; path?: string }, config: EditionConfig): boolean {
+  if (config.tenancy?.available && !config.tenancy.platform && item.path && !/^\/(erp|article|content|media|orders)(\/|$)/.test(item.path) && item.path !== '/system/files') return false;
   return isModuleEnabled(item.module, config)
     || (isNewPreset(config.edition) && item.path === '/system/servers' && config.enabledModules.includes('server'));
 }

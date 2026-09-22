@@ -1,5 +1,6 @@
 import { resolveNavigationGroup } from '../core/navigationGroup';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getCurrentAccount } from '../lib/currentAccount';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import {
@@ -333,10 +334,23 @@ const OPTIONAL_ROUTE_PREFIXES = ['/analytics', '/content', '/article', '/media',
 const isOptionalPath = (path: string) => OPTIONAL_ROUTE_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 const coreNavItems = LEGACY_NAV_ITEMS.map((item): NavItem | null => {
   if (item.type === 'link') return modulePaths.has(item.path) || isOptionalPath(item.path) ? null : item;
-  const children = item.children.filter((child) => !modulePaths.has(child.path) && !isOptionalPath(child.path));
+  const children = item.children.filter((child) => child.path === '/system/files'
+    ? modulePaths.has(child.path)
+    : !modulePaths.has(child.path) && !isOptionalPath(child.path));
   return children.length ? { ...item, children } : null;
 }).filter((item): item is NavItem => Boolean(item));
 const moduleGroups = new Map<string, NavGroup>();
+for (const type of [...(editionConfig?.accountTypes ?? [])].reverse()) {
+  if (type.store !== 'generic') continue;
+  const system = coreNavItems.find(item => item.type === 'group' && item.label === '系统管理');
+  if (system?.type === 'group') system.children.unshift({ label: type.label, path: `/system/account-users/${type.id}`, icon: icon('Users', 13) });
+}
+if (editionConfig?.sysUserEnabled) {
+  for (const item of coreNavItems) if (item.type === 'group' && item.label === '系统管理') {
+    item.children = item.children.map(child => child.path === '/system/users' || child.path === '/users' ? { ...child, label: '业务用户' } : child);
+    item.children.unshift({ label: '系统用户', path: '/system/sys-users', icon: icon('ShieldCheck', 13) });
+  }
+}
 for (const menu of enabledMenus) {
   const current = moduleGroups.get(menu.group) ?? {
     type: 'group', label: menu.group, icon: icon(menu.groupIcon, 16), children: [],
@@ -356,11 +370,16 @@ const remainingCore = coreNavItems.filter(item => !(item.type === 'link' && item
 const platformTail = new Set(['结果页面', '异常页面', '系统管理']);
 const tail = remainingCore.filter(item => item.type === 'group' && platformTail.has(item.label)
   && (!editionConfig || showDemoPages(editionConfig) || item.label === '系统管理'));
+const visibleTail = editionConfig?.tenancy?.available && !editionConfig.tenancy.platform ? [] : tail;
 const orderedTail: NavItem[] = editionConfig?.edition === 'demo'
-  ? tail.flatMap(item => item.type === 'group' && item.label !== '系统管理'
+  ? visibleTail.flatMap(item => item.type === 'group' && item.label !== '系统管理'
       ? item.children.map(child => ({ type: 'link' as const, ...child })) : [item])
-  : tail;
+  : visibleTail;
 const otherCore = remainingCore.filter(item => item.type !== 'group' || !platformTail.has(item.label));
+if (editionConfig?.tenancy?.available) {
+  otherCore.push({type: 'link', label: '地区管理', path: '/tenancy/regions', icon: icon('Network',16)},
+    {type: 'link', label: '商户管理', path: '/tenancy/merchants', icon: icon('Users',16)});
+}
 if (editionConfig?.edition === 'full' && editionConfig.presets) {
   const categories: Record<string, [string, string]> = {
     erp: ['ERP', 'Package'], oa: ['OA', 'Briefcase'], saas: ['SaaS', 'Layers'],
@@ -385,7 +404,7 @@ if (editionConfig?.edition === 'full' && editionConfig.presets) {
   }
   // Modules outside every preset remain reachable in the full edition.
   const remaining = [...moduleGroups.values()].map(group => ({ ...group, children: group.children.filter(child => !covered.has(child.path)) })).filter(group => group.children.length);
-  const end = editions.some(item => item.label === '演示') ? tail.filter(item => item.label === '系统管理') : tail;
+  const end = editions.some(item => item.label === '演示') ? visibleTail.filter(item => item.label === '系统管理') : visibleTail;
   return [...(workspace ? [workspace] : []), ...editions, ...remaining, ...otherCore, ...end];
 }
 return workspace ? [workspace, ...moduleItems, ...otherCore, ...orderedTail] : [...moduleItems, ...otherCore, ...orderedTail];
@@ -682,6 +701,8 @@ export default function Sidebar({
   showToggle = true,
   sidebarWidth = 230,
 }: SidebarProps) {
+  const [currentAccount,setCurrentAccount]=useState(getCurrentAccount);
+  useEffect(()=>{const sync=()=>setCurrentAccount(getCurrentAccount());window.addEventListener('ao-current-account-change',sync);return()=>window.removeEventListener('ao-current-account-change',sync);},[]);
   const { themeState } = useTheme();
   const { config } = useEdition();
   ACTIVE_NAV_ITEMS = buildNavItems(config);
@@ -934,11 +955,11 @@ export default function Sidebar({
         <div style={{ padding: '12px 14px', borderTop: '1px solid var(--sidebar-border)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--sidebar-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--sidebar-primary-foreground)', flexShrink: 0 }}>
-              管
+              {currentAccount.name?.charAt(0) || currentAccount.account?.charAt(0) || '用'}
             </div>
             <div style={{ overflow: 'hidden', flex: 1 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sidebar-foreground)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>超级管理员</div>
-              <div style={{ fontSize: 11, color: 'var(--sidebar-foreground)', opacity: 0.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>admin@example.com</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--sidebar-foreground)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentAccount.name || currentAccount.account}</div>
+              <div style={{ fontSize: 11, color: 'var(--sidebar-foreground)', opacity: 0.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentAccount.email}</div>
             </div>
           </div>
         </div>

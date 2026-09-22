@@ -38,7 +38,9 @@
     "prebuild:mock": "node scripts/gen-registry.mjs",
     "build:mock": "vite build --mode mock",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predev:merchant": "node scripts/gen-registry.mjs",
+    "dev:merchant": "vite --mode merchant --port 5175 --strictPort"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

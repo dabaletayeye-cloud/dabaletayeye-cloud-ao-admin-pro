@@ -86,3 +86,7 @@ for (const menu of menus) assert(fullPaths.has(menu.path), `Full edition lost ${
 assert.equal(filterByEdition(menus, full).length, menus.length);
 assert(fullNav.find(item => item.label === '演示').children.some(child => child.path.startsWith('/tmpl/')));
 console.log('Full edition categories and complete route coverage passed.');
+const separateUsers = buildNavItems({ ...full, sysUserEnabled: true }).find(item => item.label === '系统管理');
+assert.equal(separateUsers.children.filter(item => item.path === '/system/sys-users').length, 1);
+assert.equal(separateUsers.children.find(item => item.path === '/system/users').label, '业务用户');
+assert(!buildNavItems(full).find(item => item.label === '系统管理').children.some(item => item.path === '/system/sys-users'));

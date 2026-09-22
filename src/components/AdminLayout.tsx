@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getCurrentProfile } from '../api/profile';
+import { accountFromProfile, saveCurrentAccount } from '../lib/currentAccount';
 import { useTheme } from '../hooks/useTheme';
 import Sidebar from './Sidebar';
 import HorizontalNav from './HorizontalNav';
 import Topbar from './Topbar';
+import MerchantScopeBar from './MerchantScopeBar';
 import ThemePanel from './ThemePanel';
 import { BreadcrumbTrail, PageTabs } from './NavigationExtras';
 import LocalizedText from './LocalizedText';
@@ -14,6 +17,7 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children = null }: AdminLayoutProps) {
+  useEffect(()=>{let mounted=true;void getCurrentProfile().then(profile=>{if(mounted)saveCurrentAccount(accountFromProfile(profile));}).catch(()=>{});return()=>{mounted=false;};},[]);
   const { themeState } = useTheme();
   const { t } = useLocale();
   const [collapsed, setCollapsed] = useState(false);
@@ -106,6 +110,7 @@ export default function AdminLayout({ children = null }: AdminLayoutProps) {
         />
 
         {showBreadcrumb && <BreadcrumbTrail />}
+        <MerchantScopeBar />
 
         {multiTabs && <PageTabs style={tabsStyle} />}
 

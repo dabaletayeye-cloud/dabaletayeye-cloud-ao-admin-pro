@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
+import { useEdition, moduleMenus } from '../core/EditionProvider';
 import { localizeNavLabel, useLocale } from '../hooks/useLocale';
 import {
   LayoutDashboardIcon,
@@ -106,6 +107,16 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function HorizontalNav() {
+  const { config, filterMenus } = useEdition();
+  const filesAvailable = filterMenus(moduleMenus).some(menu => menu.path === '/system/files');
+  const extraUsers = (config.accountTypes ?? []).filter(type => type.store === 'generic').map(type => ({ label: type.label, path: `/system/account-users/${type.id}`, icon: <UsersIcon size={13} /> }));
+  const items: NavItem[] = NAV_ITEMS.map(item => item.type === 'group' && item.id === 'system' && (config.sysUserEnabled || extraUsers.length)
+    ? { ...item, children: [...(config.sysUserEnabled ? [{ label: '系统用户', path: '/system/sys-users', icon: <ShieldCheckIcon size={13} /> }] : []), ...extraUsers, ...item.children.map(child => child.path === '/users' && config.sysUserEnabled ? { ...child, label: '业务用户' } : child)] }
+    : item.type === 'link' && item.path === '/users' && config.sysUserEnabled ? { ...item, label: '业务用户' } : item)
+    .map(item => item.type === 'group' ? { ...item, children: item.children.filter(child => child.path !== '/system/files' || filesAvailable) } : item);
+  if(config.tenancy?.available){const index=items.findIndex(item=>item.type==='group'&&item.id==='system');items.splice(index<0?items.length:index,0,
+    {type:'link',id:'tenant-regions',label:'地区管理',path:'/tenancy/regions',icon:<UsersIcon size={14}/>},
+    {type:'link',id:'tenant-merchants',label:'商户管理',path:'/tenancy/merchants',icon:<UsersIcon size={14}/>});}
   const { themeState } = useTheme();
   const { locale } = useLocale();
   const location = useLocation();
@@ -118,7 +129,7 @@ export default function HorizontalNav() {
 
   return (
     <div data-cmp="HorizontalNav" style={{ display: 'flex', alignItems: 'center', gap: '2px', overflowX: 'auto', overflowY: 'visible', height: '100%', position: 'relative', zIndex: 200 }}>
-      {NAV_ITEMS.map(item => {
+      {items.map(item => {
         if (item.type === 'link') {
           const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '/');
           return (

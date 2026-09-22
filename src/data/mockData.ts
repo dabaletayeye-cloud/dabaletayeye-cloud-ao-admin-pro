@@ -1,9 +1,7 @@
+import type { BaseUser } from '../api/baseUser';
 // Mock data for the admin dashboard
 
-export interface User {
-  id: number;
-  name: string;
-  email: string;
+export interface User extends BaseUser {
   avatar: string;
   region: string;
   gender: '男' | '女';

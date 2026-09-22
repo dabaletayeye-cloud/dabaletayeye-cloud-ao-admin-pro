@@ -1,4 +1,9 @@
 {
   "username": "demo",
-  "password": "demo123"
+  "password": "demo123",
+  "sysUserEnabled": false,
+  "sysuser": {
+    "username": "SysAdmin",
+    "password": "admin123"
+  }
 }

@@ -1,0 +1,22 @@
+{
+  "enabled": false,
+  "defaultClientId": "admin-web",
+  "userTypes": {
+    "user": { "label": "业务用户", "enabled": true, "store": "legacy", "permissionMode": "none" },
+    "sysuser": { "label": "系统用户", "enabled": true, "store": "system", "permissionMode": "rbac" },
+    "member": { "label": "会员用户", "enabled": true, "store": "generic", "permissionMode": "none" },
+    "merchant": { "label": "商户用户", "enabled": true, "store": "generic", "permissionMode": "none" }
+  },
+  "clients": {
+    "admin-web": { "enabled": true, "userTypes": ["sysuser"], "defaultUserType": "sysuser", "apiPrefixes": ["/api"] },
+    "user-web": { "enabled": true, "userTypes": ["user", "member"], "defaultUserType": "member", "apiPrefixes": ["/api/auth"] },
+    "mobile-app": { "enabled": true, "userTypes": ["member"], "defaultUserType": "member", "apiPrefixes": ["/api/auth"] },
+    "merchant-web": { "enabled": true, "userTypes": ["merchant"], "defaultUserType": "merchant", "apiPrefixes": ["/api/auth"] }
+  },
+  "demoAccounts": [
+    { "userType": "sysuser", "username": "SysAdmin", "password": "admin123", "name": "系统管理员", "role": "super_admin" },
+    { "userType": "user", "username": "demo", "password": "demo123", "name": "业务用户" },
+    { "userType": "member", "username": "member", "password": "member123", "name": "演示会员" },
+    { "userType": "merchant", "username": "merchant", "password": "merchant123", "name": "演示商户" }
+  ]
+}

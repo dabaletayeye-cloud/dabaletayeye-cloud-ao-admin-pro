@@ -4,6 +4,8 @@ import { ChevronLeftIcon, ChevronRightIcon, CircleXIcon, HomeIcon, LayersIcon, X
 import type { TabsStyle } from '../types';
 import { localizeNavLabel, useLocale } from '../hooks/useLocale';
 import { moduleMenus } from '../generated/registry';
+import { useEdition } from '../core/EditionProvider';
+import { scopedStorageKey } from '../api/authConfig';
 
 interface PageTab {
   path: string;
@@ -17,11 +19,14 @@ interface TabContextMenu {
   y: number;
 }
 
-const TAB_STORAGE_KEY = 'admin-page-tabs';
+const TAB_STORAGE_KEY = scopedStorageKey('admin-page-tabs');
 
 const ROUTE_LABELS: Record<string, string> = {
   '/': '工作台',
   '/system/users': '用户管理',
+  '/tenancy/regions': '地区管理',
+  '/tenancy/merchants': '商户管理',
+  '/system/sys-users': '系统用户',
   '/users': '用户管理',
   '/system/roles': '角色管理',
   '/system/menus': '菜单管理',
@@ -126,7 +131,10 @@ const ROUTE_LABELS: Record<string, string> = {
 
 const MODULE_ROUTE_LABELS = new Map(moduleMenus.map(menu => [menu.path, menu.label]));
 
-function labelFor(path: string) {
+function labelFor(path: string, separateUsers = false, types: Array<{ id: string; label: string }> = []) {
+  const accountType = types.find(type => path === `/system/account-users/${type.id}`);
+  if (accountType) return accountType.label;
+  if (separateUsers && (path === '/users' || path === '/system/users')) return '业务用户';
   return ROUTE_LABELS[path] ?? MODULE_ROUTE_LABELS.get(path) ?? path.split('/').filter(Boolean).pop() ?? '页面';
 }
 
@@ -146,9 +154,10 @@ function loadTabs(current: PageTab): PageTab[] {
 }
 
 export function BreadcrumbTrail() {
+  const { config } = useEdition();
   const location = useLocation();
   const { locale } = useLocale();
-  const label = labelFor(location.pathname);
+  const label = labelFor(location.pathname, config.sysUserEnabled, config.accountTypes);
   return (
     <div className="flex h-9 items-center gap-1.5 border-b px-5 text-xs" style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
       <HomeIcon size={13} />
@@ -159,6 +168,7 @@ export function BreadcrumbTrail() {
 }
 
 export function PageTabs({ style }: { style: TabsStyle }) {
+  const { config } = useEdition();
   const location = useLocation();
   const navigate = useNavigate();
   const { locale, t } = useLocale();
@@ -240,7 +250,7 @@ export function PageTabs({ style }: { style: TabsStyle }) {
               fontWeight: active ? 700 : 500,
             }}
           >
-            <span>{localizeNavLabel(labelFor(tab.path), locale)}</span>
+            <span>{localizeNavLabel(labelFor(tab.path, config.sysUserEnabled, config.accountTypes), locale)}</span>
             {tab.path !== '/' && <XIcon size={12} className="opacity-55 transition-opacity group-hover:opacity-100" onClick={event => closeTab(event, tab)} />}
           </button>
         );

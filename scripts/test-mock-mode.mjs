@@ -12,6 +12,10 @@ const compiled = await build({
   stdin: { contents: "export { apiAdapter as api, apiMode } from './src/api/adapter'; export { erpApi } from './src/api/erp'; export { oaApi } from './src/api/oa';", resolveDir: process.cwd() },
   bundle: true, write: false, format: 'esm', define: { 'import.meta.env': JSON.stringify({ VITE_API_MODE: 'mock' }) },
   plugins: [{ name: 'registry-data', setup(plugin) {
+    if (process.argv.includes('--sysuser')) {
+      plugin.onResolve({ filter: /mock-auth\.json$/ }, () => ({ path: 'auth', namespace: 'sysuser-test' }));
+      plugin.onLoad({ filter: /.*/, namespace: 'sysuser-test' }, async () => ({ contents: JSON.stringify({ ...JSON.parse(await readFile('src/config/mock-auth.json', 'utf8')), sysUserEnabled: true }), loader: 'json' }));
+    }
     plugin.onResolve({ filter: /generated\/registry$/ }, () => ({ path: 'registry', namespace: 'data' }));
     plugin.onLoad({ filter: /.*/, namespace: 'data' }, () => ({ contents: `export const moduleMenus = ${JSON.stringify(menus)};` }));
   } }],
@@ -19,10 +23,21 @@ const compiled = await build({
 const { api, apiMode, erpApi, oaApi } = await import(`data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].text).toString('base64')}`);
 assert.equal(apiMode, 'mock');
 const auth = JSON.parse(await readFile('src/config/mock-auth.json', 'utf8'));
-assert.equal((await api.login(auth)).accessToken, 'mock-token');
-await assert.rejects(api.login({ ...auth, username: auth.username + '-wrong' }), /账号或密码不正确/);
-await assert.rejects(api.login({ ...auth, password: auth.password + '-wrong' }), /账号或密码不正确/);
-assert.equal((await api.getCurrentProfile()).username, auth.username.trim());
+if (process.argv.includes('--sysuser')) auth.sysUserEnabled = true;
+auth.sysuser ??= { username: 'SysAdmin', password: 'admin123' };
+const credentials = auth.sysUserEnabled ? auth.sysuser : auth;
+assert.equal((await api.login(credentials)).accessToken, auth.sysUserEnabled ? 'mock-sysuser-token' : 'mock-token');
+await assert.rejects(api.login({ ...credentials, username: credentials.username + '-wrong' }), /账号或密码不正确/);
+await assert.rejects(api.login({ ...credentials, password: credentials.password + '-wrong' }), /账号或密码不正确/);
+assert.equal((await api.getCurrentProfile()).username, credentials.username.trim());
+if (auth.sysUserEnabled) {
+  const before = await api.listUsers({ pageSize: 100 });
+  await api.updateCurrentProfile({ name: '独立后台用户', email: 'sys@example.com' });
+  assert.deepEqual(await api.listUsers({ pageSize: 100 }), before);
+  const created = await api.createSystemUser({ username: 'sys-test', password: 'test123', name: '测试系统用户', role: 'sys_admin' });
+  await api.deleteSystemUser(created.id);
+  assert.equal((await api.getSystemEdition()).sysUserEnabled, true);
+}
 for (const resource of ['products', 'orders', 'purchases', 'suppliers', 'inventory', 'customers', 'finance']) assert((await erpApi.list(resource)).length > 0, resource);
 for (const resource of ['approval', 'attendance', 'notices', 'schedule', 'org']) assert((await oaApi.list(resource)).length > 0, resource);
 const product = await erpApi.create('products', { sku: 'TEST-CSV-001', name: 'CSV 模拟商品', category: '办公', stock: 5, unit_price: 12.5 });

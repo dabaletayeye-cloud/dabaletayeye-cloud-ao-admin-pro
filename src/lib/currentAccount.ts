@@ -1,4 +1,7 @@
-export interface CurrentAccount {
+import type { BaseUser } from '../api/baseUser';
+import { scopedStorageKey } from '../api/authConfig';
+
+export interface CurrentAccount extends Omit<BaseUser, 'id'> {
   id?: number;
   name: string;
   account: string;
@@ -13,20 +16,15 @@ export interface CurrentAccount {
   gender?: string;
 }
 
-const STORAGE_KEY = 'ao-admin-pro.current-account';
+const STORAGE_KEY = scopedStorageKey('ao-admin-pro.current-account');
 
 export const DEFAULT_CURRENT_ACCOUNT: CurrentAccount = {
-  name: '超级管理员',
-  account: 'admin',
-  email: 'admin@example.com',
-  phone: '138 0000 0000',
-  role: '超级管理员',
-  department: '平台管理部',
-  position: '平台负责人',
-  location: '上海',
-  bio: '负责平台运营策略、团队协作与系统治理。',
-  avatar: 'https://i.pravatar.cc/160?img=68',
+  name: '', account: '', email: '', phone: '', role: '', department: '', position: '', location: '', bio: '', avatar: '',
 };
+
+export function accountFromProfile(profile: BaseUser): CurrentAccount {
+  return {id:profile.id,accountType:profile.accountType,clientId:profile.clientId,name:profile.name??'',email:profile.email??'',account:profile.username??'',phone:profile.phone??'',role:profile.role??'',department:profile.department??'',position:profile.position??'',location:profile.region??'',bio:profile.bio??'',avatar:profile.avatar??'',gender:profile.gender};
+}
 
 export function getCurrentAccount(): CurrentAccount {
   if (typeof window === 'undefined') return DEFAULT_CURRENT_ACCOUNT;

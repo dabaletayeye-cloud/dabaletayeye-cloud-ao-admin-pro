@@ -1,4 +1,6 @@
 import type { ApiAdapter } from './types';
+import { merchantHeaders } from '../merchantScope';
+import { AUTH_CLIENT_ID, AUTH_USER_TYPE, TOKEN_STORAGE_KEY } from '../authConfig';
 import type { ApiListQuery } from '../types';
 
 const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
@@ -7,7 +9,6 @@ const baseUrl = (configuredBaseUrl || 'http://localhost:8989').replace(/\/+$/, '
 interface ApiEnvelope<T> { code?: number; message?: string; data?: T; }
 interface StoredTokens { accessToken?: unknown; refreshToken?: unknown; }
 interface TokenPayload { token?: unknown; accessToken?: unknown; refreshToken?: unknown; }
-const TOKEN_STORAGE_KEY = 'manga_workshop_tokens';
 let refreshPromise: Promise<string | null> | null = null;
 
 function storedTokens(): { storage: Storage; accessToken: string; refreshToken: string | null } | null {
@@ -39,10 +40,10 @@ function isEnvelope<T>(body: ApiEnvelope<T> | T | null): body is ApiEnvelope<T> 
   return Boolean(body && typeof body === 'object' && 'data' in body && ('code' in body || 'message' in body));
 }
 
-async function send(path: string, init: RequestInit, token?: string): Promise<Response> {
+async function send(path: string, init: RequestInit, token?: string, scope = merchantHeaders()): Promise<Response> {
   return fetch(`${baseUrl}${path}`, {
     ...init,
-    headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init.headers },
+    headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init.headers, 'X-Client-Id': AUTH_CLIENT_ID, ...scope },
   });
 }
 
@@ -52,7 +53,7 @@ async function refreshAccessToken(): Promise<string | null> {
     const current = storedTokens();
     if (!current?.refreshToken) { clearTokens(current?.storage); return null; }
     try {
-      const response = await send('/api/auth/refresh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken: current.refreshToken }) });
+      const response = await send('/api/auth/refresh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken: current.refreshToken, clientId: AUTH_CLIENT_ID }) });
       const body = await response.json().catch(() => null) as ApiEnvelope<TokenPayload> | TokenPayload | null;
       const payload = isEnvelope(body) ? body.data : body;
       const accessToken = typeof payload?.accessToken === 'string' && payload.accessToken ? payload.accessToken : typeof payload?.token === 'string' && payload.token ? payload.token : null;
@@ -66,17 +67,18 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const scope = merchantHeaders();
   const initialTokens = storedTokens();
   let response: Response;
   try {
-    response = await send(path, init, initialTokens?.accessToken);
+    response = await send(path, init, initialTokens?.accessToken, scope);
   } catch {
     throw new Error('无法连接后端服务，请确认服务已启动');
   }
   if (response.status === 401 && path !== '/api/auth/login' && path !== '/api/auth/refresh') {
     const refreshedAccessToken = await refreshAccessToken();
     if (refreshedAccessToken) {
-      try { response = await send(path, init, refreshedAccessToken); }
+      try { response = await send(path, init, refreshedAccessToken, scope); }
       catch { throw new Error('无法连接后端服务，请确认服务已启动'); }
     }
   }
@@ -97,11 +99,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 async function requestBlob(path: string): Promise<Blob> {
+  const scope = merchantHeaders();
   const initialTokens = storedTokens();
-  let response = await send(path, { method: 'GET' }, initialTokens?.accessToken);
+  let response = await send(path, { method: 'GET' }, initialTokens?.accessToken, scope);
   if (response.status === 401) {
     const refreshedAccessToken = await refreshAccessToken();
-    if (refreshedAccessToken) response = await send(path, { method: 'GET' }, refreshedAccessToken);
+    if (refreshedAccessToken) response = await send(path, { method: 'GET' }, refreshedAccessToken, scope);
   }
   if (!response.ok) {
     const body = await response.json().catch(() => null) as ApiEnvelope<unknown> | null;
@@ -123,12 +126,26 @@ const queryString = (query: ApiListQuery = {}) => {
 const json = (body: unknown): RequestInit => ({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
 export const httpAdapter: ApiAdapter = {
+  getTenancyContext: () => request('/api/tenancy/context'),
+  saveTenantRegion: (input, id) => request(`/api/tenancy/regions${id ? `/${id}` : ''}`, { ...json(input), method: id ? 'PUT' : 'POST' }),
+  saveTenantMerchant: (input, id) => request(`/api/tenancy/merchants${id ? `/${id}` : ''}`, { ...json(input), method: id ? 'PUT' : 'POST' }),
+  listMerchantMembers: id => request(`/api/tenancy/merchants/${id}/members`),
+  bindMerchantMember: (id, accountType, userId) => request(`/api/tenancy/merchants/${id}/members`, json({ accountType, userId })),
+  unbindMerchantMember: (id, type, user) => request(`/api/tenancy/merchants/${id}/members/${encodeURIComponent(type)}/${user}`, { method: 'DELETE' }),
+  listTypedUsers: (type, query) => request(`/api/account-users/${encodeURIComponent(type)}${queryString(query)}`),
+  createTypedUser: (type, input) => request(`/api/account-users/${encodeURIComponent(type)}`, json(input)),
+  updateTypedUser: (type, id, input) => request(`/api/account-users/${encodeURIComponent(type)}/${id}`, { ...json(input), method: 'PUT' }),
+  deleteTypedUser: (type, id) => request(`/api/account-users/${encodeURIComponent(type)}/${id}`, { method: 'DELETE' }),
+  listSystemUsers: query => request(`/api/sys-users${queryString(query)}`),
+  createSystemUser: input => request('/api/sys-users', json(input)),
+  updateSystemUser: (id, input) => request(`/api/sys-users/${id}`, { ...json(input), method: 'PUT' }),
+  deleteSystemUser: id => request(`/api/sys-users/${id}`, { method: 'DELETE' }),
   oaList: (resource, query) => request(`/api/oa/${resource}${queryString(query)}`),
   oaGet: (resource, id) => request(`/api/oa/${resource}/${id}`),
   oaCreate: (resource, input) => request(`/api/oa/${resource}`, json(input)),
   oaUpdate: (resource, id, input) => request(`/api/oa/${resource}/${id}`, { ...json(input), method: 'PUT' }),
   oaDelete: (resource, id) => request(`/api/oa/${resource}/${id}`, { method: 'DELETE' }),
-  login: input => request('/api/auth/login', json(input)),
+  login: input => request('/api/auth/login', json({ ...input, clientId: AUTH_CLIENT_ID, userType: AUTH_USER_TYPE })),
   logout: async () => { await request('/api/auth/logout', { method: 'POST' }); clearTokens(); },
   getCurrentUser: () => request('/api/auth/me'),
   getCurrentProfile: () => request('/api/auth/me'),

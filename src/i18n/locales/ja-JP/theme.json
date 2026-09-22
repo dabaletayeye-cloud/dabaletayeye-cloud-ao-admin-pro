@@ -35,6 +35,7 @@
   "sidebarAccordion": "サイドバーのアコーディオンを有効化",
   "showSidebarToggle": "サイドバーの切り替えを表示",
   "showQuickEntry": "クイックエントリーを表示",
+  "showEditionSwitch": "エディション切替を表示",
   "showReload": "再読み込みボタンを表示",
   "showBreadcrumb": "パンくずリストを表示",
   "showLanguage": "言語セレクターを表示",

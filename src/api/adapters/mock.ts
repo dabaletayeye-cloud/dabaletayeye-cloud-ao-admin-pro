@@ -1,5 +1,12 @@
+import { merchantScope } from '../merchantScope';
+import { createMockTenancy } from './mockTenancy';
+import { createMockMerchantData } from './mockMerchantData';
 import { createMockBusiness } from './mockBusiness';
-import mockAuth from '../../config/mock-auth.json';
+import { createMockSystemUsers } from './mockSystemUsers';
+import { createMockAccountClients } from './mockAccountClients';
+import { accountClients } from '../../config/accountClients';
+import { AUTH_CLIENT_ID, AUTH_USER_TYPE, TOKEN_STORAGE_KEY } from '../authConfig';
+import mockAuth from '../../config/mockAuth';
 import { mockEditionConfig, setMockEdition } from './mockEdition';
 import { MOCK_ACTIVITIES, MOCK_NEW_USERS, MOCK_TODOS, MONTHLY_DATA, MOCK_USERS, STAT_CARDS, YEARLY_TREND, type User } from '../../data/mockData';
 import { MOCK_ARTICLES, MOCK_CATEGORIES_FLAT, MOCK_TAGS } from '../../data/contentData';
@@ -9,10 +16,21 @@ import type { ApiAdapter, CurrentProfile, LowcodeDataSource, LowcodeDataSourceIn
 
 import type { Article, Category, DashboardAnalyticsData, DashboardAnalyticsRange, DictItem, DictType, EcommerceDashboardData, ExceptionLog, FileStorageInfo, LoginLog, ManagedFile, MenuItem, OperationLog, OrderInfo, OrderStats, Role, ServerInfo, SystemConfig, Tag } from '../types';
 
+function userFields(input: Partial<User>) { const {password,...fields}=input as Partial<User> & {password?:string}; return fields; }
 const wait = (ms = 300) => new Promise<void>(resolve => setTimeout(resolve, ms));
 const clone = <T>(value: T): T => (typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value)) as T);
 
 let users = clone(MOCK_USERS);
+const systemUsers = createMockSystemUsers(mockAuth, users[0]);
+const clientAccounts = createMockAccountClients(accountClients, users[0]);
+if (accountClients.enabled && import.meta.env.VITE_API_MODE !== 'http' && typeof window !== 'undefined') {
+  try {
+    for (const storage of [window.localStorage, window.sessionStorage]) {
+      const token = JSON.parse(storage.getItem(TOKEN_STORAGE_KEY) || '{}').accessToken;
+      if (typeof token === 'string' && clientAccounts.restoreSession(token, AUTH_CLIENT_ID, AUTH_USER_TYPE)) break;
+    }
+  } catch { /* Invalid demo sessions can be replaced by logging in again. */ }
+}
 let articles = clone(MOCK_ARTICLES);
 let categories = clone(MOCK_CATEGORIES_FLAT);
 let tags = clone(MOCK_TAGS);
@@ -196,22 +214,46 @@ const ecommerceDashboard = (days: DashboardAnalyticsRange = 7): EcommerceDashboa
   };
 };
 
-export const mockAdapter: ApiAdapter = {
+const tenancy = createMockTenancy(() => baseMockAdapter.getCurrentProfile(), async(type,id)=> {
+  if(type==='user')return users.some(u=>u.id===id);
+  const list=type==='sysuser'?await baseMockAdapter.listSystemUsers({pageSize:10000}):await baseMockAdapter.listTypedUsers(type,{pageSize:10000});
+  return list.list.some(u=>u.id===id);
+});
+const merchantData = new Map<number, Partial<ApiAdapter>>();
+const businessMethods = new Set(Object.keys(createMockMerchantData()).filter(key=>!key.startsWith('oa')));
+const tenancyMethods = new Set(Object.keys(tenancy.methods));
+const baseMockAdapter: ApiAdapter = {
+  ...tenancy.methods,
+  ...systemUsers.methods,
+  listTypedUsers: (type, query) => clientAccounts.list(type, query),
+  createTypedUser: (type, input) => clientAccounts.create(type, input),
+  updateTypedUser: (type, id, input) => clientAccounts.update(type, id, input),
+  deleteTypedUser: (type, id) => clientAccounts.remove(type, id),
+  listSystemUsers: query => accountClients.enabled ? clientAccounts.list('sysuser', query) : systemUsers.methods.listSystemUsers(query),
+  createSystemUser: input => accountClients.enabled ? clientAccounts.create('sysuser', input) : systemUsers.methods.createSystemUser(input),
+  updateSystemUser: (id, input) => accountClients.enabled ? clientAccounts.update('sysuser', id, input) : systemUsers.methods.updateSystemUser(id, input),
+  deleteSystemUser: id => accountClients.enabled ? clientAccounts.remove('sysuser', id) : systemUsers.methods.deleteSystemUser(id),
   async login(input) {
     await wait();
+    if (accountClients.enabled) {
+      const user = clientAccounts.login(input, AUTH_CLIENT_ID, AUTH_USER_TYPE);
+      const token = `mock-${user.accountType}-${user.clientId}-${user.id}`;
+      return { token, accessToken: token, refreshToken: `${token}-refresh`, user, accountType: user.accountType, clientId: user.clientId };
+    }
+    if (mockAuth.sysUserEnabled) return { token: 'mock-sysuser-token', accessToken: 'mock-sysuser-token', refreshToken: 'mock-sysuser-refresh', user: systemUsers.login(input) };
     if (!mockAuth.username.trim() || !mockAuth.password) throw new Error('请配置演示账号和密码');
     if (input.username.trim() !== mockAuth.username.trim() || input.password !== mockAuth.password) throw new Error('演示账号或密码不正确');
     return { token: 'mock-token', accessToken: 'mock-token', refreshToken: 'mock-refresh-token', user: clone(users[0]) };
   },
-  async logout() { await wait(); },
-  async getCurrentUser() { await wait(); return clone(users[0] ?? null); },
-  async getCurrentProfile() { await wait(); return clone({ ...users[0], username: mockAuth.username.trim(), phone: '', department: '', position: '', bio: '' } as CurrentProfile); },
-  async updateCurrentProfile(input) { await wait(); users[0] = { ...users[0], ...input } as typeof users[0]; return clone({ ...users[0], username: mockAuth.username.trim() } as CurrentProfile); },
-  async changeCurrentPassword() { await wait(); },
-  async listUsers(query = {}) { await wait(); const filtered = users.filter(item => (!query.keyword || `${item.name}${item.email}${item.region}`.includes(query.keyword)) && (!query.status || item.status === query.status)); return page(filtered, query); },
-  async createUser(input) { await wait(); const user = { id: Date.now(), name: input.name ?? '', email: input.email ?? '', avatar: input.avatar ?? (input.name ?? '?')[0], region: input.region ?? '', gender: input.gender ?? '鐢?', role: input.role ?? '鐢ㄦ埛', roles: input.roles, status: input.status ?? 'active', joinDate: input.joinDate ?? new Date().toISOString().slice(0, 10), progress: input.progress ?? 0 } as User; users = [...users, user]; return clone(user); },
-  async updateUser(id, input) { await wait(); const index = users.findIndex(item => item.id === id); if (index < 0) throw new Error('User not found'); users[index] = { ...users[index], ...input, id }; return clone(users[index]); },
-  async deleteUser(id) { await wait(); users = users.filter(item => item.id !== id); },
+  async logout() { await wait(); if (accountClients.enabled) clientAccounts.logout(); },
+  async getCurrentUser() { await wait(); if (accountClients.enabled) return clientAccounts.current(); return mockAuth.sysUserEnabled ? systemUsers.current() : clone(users[0] ?? null); },
+  async getCurrentProfile() { await wait(); if (accountClients.enabled) return clientAccounts.current(); if (mockAuth.sysUserEnabled) return systemUsers.current(); return clone({ ...users[0], username: mockAuth.username.trim(), phone: '', department: '', position: '', bio: '' } as CurrentProfile); },
+  async updateCurrentProfile(input) { await wait(); if (accountClients.enabled) return clientAccounts.updateProfile({ ...input }); if (mockAuth.sysUserEnabled) return systemUsers.updateProfile({ ...input }); users[0] = { ...users[0], ...input } as typeof users[0]; return clone({ ...users[0], username: mockAuth.username.trim() } as CurrentProfile); },
+  async changeCurrentPassword(input) { await wait(); if (accountClients.enabled) return clientAccounts.changePassword(input.currentPassword, input.newPassword); if (mockAuth.sysUserEnabled) await systemUsers.changePassword(input.currentPassword, input.newPassword); },
+  async listUsers(query = {}) { await wait(); if (accountClients.enabled) return clientAccounts.list("user", query); const filtered = users.filter(item => (!query.keyword || `${item.name}${item.email}${item.region}`.includes(query.keyword)) && (!query.status || item.status === query.status)); return page(filtered, query); },
+  async createUser(input) { await wait(); if (accountClients.enabled) return clientAccounts.create("user", { ...userFields(input), username: input.email || input.name, password: "ChangeMe123!" }); const user = { id: Date.now(), name: input.name ?? '', email: input.email ?? '', avatar: input.avatar ?? (input.name ?? '?')[0], region: input.region ?? '', gender: input.gender ?? '鐢?', role: input.role ?? '鐢ㄦ埛', roles: input.roles, status: input.status ?? 'active', joinDate: input.joinDate ?? new Date().toISOString().slice(0, 10), progress: input.progress ?? 0 } as User; users = [...users, user]; return clone(user); },
+  async updateUser(id, input) { await wait(); if (accountClients.enabled) return clientAccounts.update("user", id, input); const index = users.findIndex(item => item.id === id); if (index < 0) throw new Error('User not found'); users[index] = { ...users[index], ...userFields(input), id }; return clone(users[index]); },
+  async deleteUser(id) { await wait(); if (accountClients.enabled) return clientAccounts.remove("user", id); users = users.filter(item => item.id !== id); },
   async listRoles(query = {}) { await wait(); return page(roles.filter(item => !query.keyword || `${item.name}${item.code}`.includes(query.keyword)), query); },
   async createRole(input) { await wait(); const role = { id: Date.now(), name: input.name ?? '', code: input.code ?? '', description: input.description ?? '', userCount: input.userCount ?? 0, status: input.status ?? 'enabled', createdAt: input.createdAt ?? new Date().toISOString().slice(0, 10), permissions: input.permissions ?? [] } as Role; roles = [...roles, role]; return clone(role); },
   async updateRole(id, input) { await wait(); const index = roles.findIndex(item => item.id === id); if (index < 0) throw new Error('Role not found'); roles[index] = { ...roles[index], ...input, id }; return clone(roles[index]); },
@@ -340,3 +382,30 @@ export const mockAdapter: ApiAdapter = {
   async rollbackLowcodeRelease(id) { await wait(); const release = lowcodeReleases.find(item => item.id === id); if (!release) throw new Error('低代码发布版本不存在'); lowcodeReleases = lowcodeReleases.map(item => item.resourceId === release.resourceId ? { ...item, active: item.id === id } : item); const resource = lowcodeResources.find(item => item.id === release.resourceId); if (resource) { resource.definition = JSON.parse(release.snapshotJson) as Record<string, unknown>; resource.status = 'published'; resource.currentVersion = release.version; resource.updatedAt = lowcodeNow(); } return clone({ ...release, active: true }); },
   ...createMockBusiness(),
 };
+
+const publicAccountMethods = new Set(['login', 'logout', 'getCurrentUser', 'getCurrentProfile', 'updateCurrentProfile', 'changeCurrentPassword']);
+export const mockAdapter: ApiAdapter = new Proxy(baseMockAdapter, {
+  get(target, key, receiver) {
+    const value = Reflect.get(target, key, receiver);
+    if (typeof value !== 'function') return value;
+    return async (...args: unknown[]) => {
+      const requestScope = merchantScope();
+      if (tenancy.enabled() && !publicAccountMethods.has(String(key)) && !tenancyMethods.has(String(key))) {
+        const context = await tenancy.context();
+        if (businessMethods.has(String(key))) {
+          const scope = await tenancy.scope(requestScope);
+          if(scope>0){
+            if(!merchantData.has(scope))merchantData.set(scope,createMockMerchantData());
+            const store=merchantData.get(scope)!;return (store[key as keyof ApiAdapter] as (...args: unknown[])=>unknown).apply(store,args);
+          }
+        }
+        if(!context.platform)throw new Error('当前账号没有此商户业务权限');
+      }
+      if (tenancyMethods.has(String(key))) return value.apply(target,args);
+      if (accountClients.enabled && !publicAccountMethods.has(String(key))) {
+        try { clientAccounts.manage(); } catch (error) { return Promise.reject(error); }
+      }
+      return value.apply(target, args);
+    };
+  },
+});

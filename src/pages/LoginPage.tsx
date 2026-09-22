@@ -25,10 +25,12 @@ import { LANGUAGE_OPTIONS, useLocale } from '../hooks/useLocale';
 import ThemePanel from '../components/ThemePanel';
 import { login } from '../api';
 import { apiMode } from '../api/adapter';
-import mockAuth from '../config/mock-auth.json';
+import { AUTH_CLIENT_ID, AUTH_USER_TYPE, TOKEN_STORAGE_KEY, scopedStorageKey } from '../api/authConfig';
+import { accountClients } from '../config/accountClients';
+import mockAuth from '../config/mockAuth';
 import { useEdition } from '../core/EditionProvider';
 import LocalizedText from '../components/LocalizedText';
-import { getCurrentAccount, saveCurrentAccount } from '../lib/currentAccount';
+import { getCurrentAccount, saveCurrentAccount, accountFromProfile } from '../lib/currentAccount';
 import appConfig from '../config/app.json';
 import './AuthPage.css';
 
@@ -43,10 +45,14 @@ const ROLE_OPTIONS = [
   { value: 'analyst', sourceLabel: '数据分析师', labelKey: 'auth.roleAnalyst' },
 ];
 
-const REMEMBERED_ACCOUNT_KEY = 'ao-admin-pro.remembered-account';
+const REMEMBERED_ACCOUNT_KEY = scopedStorageKey('ao-admin-pro.remembered-account');
 
 function getRememberedAccount() {
-  if (apiMode === 'mock') return mockAuth.username.trim();
+  if (apiMode === 'mock' && accountClients.enabled) {
+    const type = AUTH_USER_TYPE || accountClients.clients[AUTH_CLIENT_ID]?.defaultUserType;
+    return accountClients.demoAccounts.find(account => account.userType === type)?.username ?? '';
+  }
+  if (apiMode === 'mock') return (mockAuth.sysUserEnabled ? mockAuth.sysuser.username : mockAuth.username).trim();
   const configuredAccount = import.meta.env.VITE_DEFAULT_LOGIN_ACCOUNT?.trim() || '';
   if (typeof window === 'undefined') return configuredAccount;
   return window.localStorage.getItem(REMEMBERED_ACCOUNT_KEY) || configuredAccount;
@@ -234,11 +240,12 @@ export default function LoginPage() {
 
     setSubmitting(true);
     try {
-      const { token, accessToken = token, refreshToken } = await login({ username: account.trim(), password });
+      const { token, accessToken = token, refreshToken, user } = await login({ username: account.trim(), password });
       const tokenStorage = remember ? window.localStorage : window.sessionStorage;
       const otherStorage = remember ? window.sessionStorage : window.localStorage;
-      tokenStorage.setItem('manga_workshop_tokens', JSON.stringify({ accessToken, refreshToken }));
-      otherStorage.removeItem('manga_workshop_tokens');
+      tokenStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify({ accessToken, refreshToken }));
+      otherStorage.removeItem(TOKEN_STORAGE_KEY);
+      saveCurrentAccount(accountFromProfile(user));
       await refreshEdition();
     } catch (error) {
       setSubmitting(false);
@@ -246,14 +253,6 @@ export default function LoginPage() {
       return;
     }
     window.setTimeout(() => {
-      const selectedRole = ROLE_OPTIONS.find((option) => option.value === role)?.sourceLabel ?? '普通用户';
-      const savedAccount = getCurrentAccount();
-      saveCurrentAccount({
-        ...savedAccount,
-        account: account.trim(),
-        name: savedAccount.account === account.trim() ? savedAccount.name : account.trim(),
-        role: selectedRole,
-      });
       if (remember) {
         window.localStorage.setItem(REMEMBERED_ACCOUNT_KEY, account.trim());
       } else {

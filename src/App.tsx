@@ -1,4 +1,5 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import TenancyPage from './pages/TenancyPage';
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from './hooks/useTheme';
@@ -8,6 +9,8 @@ import LegacyTextLocalizer from './components/LegacyTextLocalizer';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import UsersPage from './pages/UsersPage';
+import SystemUsersPage from './pages/SystemUsersPage';
+import TypedUsersPage from './pages/TypedUsersPage';
 import RolePage from './pages/RolePage';
 import MenuPage from './pages/MenuPage';
 import LogPage from './pages/LogPage';
@@ -57,6 +60,8 @@ function EditionRouteGuard() {
 }
 
 function AppRoutes() {
+  const [merchantRevision,setMerchantRevision]=useState(0);
+  useEffect(()=>{const change=()=>setMerchantRevision(v=>v+1);window.addEventListener('ao-merchant-changed',change);return()=>window.removeEventListener('ao-merchant-changed',change);},[]);
   const { filterRoutes } = useEdition();
   return (
         <BrowserRouter>
@@ -64,13 +69,17 @@ function AppRoutes() {
           <EditionRouteGuard />
           <Toaster position="top-right" richColors />
           <LegacyTextLocalizer />
-          <Routes>
+          <Routes key={merchantRevision}>
+            <Route path="/tenancy/regions" element={<TenancyPage kind="regions" />} />
+            <Route path="/tenancy/merchants" element={<TenancyPage kind="merchants" />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<LoginPage />} />
             <Route path="/forgot-password" element={<LoginPage />} />
             <Route path="/" element={<Dashboard />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/system/users" element={<UsersPage />} />
+            <Route path="/system/sys-users" element={<SystemUsersPage />} />
+            <Route path="/system/account-users/:userType" element={<TypedUsersPage />} />
             <Route path="/system/roles" element={<RolePage />} />
             <Route path="/system/menus" element={<MenuPage />} />
             <Route path="/system/logs" element={<LogPage />} />

@@ -35,6 +35,7 @@
   "sidebarAccordion": "側邊欄啟用手風琴模式",
   "showSidebarToggle": "顯示側邊欄收合按鈕",
   "showQuickEntry": "顯示快速入口",
+  "showEditionSwitch": "顯示版本切換入口",
   "showReload": "顯示重新載入頁面按鈕",
   "showBreadcrumb": "顯示全域麵包屑導覽",
   "showLanguage": "顯示多語言選擇",

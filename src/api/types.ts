@@ -1,3 +1,5 @@
+import type { BaseUser } from './baseUser';
+export { BaseUser } from './baseUser';
 import type { Activity, TodoItem, User } from '../data/mockData';
 import type { Article, ArticleStatus, Category, Tag } from '../data/contentData';
 import type { CalEvent } from '../data/calendarData';
@@ -303,3 +305,13 @@ export interface OrderStats {
   cancelled: number;
   revenue: number;
 }
+export interface SystemUser extends BaseUser {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+  role: string;
+  status: 'active' | 'inactive' | 'banned';
+}
+
+export type SystemUserInput = Partial<Pick<SystemUser, 'username' | 'name' | 'email' | 'role' | 'status'>> & { password?: string };

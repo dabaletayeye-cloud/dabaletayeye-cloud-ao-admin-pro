@@ -1,3 +1,5 @@
+import { useEdition } from '../core/EditionProvider';
+import MerchantHome from '../components/MerchantHome';
 import { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import StatCards from '../components/StatCards';
@@ -10,6 +12,12 @@ import { useLocale } from '../hooks/useLocale';
 import { BarChart2Icon, TrendingUpIcon } from 'lucide-react';
 
 export default function Dashboard() {
+  const {config,loading}=useEdition();
+  if(loading)return <AdminLayout><p>Loading...</p></AdminLayout>;
+  if(config.tenancy?.enabled&&!config.tenancy.platform)return <MerchantHome/>;
+  return <PlatformDashboard/>;
+}
+function PlatformDashboard() {
   const { themeState } = useTheme();
   const { locale, t } = useLocale();
   const isManga = themeState.themeId === 'manga';

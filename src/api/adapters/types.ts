@@ -1,3 +1,4 @@
+import type { BaseUser } from '../baseUser';
 import type {
   ApiListQuery, Article, Category, DashboardAnalyticsData, DashboardAnalyticsRange, DashboardData, DictItem, DictType, EcommerceDashboardData, ExceptionLog,
   FunnelData, LoginLog, MenuItem, OperationLog, PageResult, Role, Tag, User,
@@ -8,21 +9,9 @@ import type {
   OrderInfo, OrderStats,
 } from '../types';
 import type { EditionConfig } from '../../core/edition';
+import type { SystemUser, SystemUserInput } from '../types';
 
-export interface CurrentProfile {
-  id: number;
-  name: string;
-  email: string;
-  phone?: string;
-  avatar?: string;
-  region?: string;
-  gender?: string;
-  role?: string;
-  department?: string;
-  position?: string;
-  bio?: string;
-  username?: string;
-}
+export interface CurrentProfile extends BaseUser {}
 
 export interface CurrentProfileInput {
   name: string;
@@ -86,6 +75,20 @@ export interface LowcodeResourceInput { resourceType: LowcodeResourceType; resou
 export interface LowcodeDataSourceInput { name: string; sourceType: string; host?: string; port?: number; username?: string; secretRef?: string; databaseName?: string; baseUrl?: string; headersJson?: string; }
 
 export interface ApiAdapter {
+  getTenancyContext(): Promise<import('../tenancyTypes').TenancyContext>;
+  saveTenantRegion(input: import('../tenancyTypes').RegionInput, id?: number): Promise<void>;
+  saveTenantMerchant(input: import('../tenancyTypes').MerchantInput, id?: number): Promise<void>;
+  listMerchantMembers(id: number): Promise<import('../tenancyTypes').MerchantMember[]>;
+  bindMerchantMember(id: number, type: string, user: number): Promise<void>;
+  unbindMerchantMember(id: number, type: string, user: number): Promise<void>;
+  listTypedUsers(type: string, query?: ApiListQuery): Promise<PageResult<SystemUser>>;
+  createTypedUser(type: string, input: SystemUserInput): Promise<SystemUser>;
+  updateTypedUser(type: string, id: number, input: SystemUserInput): Promise<SystemUser>;
+  deleteTypedUser(type: string, id: number): Promise<void>;
+  listSystemUsers(query?: ApiListQuery): Promise<PageResult<SystemUser>>;
+  createSystemUser(input: SystemUserInput): Promise<SystemUser>;
+  updateSystemUser(id: number, input: SystemUserInput): Promise<SystemUser>;
+  deleteSystemUser(id: number): Promise<void>;
   oaList(resource: string, query?: Record<string, string>): Promise<Record<string, unknown>[]>;
   oaGet(resource: string, id: number): Promise<Record<string, unknown>>;
   oaCreate(resource: string, input: Record<string, unknown>): Promise<Record<string, unknown>>;

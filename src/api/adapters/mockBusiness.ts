@@ -12,7 +12,7 @@ const requireFields = (row: Record<string, unknown>, fields: string[]) => {
 type BusinessMethods = Pick<ApiAdapter, 'listErp' | 'getErp' | 'createErp' | 'updateErp' | 'deleteErp' | 'moveErpInventory' | 'listErpInventoryFlows' | 'getErpReports' | 'approveErpPurchase' | 'listErpInventoryAlerts' | 'getErpStats' | 'oaList' | 'oaGet' | 'oaCreate' | 'oaUpdate' | 'oaDelete'>;
 
 /** In-memory demonstration data. No fetch, real inventory, or real financial writes. */
-export function createMockBusiness(): Required<BusinessMethods> {
+export function createMockBusiness(empty = false): Required<BusinessMethods> {
   let sequence = 100;
   const stamp = now();
   let erp: Store = {
@@ -33,6 +33,7 @@ export function createMockBusiness(): Required<BusinessMethods> {
   };
   erp.inventory = erp.products.map(product => ({ id: product.id, product_id: product.id, product_name: product.name, stock: product.stock, safe_stock: 20, updated_at: stamp }));
   erp.flows = erp.products.filter(product => num(product.stock) > 0).map(product => ({ id: sequence++, product_id: product.id, inventory_id: product.id, flow_type: 'initial', quantity: product.stock, before_stock: 0, after_stock: product.stock, operator: '演示管理员', created_at: stamp }));
+  if (empty) for (const key of Object.keys(erp)) erp[key] = [];
   const oa: Store = {
     approval: [{ id: 1, approval_no: 'OA-DEMO-001', approval_type: 'leave', title: '年假申请', applicant_id: 1, applicant_name: '演示管理员', status: 'pending', current_node: '部门主管', submitted_at: stamp, records: [] }, { id: 2, approval_no: 'OA-DEMO-002', approval_type: 'expense', title: '差旅报销', applicant_id: 1, status: 'approved', current_node: '完成', submitted_at: stamp, records: [] }],
     attendance: [{ id: 1, user_id: 1, attendance_date: '2026-09-07', check_in: '2026-09-07 08:56:00', check_out: '2026-09-07 18:10:00', status: 'normal', remark: '模拟出勤记录' }],

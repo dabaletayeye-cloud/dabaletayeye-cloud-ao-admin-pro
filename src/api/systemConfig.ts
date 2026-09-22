@@ -1,4 +1,5 @@
 import { apiAdapter } from './adapter';
+import { AUTH_CLIENT_ID, TOKEN_STORAGE_KEY } from './authConfig';
 import type { SystemConfig } from './types';
 import type { EditionConfig, Edition } from '../core/edition';
 
@@ -11,7 +12,6 @@ export type { Edition };
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 const apiBaseUrl = (configuredApiBaseUrl || 'http://localhost:8989').replace(/\/+$/, '');
 const apiMode = (import.meta.env.VITE_API_MODE || 'mock').toLowerCase();
-const TOKEN_STORAGE_KEY = 'manga_workshop_tokens';
 
 export interface GenerationQuotas {
   proScriptGenerateLimit: number;
@@ -49,7 +49,7 @@ async function refreshToken(current: NonNullable<ReturnType<typeof storedTokens>
   if (!current.refreshToken) return null;
   try {
     const response = await fetch(`${apiBaseUrl}/api/auth/refresh`, {
-      method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken: current.refreshToken }),
+      method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-Client-Id': AUTH_CLIENT_ID }, body: JSON.stringify({ refreshToken: current.refreshToken, clientId: AUTH_CLIENT_ID }),
     });
     const result = await response.json().catch(() => null) as ApiEnvelope<{ accessToken?: unknown; refreshToken?: unknown }> | null;
     const accessToken = typeof result?.data?.accessToken === 'string' ? result.data.accessToken : null;
@@ -65,7 +65,7 @@ async function refreshToken(current: NonNullable<ReturnType<typeof storedTokens>
 async function sendQuota(method: 'GET' | 'PUT', token: string, body?: unknown): Promise<Response> {
   return fetch(`${apiBaseUrl}/api/v1/admin/generation-quotas`, {
     method,
-    headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, 'X-Client-Id': AUTH_CLIENT_ID, ...(body ? { 'Content-Type': 'application/json' } : {}) },
     body: body ? JSON.stringify(body) : undefined,
   });
 }
