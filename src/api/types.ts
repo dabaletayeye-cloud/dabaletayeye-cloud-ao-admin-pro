@@ -99,6 +99,11 @@ export interface Role {
   permissions: string[];
 }
 
+export interface LoginRoleOption {
+  code: string;
+  name: string;
+}
+
 export type MenuType = 'catalog' | 'menu' | 'button' | 'external';
 
 export interface MenuItem {

@@ -2,7 +2,7 @@ import ViewportPortal from '../components/ViewportPortal';
 import { useEffect, useMemo, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { useTheme } from '../hooks/useTheme';
-import { listRoles } from '../api';
+import { createRole, deleteRole as deleteRoleApi, listRoles, updateRole, updateRolePermissions } from '../api';
 import { ApiState, useApiResource } from '../hooks/useApiResource';
 import { toast } from '../lib/localizedToast';
 import { modulePermissionGroups } from '../generated/registry';
@@ -175,14 +175,27 @@ export default function RolePage() {
     return matchText && matchStatus;
   });
 
-  const toggleStatus = (id: number) => {
-    setRoles(prev => prev.map(r => r.id === id ? { ...r, status: r.status === 'enabled' ? 'disabled' : 'enabled' } : r));
+  const toggleStatus = async (id: number) => {
+    const role = roles.find(item => item.id === id);
+    if (!role) return;
     setOpenDropdown(null);
+    try {
+      const updated = await updateRole(id, { status: role.status === 'enabled' ? 'disabled' : 'enabled' });
+      setRoles(prev => prev.map(item => item.id === id ? { ...item, ...updated } : item));
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : '角色状态更新失败');
+    }
   };
 
-  const deleteRole = (id: number) => {
-    setRoles(prev => prev.filter(r => r.id !== id));
+  const deleteRole = async (id: number) => {
     setOpenDropdown(null);
+    try {
+      await deleteRoleApi(id);
+      setRoles(prev => prev.filter(role => role.id !== id));
+      toast.success('角色已删除');
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : '角色删除失败');
+    }
   };
 
   const openEdit = (role: Role) => {
@@ -249,31 +262,35 @@ export default function RolePage() {
     });
   };
 
-  const savePermissions = () => {
+  const savePermissions = async () => {
     if (!permissionRole) return;
-    setRoles(prev => prev.map(role => role.id === permissionRole.id ? { ...role, permissions: draftPermissions } : role));
-    toast.success(`已更新“${permissionRole.name}”的菜单权限`);
-    closePermissionModal();
+    try {
+      const updated = await updateRolePermissions(permissionRole.id, draftPermissions);
+      setRoles(prev => prev.map(role => role.id === permissionRole.id ? { ...role, ...updated } : role));
+      toast.success(`已更新“${permissionRole.name}”的菜单权限`);
+      closePermissionModal();
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : '权限更新失败');
+    }
   };
 
-  const saveRole = () => {
+  const saveRole = async () => {
     if (!editRole) return;
-    if (editRole.id) {
-      setRoles(prev => prev.map(r => r.id === editRole.id ? { ...r, ...editRole } as Role : r));
-    } else {
-      setRoles(prev => [...prev, {
-        id: Date.now(),
-        name: editRole.name ?? '',
-        code: editRole.code ?? '',
-        description: editRole.description ?? '',
-        userCount: 0,
-        status: editRole.status ?? 'enabled',
-        createdAt: new Date().toISOString().slice(0, 10),
-        permissions: editRole.permissions ?? [],
-      }]);
+    if (!editRole.name?.trim() || !editRole.code?.trim()) {
+      toast.error('请填写角色名称和角色编码');
+      return;
     }
-    setShowModal(false);
-    setEditRole(null);
+    try {
+      const saved = editRole.id ? await updateRole(editRole.id, editRole) : await createRole(editRole);
+      setRoles(prev => editRole.id
+        ? prev.map(role => role.id === saved.id ? { ...role, ...saved } : role)
+        : [...prev, saved]);
+      toast.success(editRole.id ? '角色已更新' : '角色已创建');
+      setShowModal(false);
+      setEditRole(null);
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : '角色保存失败');
+    }
   };
 
   const inputStyle = {
@@ -448,7 +465,16 @@ export default function RolePage() {
                         }}
                       >
                         <button
-                          onClick={() => { const r = roles.find(x => x.id === role.id); if (r) { setRoles(prev => [...prev, { ...r, id: Date.now(), name: r.name + ' (副本)', code: r.code + '_copy' }]); setOpenDropdown(null); } }}
+                          onClick={async () => {
+                            setOpenDropdown(null);
+                            try {
+                              const copy = await createRole({ ...role, id: undefined, name: `${role.name} (副本)`, code: `${role.code}_copy`, userCount: 0 });
+                              setRoles(prev => [...prev, copy]);
+                              toast.success('角色已复制');
+                            } catch (reason) {
+                              toast.error(reason instanceof Error ? reason.message : '角色复制失败');
+                            }
+                          }}
                           className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left"
                           style={{ color: 'var(--foreground)' }}
                         >
@@ -462,7 +488,7 @@ export default function RolePage() {
                           <ListChecksIcon size={13} /> 分配菜单权限
                         </button>
                         <button
-                          onClick={() => toggleStatus(role.id)}
+                          onClick={() => void toggleStatus(role.id)}
                           className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left"
                           style={{ color: role.status === 'enabled' ? '#F59E0B' : '#22C55E' }}
                         >
@@ -471,7 +497,7 @@ export default function RolePage() {
                         </button>
                         <div style={{ borderTop: '1px solid var(--border)', margin: '2px 0' }} />
                         <button
-                          onClick={() => deleteRole(role.id)}
+                          onClick={() => void deleteRole(role.id)}
                           className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left"
                           style={{ color: '#EF4444' }}
                         >
@@ -581,7 +607,7 @@ export default function RolePage() {
                 取消
               </button>
               <button
-                onClick={saveRole}
+                onClick={() => void saveRole()}
                 className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ background: primary }}
               >
@@ -737,7 +763,7 @@ export default function RolePage() {
               </button>
               <button
                 type="button"
-                onClick={savePermissions}
+                onClick={() => void savePermissions()}
                 className="rounded-xl px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ background: primary }}
               >

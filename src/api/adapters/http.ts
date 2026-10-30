@@ -66,16 +66,16 @@ async function refreshAccessToken(): Promise<string | null> {
   return refreshPromise;
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, init: RequestInit = {}, anonymous = false): Promise<T> {
   const scope = merchantHeaders();
-  const initialTokens = storedTokens();
+  const initialTokens = anonymous ? null : storedTokens();
   let response: Response;
   try {
     response = await send(path, init, initialTokens?.accessToken, scope);
   } catch {
     throw new Error('无法连接后端服务，请确认服务已启动');
   }
-  if (response.status === 401 && path !== '/api/auth/login' && path !== '/api/auth/refresh') {
+  if (!anonymous && response.status === 401 && path !== '/api/auth/login' && path !== '/api/auth/refresh') {
     const refreshedAccessToken = await refreshAccessToken();
     if (refreshedAccessToken) {
       try { response = await send(path, init, refreshedAccessToken, scope); }
@@ -84,7 +84,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   const body = await response.json().catch(() => null) as ApiEnvelope<T> | T | null;
   if (!response.ok) {
-    if (response.status === 401) {
+    if (!anonymous && response.status === 401) {
       clearTokens();
       if (path !== '/api/auth/login' && path !== '/api/auth/refresh') notifyAuthenticationRequired();
     }
@@ -148,6 +148,7 @@ export const httpAdapter: ApiAdapter = {
   login: input => request('/api/auth/login', json({ ...input, clientId: AUTH_CLIENT_ID, userType: AUTH_USER_TYPE })),
   logout: async () => { await request('/api/auth/logout', { method: 'POST' }); clearTokens(); },
   getCurrentUser: () => request('/api/auth/me'),
+  getCurrentPermissions: () => request('/api/auth/permissions'),
   getCurrentProfile: () => request('/api/auth/me'),
   updateCurrentProfile: input => request('/api/auth/me/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) }),
   changeCurrentPassword: input => request('/api/auth/me/password', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) }),
@@ -156,6 +157,7 @@ export const httpAdapter: ApiAdapter = {
   updateUser: (id, input) => request(`/api/users/${id}`, { ...json(input), method: 'PUT' }),
   deleteUser: id => request(`/api/users/${id}`, { method: 'DELETE' }),
   listRoles: query => request(`/api/roles${queryString(query)}`),
+  listLoginRoles: () => request('/api/auth/roles', {}, true),
   createRole: input => request('/api/roles', json(input)),
   updateRole: (id, input) => request(`/api/roles/${id}`, { ...json(input), method: 'PUT' }),
   deleteRole: id => request(`/api/roles/${id}`, { method: 'DELETE' }),

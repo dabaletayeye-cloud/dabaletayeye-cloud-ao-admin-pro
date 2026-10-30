@@ -24,6 +24,7 @@ export default function SystemUsersPage({ accountType = 'sysuser' }: { accountTy
   const [keyword, setKeyword] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [rolesLoading, setRolesLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<SystemUser | 'new' | null>(null);
   const [form, setForm] = useState<SystemUserInput>({});
@@ -34,9 +35,20 @@ export default function SystemUsersPage({ accountType = 'sysuser' }: { accountTy
     catch (reason) { setError(reason instanceof Error ? reason.message : '加载失败'); }
   }, [enabled, page, keyword, service, withRoles]);
   useEffect(() => { void load(); }, [load]);
-  const open = (user: SystemUser | 'new') => {
+  const open = async (user: SystemUser | 'new') => {
     setEditing(user);
     setForm(user === 'new' ? { username: '', name: '', email: '', role: withRoles ? 'sys_admin' : accountType, status: 'active', password: '' } : { ...user, password: '' });
+    if (withRoles) {
+      setRolesLoading(true);
+      try {
+        const available = await listRoles({ pageSize: 100 });
+        setRoles(available.list);
+      } catch (reason) {
+        toast.error(reason instanceof Error ? reason.message : '角色列表加载失败');
+      } finally {
+        setRolesLoading(false);
+      }
+    }
   };
   const save = async () => {
     if (!form.username?.trim() || !form.name?.trim() || editing === 'new' && !form.password) return toast.error('请填写账号、姓名和初始密码');
@@ -66,9 +78,9 @@ export default function SystemUsersPage({ accountType = 'sysuser' }: { accountTy
     </>}
     <Dialog open={editing !== null} onOpenChange={open => { if (!open && !busy) setEditing(null); }}><DialogContent aria-describedby={undefined}><DialogHeader><DialogTitle>{editing === 'new' ? `新增${title}` : `编辑${title}`}</DialogTitle></DialogHeader>
       {(['username', 'name', 'email', 'password'] as const).map(key => <label key={key} className="grid gap-2 text-sm">{{ username: '登录账号', name: '姓名', email: '邮箱', password: editing === 'new' ? '初始密码' : '重置密码（留空不修改）' }[key]}<input className={inputClass} type={key === 'password' ? 'password' : key === 'email' ? 'email' : 'text'} value={form[key] ?? ''} autoComplete={key === 'password' ? 'new-password' : 'off'} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))} /></label>)}
-      {withRoles && <label className="grid gap-2 text-sm">角色<select className={inputClass} value={form.role ?? ''} onChange={event => setForm(previous => ({ ...previous, role: event.target.value }))}>{roles.filter(role => role.status === 'enabled').map(role => <option key={role.id} value={role.code}>{role.name}</option>)}</select></label>}
+      {withRoles && <label className="grid gap-2 text-sm">角色<select className={inputClass} value={form.role ?? ''} disabled={rolesLoading} onChange={event => setForm(previous => ({ ...previous, role: event.target.value }))}>{rolesLoading && <option value="">加载角色中…</option>}{roles.filter(role => role.status === 'enabled').map(role => <option key={role.id} value={role.code}>{role.name}</option>)}</select></label>}
       <label className="grid gap-2 text-sm">状态<select className={inputClass} value={form.status ?? 'active'} onChange={event => setForm(previous => ({ ...previous, status: event.target.value as SystemUser['status'] }))}><option value="active">正常</option><option value="inactive">停用</option><option value="banned">封禁</option></select></label>
-      <DialogFooter><button disabled={busy} className={buttonClass} onClick={() => void save()}>{busy ? '保存中…' : '保存'}</button></DialogFooter>
+      <DialogFooter><button disabled={busy || rolesLoading} className={buttonClass} onClick={() => void save()}>{busy ? '保存中…' : '保存'}</button></DialogFooter>
     </DialogContent></Dialog>
   </AdminLayout>;
 }

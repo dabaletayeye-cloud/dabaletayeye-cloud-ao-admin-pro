@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '../lib/localizedToast';
@@ -23,7 +23,8 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { LANGUAGE_OPTIONS, useLocale } from '../hooks/useLocale';
 import ThemePanel from '../components/ThemePanel';
-import { login } from '../api';
+import { listLoginRoles, login } from '../api';
+import type { LoginRoleOption } from '../api/types';
 import { apiMode } from '../api/adapter';
 import { AUTH_CLIENT_ID, AUTH_USER_TYPE, TOKEN_STORAGE_KEY, scopedStorageKey } from '../api/authConfig';
 import { accountClients } from '../config/accountClients';
@@ -39,10 +40,10 @@ type RegistrationResult = {
   email: string;
 };
 
-const ROLE_OPTIONS = [
-  { value: 'super-admin', sourceLabel: '超级管理员', labelKey: 'auth.roleSuperAdmin' },
-  { value: 'editor', sourceLabel: '内容运营', labelKey: 'auth.roleContentOperator' },
-  { value: 'analyst', sourceLabel: '数据分析师', labelKey: 'auth.roleAnalyst' },
+const FALLBACK_ROLE_OPTIONS: LoginRoleOption[] = [
+  { code: 'super_admin', name: '超级管理员' },
+  { code: 'content_editor', name: '内容运营' },
+  { code: 'data_analyst', name: '数据分析师' },
 ];
 
 const REMEMBERED_ACCOUNT_KEY = scopedStorageKey('ao-admin-pro.remembered-account');
@@ -55,7 +56,8 @@ function getRememberedAccount() {
   if (apiMode === 'mock') return (mockAuth.sysUserEnabled ? mockAuth.sysuser.username : mockAuth.username).trim();
   const configuredAccount = import.meta.env.VITE_DEFAULT_LOGIN_ACCOUNT?.trim() || '';
   if (typeof window === 'undefined') return configuredAccount;
-  return window.localStorage.getItem(REMEMBERED_ACCOUNT_KEY) || configuredAccount;
+  // An explicit deployment default should replace a stale remembered username.
+  return configuredAccount || window.localStorage.getItem(REMEMBERED_ACCOUNT_KEY) || '';
 }
 
 function AuthVisual() {
@@ -133,7 +135,8 @@ export default function LoginPage() {
   const location = useLocation();
   const { themeState, toggleMode } = useTheme();
   const { locale, setLocale, t } = useLocale();
-  const [role, setRole] = useState('super-admin');
+  const [loginRoles, setLoginRoles] = useState<LoginRoleOption[]>(FALLBACK_ROLE_OPTIONS);
+  const [role, setRole] = useState('super_admin');
   const [account, setAccount] = useState(getRememberedAccount);
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -147,6 +150,16 @@ export default function LoginPage() {
   const [verification, setVerification] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<RegistrationResult | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void listLoginRoles().then(available => {
+      if (!active) return;
+      setLoginRoles(available);
+      setRole(current => available.some(item => item.code === current) ? current : available[0]?.code ?? '');
+    }).catch(() => { /* Keep demo options if the public catalog is unavailable. */ });
+    return () => { active = false; };
+  }, []);
 
   const isRegister = location.pathname === '/register';
   const recovery = location.pathname === '/forgot-password';
@@ -441,9 +454,12 @@ export default function LoginPage() {
                     <span>{t('auth.loginRole')}</span>
                     <div className="auth-select-wrap">
                       <select value={role} onChange={(event) => setRole(event.target.value)}>
-                        {ROLE_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>{t(option.labelKey)}</option>
-                        ))}
+                        {loginRoles.map((option) => {
+                          const label = option.code === 'super_admin' || option.code === 'sys_admin' ? t('auth.roleSuperAdmin')
+                            : option.code === 'content_editor' ? t('auth.roleContentOperator')
+                              : option.code === 'data_analyst' ? t('auth.roleAnalyst') : option.name;
+                          return <option key={option.code} value={option.code}>{label}</option>;
+                        })}
                       </select>
                       <ChevronDownIcon size={17} />
                     </div>

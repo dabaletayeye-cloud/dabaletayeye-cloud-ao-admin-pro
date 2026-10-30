@@ -31,6 +31,7 @@ import { moduleRoutes } from './generated/registry';
 import { EditionProvider, useEdition } from './core/EditionProvider';
 import { isEntryEnabled, isNewPreset, showDemoPages } from './core/edition';
 import { toast } from './lib/localizedToast';
+import { requiredRoutePermission } from './core/routePermissions';
 
 function AuthenticationExpiryRedirect() {
   const navigate = useNavigate();
@@ -45,9 +46,17 @@ function AuthenticationExpiryRedirect() {
 function EditionRouteGuard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { config, loading } = useEdition();
+  const { config, loading, currentPermissions } = useEdition();
   useEffect(() => {
     if (loading) return;
+    if (currentPermissions !== undefined && currentPermissions !== null) {
+      const requiredPermission = requiredRoutePermission(location.pathname);
+      if (requiredPermission && !currentPermissions.includes('admin:all') && !currentPermissions.includes(requiredPermission)) {
+        toast.error('当前账户没有此页面权限');
+        navigate('/error/403', { replace: true });
+        return;
+      }
+    }
     const blocked = moduleRoutes.find(route => location.pathname === route.path || location.pathname.startsWith(`${route.path}/`));
     const hiddenDemo = isNewPreset(config.edition) && !showDemoPages(config)
       && /^\/(result|error)\//.test(location.pathname);
@@ -55,7 +64,7 @@ function EditionRouteGuard() {
         toast.error('该模块在当前版本未启用');
         navigate('/', { replace: true });
     }
-  }, [location.pathname, config, loading, navigate]);
+  }, [location.pathname, config, currentPermissions, loading, navigate]);
   return null;
 }
 

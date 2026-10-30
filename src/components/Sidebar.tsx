@@ -1,6 +1,7 @@
 import { resolveNavigationGroup } from '../core/navigationGroup';
 import React, { useState, useEffect } from 'react';
 import { getCurrentAccount } from '../lib/currentAccount';
+import { hasRoutePermission } from '../core/routePermissions';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import {
@@ -327,7 +328,40 @@ function icon(name: string, size: number) {
   return <Icon size={size} />;
 }
 
-export const buildNavItems = (editionConfig?: EditionConfig): NavItem[] => {
+const CORE_NAV_PERMISSIONS: Record<string, string> = {
+  '/': 'dashboard:view',
+  '/users': 'user:list',
+  '/system/users': 'user:list',
+  '/system/sys-users': 'config:view',
+  '/system/roles': 'role:list',
+  '/system/menus': 'menu:list',
+  '/system/logs': 'log:list',
+  '/system/dict': 'dict:list',
+  '/system/config': 'config:view',
+  '/permissions': 'perm:list',
+  '/orders': 'order:list',
+  '/messages': 'message:list',
+  '/generation-quotas': 'config:view',
+};
+
+function filterNavByPermissions(items: NavItem[], permissions: ReadonlySet<string>): NavItem[] {
+  const canOpen = (path: string) => {
+    if (permissions.has('admin:all')) return true;
+    if (path.startsWith('/system/account-users/')) return permissions.has('config:view');
+    const moduleMenu = moduleMenus.find(menu => menu.path === path);
+    if (moduleMenu) return Boolean(moduleMenu.perms[0] && permissions.has(moduleMenu.perms[0]));
+    const permission = CORE_NAV_PERMISSIONS[path];
+    return Boolean(permission && permissions.has(permission));
+  };
+
+  return items.flatMap<NavItem>(item => {
+    if (item.type === 'link') return canOpen(item.path) ? [item] : [];
+    const children = item.children.filter(child => canOpen(child.path));
+    return children.length ? [{ ...item, children }] : [];
+  });
+}
+
+export const buildNavItems = (editionConfig?: EditionConfig, permissions?: ReadonlySet<string> | null): NavItem[] => {
 const enabledMenus = editionConfig ? filterModuleMenus(moduleMenus, editionConfig) : moduleMenus;
 const modulePaths = new Set(enabledMenus.map((menu) => menu.path));
 const OPTIONAL_ROUTE_PREFIXES = ['/analytics', '/content', '/article', '/media', '/marketing', '/orders', '/messages', '/generation-quotas', '/system/files', '/system/servers', '/dashboard/analytics', '/dashboard/ecommerce', '/lowcode', '/ai', '/comp', '/tmpl', '/examples'];
@@ -406,9 +440,11 @@ if (editionConfig?.edition === 'full' && editionConfig.presets) {
   // Modules outside every preset remain reachable in the full edition.
   const remaining = [...moduleGroups.values()].map(group => ({ ...group, children: group.children.filter(child => !covered.has(child.path)) })).filter(group => group.children.length);
   const end = editions.some(item => item.label === '演示') ? visibleTail.filter(item => item.label === '系统管理') : visibleTail;
-  return [...(workspace ? [workspace] : []), ...editions, ...remaining, ...otherCore, ...end];
+  const items = [...(workspace ? [workspace] : []), ...editions, ...remaining, ...otherCore, ...end];
+  return permissions ? filterNavByPermissions(items, permissions) : items;
 }
-return workspace ? [workspace, ...moduleItems, ...otherCore, ...orderedTail] : [...moduleItems, ...otherCore, ...orderedTail];
+const items = workspace ? [workspace, ...moduleItems, ...otherCore, ...orderedTail] : [...moduleItems, ...otherCore, ...orderedTail];
+return permissions ? filterNavByPermissions(items, permissions) : items;
 };
 export const NAV_ITEMS: NavItem[] = buildNavItems();
 let ACTIVE_NAV_ITEMS: NavItem[] = NAV_ITEMS;
@@ -705,8 +741,15 @@ export default function Sidebar({
   const [currentAccount,setCurrentAccount]=useState(getCurrentAccount);
   useEffect(()=>{const sync=()=>setCurrentAccount(getCurrentAccount());window.addEventListener('ao-current-account-change',sync);return()=>window.removeEventListener('ao-current-account-change',sync);},[]);
   const { themeState } = useTheme();
-  const { config } = useEdition();
-  ACTIVE_NAV_ITEMS = buildNavItems(config);
+  const { config, currentPermissions } = useEdition();
+  const permissionSet = new Set(currentPermissions ?? []);
+  const visibleByPermission = (path: string) => currentPermissions == null
+    ? true : hasRoutePermission(path, permissionSet);
+  ACTIVE_NAV_ITEMS = buildNavItems(config).flatMap<NavItem>(item => {
+    if (item.type === 'link') return visibleByPermission(item.path) ? [item] : [];
+    const children = item.children.filter(child => visibleByPermission(child.path));
+    return children.length ? [{ ...item, children }] : [];
+  });
   const { locale } = useLocale();
   const { menuStyle, mode, sidebarAccordion } = themeState;
   const location = useLocation();

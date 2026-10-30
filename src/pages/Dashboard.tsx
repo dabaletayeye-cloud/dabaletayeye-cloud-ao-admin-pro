@@ -14,7 +14,7 @@ import { BarChart2Icon, TrendingUpIcon } from 'lucide-react';
 export default function Dashboard() {
   const {config,loading}=useEdition();
   if(loading)return <AdminLayout><p>Loading...</p></AdminLayout>;
-  if(config.tenancy?.enabled&&!config.tenancy.platform)return <MerchantHome/>;
+  if(config.tenancy?.enabled&&!config.tenancy.platform&&(config.tenancy.accountType==='merchant'||config.tenancy.merchantId!=null))return <MerchantHome/>;
   return <PlatformDashboard/>;
 }
 function PlatformDashboard() {

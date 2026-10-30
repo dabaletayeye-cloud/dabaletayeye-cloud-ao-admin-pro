@@ -3,8 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeftIcon, ChevronRightIcon, CircleXIcon, HomeIcon, LayersIcon, XIcon } from 'lucide-react';
 import type { TabsStyle } from '../types';
 import { localizeNavLabel, useLocale } from '../hooks/useLocale';
-import { moduleMenus } from '../generated/registry';
+import { moduleMenus, moduleRoutes } from '../generated/registry';
 import { useEdition } from '../core/EditionProvider';
+import { isEntryEnabled, isNewPreset, showDemoPages } from '../core/edition';
+import { hasRoutePermission, requiredRoutePermission } from '../core/routePermissions';
 import { scopedStorageKey } from '../api/authConfig';
 
 interface PageTab {
@@ -168,7 +170,7 @@ export function BreadcrumbTrail() {
 }
 
 export function PageTabs({ style }: { style: TabsStyle }) {
-  const { config } = useEdition();
+  const { config, currentPermissions } = useEdition();
   const location = useLocation();
   const navigate = useNavigate();
   const { locale, t } = useLocale();
@@ -181,6 +183,15 @@ export function PageTabs({ style }: { style: TabsStyle }) {
     setTabs(nextTabs);
     try { sessionStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(nextTabs)); } catch { /* storage is optional */ }
   };
+
+  const permissions = currentPermissions == null ? null : new Set(currentPermissions);
+  const visibleTabs = tabs.filter(tab => {
+    const route = moduleRoutes.find(item => item.path === tab.path);
+    if (route && !isEntryEnabled(route, config)) return false;
+    if (isNewPreset(config.edition) && !showDemoPages(config) && /^\/(result|error)\//.test(tab.path)) return false;
+    const required = requiredRoutePermission(tab.path);
+    return !permissions || !required || hasRoutePermission(tab.path, permissions);
+  });
 
   const closeTab = (event: MouseEvent, tab: PageTab) => {
     event.stopPropagation();
@@ -232,7 +243,7 @@ export function PageTabs({ style }: { style: TabsStyle }) {
   const isChrome = style === 'chrome';
   return (
     <div className="flex min-h-10 items-end gap-1 overflow-x-auto border-b px-3 pt-1" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-      {tabs.map(tab => {
+      {visibleTabs.map(tab => {
         const active = tab.path === location.pathname;
         return (
           <button
@@ -256,16 +267,16 @@ export function PageTabs({ style }: { style: TabsStyle }) {
         );
       })}
       {contextMenu && (() => {
-        const tabIndex = tabs.findIndex(tab => tab.path === contextMenu.tab.path);
-        const closeLeft = tabs.slice(0, tabIndex).filter(tab => tab.path !== '/').map(tab => tab.path);
-        const closeRight = tabs.slice(tabIndex + 1).filter(tab => tab.path !== '/').map(tab => tab.path);
-        const closeOthers = tabs.filter(tab => tab.path !== '/' && tab.path !== contextMenu.tab.path).map(tab => tab.path);
+        const tabIndex = visibleTabs.findIndex(tab => tab.path === contextMenu.tab.path);
+        const closeLeft = visibleTabs.slice(0, tabIndex).filter(tab => tab.path !== '/').map(tab => tab.path);
+        const closeRight = visibleTabs.slice(tabIndex + 1).filter(tab => tab.path !== '/').map(tab => tab.path);
+        const closeOthers = visibleTabs.filter(tab => tab.path !== '/' && tab.path !== contextMenu.tab.path).map(tab => tab.path);
         const menuItems = [
           { label: t('closeTab'), icon: <XIcon size={15} />, paths: contextMenu.tab.path === '/' ? [] : [contextMenu.tab.path] },
           { label: t('closeLeftTabs'), icon: <ChevronLeftIcon size={15} />, paths: closeLeft },
           { label: t('closeRightTabs'), icon: <ChevronRightIcon size={15} />, paths: closeRight },
           { label: t('closeOtherTabs'), icon: <LayersIcon size={15} />, paths: closeOthers },
-          { label: t('closeAllTabs'), icon: <CircleXIcon size={15} />, paths: tabs.filter(tab => tab.path !== '/').map(tab => tab.path) },
+          { label: t('closeAllTabs'), icon: <CircleXIcon size={15} />, paths: visibleTabs.filter(tab => tab.path !== '/').map(tab => tab.path) },
         ];
         return (
           <div

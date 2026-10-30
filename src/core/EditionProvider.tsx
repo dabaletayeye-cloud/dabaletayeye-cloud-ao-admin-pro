@@ -17,6 +17,7 @@ function resolveEdition(config: EditionConfig): EditionConfig {
 interface EditionContextValue {
   config: EditionConfig;
   loading: boolean;
+  currentPermissions: string[] | null | undefined;
   refreshEdition: () => Promise<void>;
   setEdition: (edition: Edition) => Promise<EditionConfig>;
   filterMenus: (items: ModuleMenuEntry[]) => ModuleMenuEntry[];
@@ -29,10 +30,13 @@ const Context = createContext<EditionContextValue | null>(null);
 export function EditionProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<EditionConfig>(() => resolveEdition(DEFAULT_EDITION));
   const [loading, setLoading] = useState(true);
+  const [currentPermissions, setCurrentPermissions] = useState<string[] | null>();
   const refreshEdition = useCallback(async () => {
     try {
       const next = await apiAdapter.getSystemEdition();
-      if (next?.edition) setConfig(resolveEdition({ ...next, enabledModules: Array.isArray(next.enabledModules) ? next.enabledModules : [] }));
+      if (next?.edition) {
+        setConfig(resolveEdition({ ...next, enabledModules: Array.isArray(next.enabledModules) ? next.enabledModules : [] }));
+      }
     } catch {
       // Users without configuration permission can still identify their own account domain.
       try { const profile = await apiAdapter.getCurrentProfile(); setConfig(current => ({ ...current, sysUserEnabled: profile.accountType === 'sysuser' })); }
@@ -40,6 +44,7 @@ export function EditionProvider({ children }: { children: ReactNode }) {
     }
     finally {
       try { const tenancy = await apiAdapter.getTenancyContext(); if(!tenancy.available)setMerchantScope(0); setConfig(current => ({...current,...(!tenancy.platform&&tenancy.editionConfig?resolveEdition(tenancy.editionConfig):{}),tenancy:{...tenancy,available:tenancy.available&&['saas','ecommerce','crm','full'].includes(current.edition)}})); } catch { setConfig(current=>({...current,tenancy:undefined})); }
+      try { setCurrentPermissions(await apiAdapter.getCurrentPermissions()); } catch { setCurrentPermissions(null); }
       setLoading(false);
     }
   }, []);
@@ -57,12 +62,12 @@ export function EditionProvider({ children }: { children: ReactNode }) {
     return normalized;
   }, []);
   const value = useMemo<EditionContextValue>(() => ({
-    config, loading, refreshEdition, setEdition,
+    config, loading, currentPermissions, refreshEdition, setEdition,
     filterMenus: items => filterByEdition(items, config),
     filterRoutes: items => filterByEdition(items, config),
     filterPermissions: items => filterPermissionGroups(items, config),
     isModuleEnabled: module => isModuleEnabled(module, config),
-  }), [config, loading, refreshEdition, setEdition]);
+  }), [config, loading, currentPermissions, refreshEdition, setEdition]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 export function useEdition() {

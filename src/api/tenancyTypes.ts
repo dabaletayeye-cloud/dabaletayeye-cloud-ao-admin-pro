@@ -5,7 +5,7 @@ export interface MerchantMember { accountType: string; userId: number; merchantI
 export interface TenancyContext {
   editionConfig?: import('../core/edition').EditionConfig;
   enabled: boolean; available: boolean; regionMode: RegionMode; platform: boolean;
-  merchantId?: number | null; regions: Region[]; merchants: Merchant[];
+  accountType?: string; merchantId?: number | null; regions: Region[]; merchants: Merchant[];
 }
 export type RegionInput = Omit<Region, 'id'>;
 export type MerchantInput = Omit<Merchant, 'id'>;

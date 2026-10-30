@@ -12,3 +12,4 @@ export type LoginResult = {
 export const login = (input: LoginInput): Promise<LoginResult> => apiAdapter.login(input);
 export const logout = (): Promise<void> => apiAdapter.logout();
 export const getCurrentUser = (): Promise<User | null> => apiAdapter.getCurrentUser();
+export const getCurrentPermissions = (): Promise<string[] | null> => apiAdapter.getCurrentPermissions();

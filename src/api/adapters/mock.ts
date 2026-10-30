@@ -247,6 +247,16 @@ const baseMockAdapter: ApiAdapter = {
   },
   async logout() { await wait(); if (accountClients.enabled) clientAccounts.logout(); },
   async getCurrentUser() { await wait(); if (accountClients.enabled) return clientAccounts.current(); return mockAuth.sysUserEnabled ? systemUsers.current() : clone(users[0] ?? null); },
+  async getCurrentPermissions() {
+    await wait();
+    const account = accountClients.enabled ? clientAccounts.current() : mockAuth.sysUserEnabled ? systemUsers.current() : clone(users[0] ?? null);
+    if (!account) return [];
+    const accountType = String(account.accountType ?? (mockAuth.sysUserEnabled ? 'sysuser' : 'user'));
+    if (accountClients.enabled && accountClients.userTypes[accountType]?.permissionMode !== 'rbac') return null;
+    const assigned = [account.role, ...(account.roles ?? [])].filter((value): value is string => typeof value === 'string').map(value => value.trim().toLowerCase());
+    const superAdmin = assigned.some(value => ['super_admin', 'superadmin', 'super administrator', '超级管理员'].includes(value));
+    return [...new Set(roles.filter(item => item.status === 'enabled' && (superAdmin || assigned.includes(item.code.toLowerCase()) || assigned.includes(item.name.toLowerCase()))).flatMap(item => item.permissions))];
+  },
   async getCurrentProfile() { await wait(); if (accountClients.enabled) return clientAccounts.current(); if (mockAuth.sysUserEnabled) return systemUsers.current(); return clone({ ...users[0], username: mockAuth.username.trim(), phone: '', department: '', position: '', bio: '' } as CurrentProfile); },
   async updateCurrentProfile(input) { await wait(); if (accountClients.enabled) return clientAccounts.updateProfile({ ...input }); if (mockAuth.sysUserEnabled) return systemUsers.updateProfile({ ...input }); users[0] = { ...users[0], ...input } as typeof users[0]; return clone({ ...users[0], username: mockAuth.username.trim() } as CurrentProfile); },
   async changeCurrentPassword(input) { await wait(); if (accountClients.enabled) return clientAccounts.changePassword(input.currentPassword, input.newPassword); if (mockAuth.sysUserEnabled) await systemUsers.changePassword(input.currentPassword, input.newPassword); },
@@ -255,6 +265,7 @@ const baseMockAdapter: ApiAdapter = {
   async updateUser(id, input) { await wait(); if (accountClients.enabled) return clientAccounts.update("user", id, input); const index = users.findIndex(item => item.id === id); if (index < 0) throw new Error('User not found'); users[index] = { ...users[index], ...userFields(input), id }; return clone(users[index]); },
   async deleteUser(id) { await wait(); if (accountClients.enabled) return clientAccounts.remove("user", id); users = users.filter(item => item.id !== id); },
   async listRoles(query = {}) { await wait(); return page(roles.filter(item => !query.keyword || `${item.name}${item.code}`.includes(query.keyword)), query); },
+  async listLoginRoles() { await wait(); return clone(roles.filter(item => item.status === 'enabled').map(({ code, name }) => ({ code, name }))); },
   async createRole(input) { await wait(); const role = { id: Date.now(), name: input.name ?? '', code: input.code ?? '', description: input.description ?? '', userCount: input.userCount ?? 0, status: input.status ?? 'enabled', createdAt: input.createdAt ?? new Date().toISOString().slice(0, 10), permissions: input.permissions ?? [] } as Role; roles = [...roles, role]; return clone(role); },
   async updateRole(id, input) { await wait(); const index = roles.findIndex(item => item.id === id); if (index < 0) throw new Error('Role not found'); roles[index] = { ...roles[index], ...input, id }; return clone(roles[index]); },
   async deleteRole(id) { await wait(); roles = roles.filter(item => item.id !== id); },

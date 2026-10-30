@@ -108,8 +108,9 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function HorizontalNav() {
-  const { config } = useEdition();
-  const items: NavItem[] = buildNavItems(config).map((item,index) => ({...item,id:item.type==='link'?item.path:'group-'+index}));
+  const { config, currentPermissions } = useEdition();
+  const permissions = currentPermissions == null ? null : new Set(currentPermissions);
+  const items: NavItem[] = buildNavItems(config, permissions).map((item,index) => ({...item,id:item.type==='link'?item.path:'group-'+index}));
   const { themeState } = useTheme();
   const { locale } = useLocale();
   const location = useLocation();

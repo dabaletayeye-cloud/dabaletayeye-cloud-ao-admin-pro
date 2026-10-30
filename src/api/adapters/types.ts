@@ -1,7 +1,7 @@
 import type { BaseUser } from '../baseUser';
 import type {
   ApiListQuery, Article, Category, DashboardAnalyticsData, DashboardAnalyticsRange, DashboardData, DictItem, DictType, EcommerceDashboardData, ExceptionLog,
-  FunnelData, LoginLog, MenuItem, OperationLog, PageResult, Role, Tag, User,
+  FunnelData, LoginLog, LoginRoleOption, MenuItem, OperationLog, PageResult, Role, Tag, User,
   UserPortraitData, VisitStatsData,
   FileStorageInfo, ManagedFile, ManagedFileFolder,
   SystemConfig,
@@ -104,6 +104,7 @@ export interface ApiAdapter {
   }>;
   logout(): Promise<void>;
   getCurrentUser(): Promise<User | null>;
+  getCurrentPermissions(): Promise<string[] | null>;
   getCurrentProfile(): Promise<CurrentProfile>;
   updateCurrentProfile(input: CurrentProfileInput): Promise<CurrentProfile>;
   changeCurrentPassword(input: { currentPassword: string; newPassword: string }): Promise<void>;
@@ -112,6 +113,7 @@ export interface ApiAdapter {
   updateUser(id: number, input: Partial<User>): Promise<User>;
   deleteUser(id: number): Promise<void>;
   listRoles(query?: ApiListQuery): Promise<PageResult<Role>>;
+  listLoginRoles(): Promise<LoginRoleOption[]>;
   createRole(input: Partial<Role>): Promise<Role>;
   updateRole(id: number, input: Partial<Role>): Promise<Role>;
   deleteRole(id: number): Promise<void>;
